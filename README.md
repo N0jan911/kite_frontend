@@ -15,6 +15,4 @@ A low-data messaging app that lets you message anyone by phone number.
 - Client-side storage (localStorage fallback)
 - Single-file deployment (133 lines)
 
-**Live demo:** [Try it on Netlify] _(pending backend URL)_
-
 **Status:** Frontend complete. Backend authentication working. Messages & feed endpoints pending.

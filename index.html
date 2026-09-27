@@ -57,7 +57,7 @@ async function getMany(e,n){const r=[];
 for(let s=0;
 s<e.length;
 s+=8){const i=e.slice(s,s+8);
-r.push(...await Promise.all(i.map(async l=>[l,await store.get(l,n)])))}return r}const HISTORY=60,parse=(e,n)=>{try{return e?JSON.parse(e):n}catch(r){return n}},digits=e=>(e||"").replace(/\D/g,""),validNum=e=>e.length>=8&&e.length<=15,pretty=e=>"+"+e,rid=()=>Math.random().toString(36).slice(2,6),CODE_LEN=6,API_BASE="https://kite-backend-pass.onrender.com",SESSION_KEY="kite_token",lsGet=e=>{try{return localStorage.getItem(e)}catch(n){return null}},lsSet=(e,n)=>{try{localStorage.setItem(e,n)}catch(r){}},lsDel=e=>{try{localStorage.removeItem(e)}catch(n){}},hue=e=>{let n=7;
+r.push(...await Promise.all(i.map(async l=>[l,await store.get(l,n)])))}return r}const HISTORY=60,parse=(e,n)=>{try{return e?JSON.parse(e):n}catch(r){return n}},digits=e=>(e||"").replace(/\D/g,""),validNum=e=>e.length>=8&&e.length<=15,pretty=e=>"+"+e,rid=()=>Math.random().toString(36).slice(2,6),CODE_LEN=6,API_BASE="https://kite-backend-pqsm.onrender.com",SESSION_KEY="kite_token",lsGet=e=>{try{return localStorage.getItem(e)}catch(n){return null}},lsSet=(e,n)=>{try{localStorage.setItem(e,n)}catch(r){}},lsDel=e=>{try{localStorage.removeItem(e)}catch(n){}},hue=e=>{let n=7;
 for(let r=0;
 r<e.length;
 r++)n=n*31+e.charCodeAt(r)>>>0;

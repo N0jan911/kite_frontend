@@ -6,6 +6,7 @@
 <title>Kite</title>
 <meta name="theme-color" content="#1668e3">
 <meta name="description" content="Connect · Share · Belong">
+<link rel="icon" href="kite logo2.PNG">
 <style>html,body{margin:0;height:100%;background:#f1f6ff}</style>
 </head>
 <body>
@@ -76,7 +77,21 @@ return}f(E.pin_id),I(""),c("code")}catch(m){w(!1),h(m instanceof TypeError?"Coul
 try{const m=await fetch(`${API_BASE}/api/auth/verify-code`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({number:A,name:S.trim(),mode:s,pin_id:y,pin:$})}),E=await m.json().catch(()=>({}));
 if(w(!1),!m.ok){h(E.error||"That code didn't work.");
 return}e(E)}catch(m){w(!1),h(m instanceof TypeError?"Couldn't reach the server. Please try again in a moment.":"Something went wrong. Try again.")}}};
-return React.createElement("div",{className:"auth"},React.createElement("div",{className:"lattice"}),React.createElement("div",{className:"authtop"},React.createElement("button",{className:"iconbtn",onClick:r,"aria-label":"Switch between light and dark blue"},React.createElement(Ic,{n:n==="dark"?"sun":"moon"}))),React.createElement("div",{className:"hero"},React.createElement("div",{className:"logo"},React.createElement(Logo,{size:64})),React.createElement("h1",null,"Kite"),React.createElement("p",null,"Connect · Share · Belong")),R==="form"?React.createElement(React.Fragment,null,React.createElement("div",{className:"seg"},React.createElement("button",{"aria-pressed":s==="register",onClick:()=>J("register")},"Register"),React.createElement("button",{"aria-pressed":s==="signin",onClick:()=>J("signin")},"Sign in")),React.createElement("label",{className:"lbl",htmlFor:"num"},"Phone number with country code"),React.createElement("input",{id:"num",className:"field",type:"tel",inputMode:"tel",autoComplete:"tel",placeholder:"+44 7700 900123",value:l,onChange:m=>N(m.target.value),onKeyDown:m=>m.key==="Enter"&&P()}),s==="register"&&React.createElement(React.Fragment,null,React.createElement("label",{className:"lbl",htmlFor:"nm"},"Your name"),React.createElement("input",{id:"nm",className:"field",maxLength:24,placeholder:"How friends will see you",value:S,onChange:m=>d(m.target.value),onKeyDown:m=>m.key==="Enter"&&P()})),React.createElement("button",{className:"btn",disabled:!B||p,onClick:P},p?"One moment":"Continue"),b&&React.createElement("div",{className:"err",role:"alert"},b),React.createElement("p",{className:"fine"},"We'll text a one-time code to that number to confirm it's yours.")):React.createElement(React.Fragment,null,React.createElement("label",{className:"lbl first"},"Verification code"),React.createElement("p",{className:"fine",style:{margin:"0 0 12px"}},"Sent by SMS to ",pretty(A),"."),React.createElement("input",{className:"field code",inputMode:"numeric",autoComplete:"one-time-code",maxLength:CODE_LEN,placeholder:"0".repeat(CODE_LEN),value:$,onChange:m=>I(digits(m.target.value).slice(0,CODE_LEN)),onKeyDown:m=>m.key==="Enter"&&$.length===CODE_LEN&&F()}),React.createElement("button",{className:"btn",disabled:p||$.length!==CODE_LEN,onClick:F},p?"One moment":s==="register"?"Create account":"Sign in"),b&&React.createElement("div",{className:"err",role:"alert"},b),React.createElement("div",{className:"actions"},React.createElement("button",{className:"act",onClick:P},"Resend code"),React.createElement("button",{className:"act",onClick:()=>{c("form"),h(""),f(null)}},"Use a different number"))))}function NewChat({onStart:e}){const[n,r]=useState(""),[s,i]=useState(""),[l,N]=useState(!1),S=async()=>{const d=digits(n);
+const OTP_TIMEOUT=60,[left,setLeft]=useState(OTP_TIMEOUT),[expired,setExpired]=useState(false);
+useEffect(()=>{
+  if(R!=="code")return;
+  setExpired(false);
+  setLeft(OTP_TIMEOUT);
+  const t=setInterval(()=>{
+    setLeft(s=>{
+      if(s<=1){clearInterval(t);setExpired(true);return 0}
+      return s-1;
+    });
+  },1000);
+  return()=>clearInterval(t);
+},[R,y]);
+const restart=()=>{setExpired(false);I("");h("");f(null);c("form")};
+return React.createElement("div",{className:"auth"},React.createElement("div",{className:"lattice"}),React.createElement("div",{className:"authtop"},React.createElement("button",{className:"iconbtn",onClick:r,"aria-label":"Switch between light and dark blue"},React.createElement(Ic,{n:n==="dark"?"sun":"moon"}))),React.createElement("div",{className:"hero"},React.createElement("div",{className:"logo"},React.createElement(Logo,{size:64})),React.createElement("h1",null,"Kite"),React.createElement("p",null,"Connect · Share · Belong")),R==="form"?React.createElement(React.Fragment,null,React.createElement("div",{className:"seg"},React.createElement("button",{"aria-pressed":s==="register",onClick:()=>J("register")},"Register"),React.createElement("button",{"aria-pressed":s==="signin",onClick:()=>J("signin")},"Sign in")),React.createElement("label",{className:"lbl",htmlFor:"num"},"Phone number with country code"),React.createElement("input",{id:"num",className:"field",type:"tel",inputMode:"tel",autoComplete:"tel",placeholder:"+44 7700 900123",value:l,onChange:m=>N(m.target.value),onKeyDown:m=>m.key==="Enter"&&P()}),s==="register"&&React.createElement(React.Fragment,null,React.createElement("label",{className:"lbl",htmlFor:"nm"},"Your name"),React.createElement("input",{id:"nm",className:"field",maxLength:24,placeholder:"How friends will see you",value:S,onChange:m=>d(m.target.value),onKeyDown:m=>m.key==="Enter"&&P()})),React.createElement("button",{className:"btn",disabled:!B||p,onClick:P},p?"One moment":"Continue"),b&&React.createElement("div",{className:"err",role:"alert"},b),React.createElement("p",{className:"fine"},"We'll text a one-time code to that number to confirm it's yours.")):React.createElement(React.Fragment,null,React.createElement("label",{className:"lbl first"},"Verification code"),React.createElement("p",{className:"fine",style:{margin:"0 0 12px"}},"Sent by SMS to ",pretty(A),"."),React.createElement("p",{className:"fine",style:{margin:"0 0 12px"}},"Code expires in ",Math.floor(left/60),":",String(left%60).padStart(2,"0")),React.createElement("input",{className:"field code",inputMode:"numeric",autoComplete:"one-time-code",maxLength:CODE_LEN,placeholder:"0".repeat(CODE_LEN),value:$,onChange:m=>I(digits(m.target.value).slice(0,CODE_LEN)),onKeyDown:m=>m.key==="Enter"&&$.length===CODE_LEN&&F()}),React.createElement("button",{className:"btn",disabled:p||$.length!==CODE_LEN,onClick:F},p?"One moment":s==="register"?"Create account":"Sign in"),b&&React.createElement("div",{className:"err",role:"alert"},b),React.createElement("div",{className:"actions"},React.createElement("button",{className:"act",onClick:P},"Resend code"),React.createElement("button",{className:"act",onClick:()=>{c("form"),h(""),f(null)}},"Use a different number"))),expired&&React.createElement("div",{className:"modal",role:"alertdialog","aria-modal":"true"},React.createElement("div",{className:"modalcard"},React.createElement("h2",null,"Session timed out"),React.createElement("p",null,"You didn't enter the code in time. Please start again."),React.createElement("button",{className:"btn",onClick:restart},"Start over"))))}function NewChat({onStart:e}){const[n,r]=useState(""),[s,i]=useState(""),[l,N]=useState(!1),S=async()=>{const d=digits(n);
 if(!validNum(d)){i("Enter the full number, starting with the country code.");
 return}N(!0),i("");
 const b=await e(d);
@@ -340,6 +355,10 @@ background:repeating-linear-gradient(45deg,transparent 0 34px,var(--tint) 34px 3
 @keyframes pop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.kite *{animation:none!important;transition:none!important}}
+.modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:24px;background:rgba(5,15,40,.55)}
+.modalcard{width:100%;max-width:340px;padding:22px;border-radius:20px;background:var(--bg);color:var(--ink);text-align:center}
+.modalcard h2{margin:0 0 8px;font-size:20px}
+.modalcard p{margin:0;color:var(--mute)}
 `;
 ReactDOM.createRoot(document.getElementById("root")).render(
 React.createElement(

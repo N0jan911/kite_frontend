@@ -344,24 +344,12 @@ return e?r?d?U=React.createElement(ChatView,{me:r,partner:d,name:re(d),about:c[d
 N==="feed"&&React.createElement(Feed,{me:r,posts:f,likeKeys:I,saver:i.saver,onPost:ue,onLike:pe,onMessage:de,onRefresh:me}),
 N==="status"&&React.createElement(Status),
 N==="me"&&React.createElement(Me,{me:r,prefs:i,setPrefs:l,onSave:ie,onSignOut:se})
-
-render(){
-if(!this.state.error)return this.props.children;
-const message=this.state.error&&this.state.error.message
-?this.state.error.message
-:"Unexpected error";
-return React.createElement("div",{
-style:{
-minHeight:"100vh",
-display:"grid",
-placeItems:"center",
-padding:"28px",
-background:"#f1f6ff",
-color:"#0b1b3a",
-fontFamily:"system-ui,-apple-system,Segoe UI,Roboto,sans-serif",
-textAlign:"center"
+)
+)
+)
+:U=null,
+U
 }
-},
 
 const CSS=`
 .kite,.kite *{box-sizing:border-box}

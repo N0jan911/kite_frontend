@@ -114,7 +114,154 @@ p(!1),y&&b("")};
 return React.createElement(React.Fragment,null,React.createElement("div",{className:"titlerow"},React.createElement("h1",{className:"h1"},"Feed"),React.createElement("button",{className:"iconbtn",onClick:S,"aria-label":"Refresh feed"},React.createElement(Ic,{n:"refresh"}))),s&&React.createElement("div",{className:"note"},React.createElement(Ic,{n:"zap",s:14}),"Text only. Tap refresh to load new posts."),React.createElement("div",{className:"card"},React.createElement("textarea",{className:"field",rows:3,maxLength:280,placeholder:"Share something short","aria-label":"New post",value:d,onChange:c=>b(c.target.value)}),React.createElement("div",{className:"composerow"},React.createElement("span",{className:"chars"},d.length,"/280"),React.createElement("button",{className:"btn sm",onClick:R,disabled:!d.trim()||h},"Post"))),React.createElement("div",{className:"list"},n.length===0&&React.createElement("p",{className:"empty"},"Nothing here yet. Post the first update."),n.map(c=>{const y=w[c.id]||{n:0,mine:!1};
 return React.createElement("article",{className:"post",key:c.id},React.createElement("div",{className:"posthead"},React.createElement(Avatar,{id:c.by,name:c.name,size:38}),React.createElement("div",{className:"rowmain"},React.createElement("div",{className:"rowtitle"},React.createElement("span",{className:"trunc"},c.name)),React.createElement("div",{className:"sub"},ago(c.ts)))),React.createElement("div",{className:"posttext"},c.text),React.createElement("div",{className:"actions"},React.createElement("button",{className:"act","aria-pressed":y.mine,onClick:()=>l(c.id),"aria-label":y.mine?"Remove like":"Like"},React.createElement(Ic,{n:"heart",s:16,fill:y.mine}),y.n),c.by!==e.number&&React.createElement("button",{className:"act",onClick:()=>N(c.by,c.name)},React.createElement(Ic,{n:"chat",s:16}),"Message")))})))}function Me({me:e,prefs:n,setPrefs:r,onSave:s,onSignOut:i}){const[l,N]=useState(e.name),[S,d]=useState(e.about||""),b=useMeter(),h=l.trim()!==e.name||S.trim()!==(e.about||"");
 return React.createElement(React.Fragment,null,React.createElement("h1",{className:"h1"},"Me"),React.createElement("div",{className:"card profile"},React.createElement(Avatar,{id:e.number,name:e.name,size:60}),React.createElement("div",{className:"rowmain"},React.createElement("div",{className:"rowtitle"},React.createElement("span",{className:"trunc"},e.name)),React.createElement("div",{className:"sub"},pretty(e.number)))),React.createElement("label",{className:"lbl",htmlFor:"myname"},"Name"),React.createElement("input",{id:"myname",className:"field",maxLength:24,value:l,onChange:p=>N(p.target.value)}),React.createElement("label",{className:"lbl",htmlFor:"myabout"},"About"),React.createElement("input",{id:"myabout",className:"field",maxLength:60,placeholder:"A short line about you",value:S,onChange:p=>d(p.target.value)}),h&&l.trim().length>=2&&React.createElement("button",{className:"btn",onClick:()=>s(l.trim(),S.trim())},"Save profile"),React.createElement("h2",{className:"h2"},"Appearance"),React.createElement("div",{className:"seg"},React.createElement("button",{"aria-pressed":n.theme==="light",onClick:()=>r(p=>({...p,theme:"light"}))},React.createElement(Ic,{n:"sun",s:16}),"Blue and white"),React.createElement("button",{"aria-pressed":n.theme==="dark",onClick:()=>r(p=>({...p,theme:"dark"}))},React.createElement(Ic,{n:"moon",s:16}),"Dark blue")),React.createElement("h2",{className:"h2"},"Data"),React.createElement("div",{className:"card"},React.createElement("div",{className:"setrow"},React.createElement("div",null,React.createElement("div",{className:"setname"},"Data saver"),React.createElement("div",{className:"sub"},"Checks for messages every 20 seconds instead of 6, updates the feed only when you tap refresh, and keeps the 15 newest posts.")),React.createElement("button",{className:"switch",role:"switch","aria-checked":n.saver,"aria-label":"Data saver",onClick:()=>r(p=>({...p,saver:!p.saver}))})),React.createElement("div",{className:"meter"},React.createElement(Ic,{n:"activity",s:18}),React.createElement("span",null,"Used this session"),React.createElement("strong",null,fmtBytes(b))),React.createElement("div",{className:"sub",style:{marginTop:6}},"Estimated from what the app sends and receives. Chat history is kept on this device, so it is not downloaded again.")),React.createElement("button",{className:"btn soft",onClick:i},React.createElement(Ic,{n:"logout",s:18}),"Sign out"))}function DataPill({online:e,onClick:n}){const r=useMeter();
-return e?React.createElement("button",{className:"pill",onClick:n,"aria-label":"Data used this session. Open data settings"},React.createElement(Ic,{n:"activity",s:15}),fmtBytes(r)):React.createElement("span",{className:"pill"},React.createElement(Ic,{n:"wifioff",s:15}),"Offline")}function Kite(){const[e,n]=useState(!1),[r,s]=useState(null),[i,l]=useState({theme:"light",saver:!0}),[N,S]=useState("chats"),[d,b]=useState(null),[h,p]=useState([]),[w,R]=useState({}),[c,y]=useState({}),[f,$]=useState([]),[I,D]=useState([]),[A,B]=useState(typeof navigator=="undefined"?!0:navigator.onLine!==!1),[J,P]=useState(""),[F,m]=useState(null),E=useRef(null),X=useRef(i),Q=useRef(N),K=useRef(new Set),V=useRef(new Set),W=useRef(new Set),_=useRef({inbox:void 0,feed:void 0}),T=useRef([]),G=useRef(!1),ee=useRef(0),te=useRef(null),x=r?r.number:null,O=a=>{P(a),clearTimeout(te.current),te.current=setTimeout(()=>P(""),2600)};
+return e?React.createElement("button",{className:"pill",onClick:n,"aria-label":"Data used this session. Open data settings"},React.createElement(Ic,{n:"activity",s:15}),fmtBytes(r)):React.createElement("span",{className:"pill"},React.createElement(Ic,{n:"wifioff",s:15}),"Offline")}
+function Status(){
+  const[statuses,setStatuses]=React.useState([
+    {
+      name:"Kite Team",
+      text:"Welcome to Kite 🚀",
+      time:"2h"
+    },
+    {
+      name:"Kite System",
+      text:"Everything is running smoothly.",
+      time:"5h"
+    }
+  ]);
+
+  const addStatus=()=>{
+    const text=window.prompt("What do you want to post?");
+
+    if(!text||!text.trim())return;
+
+    setStatuses([
+      {
+        name:"You",
+        text:text.trim(),
+        time:"now"
+      },
+      ...statuses
+    ]);
+  };
+
+  return React.createElement(
+    "section",
+    {className:"status-page"},
+
+    React.createElement(
+      "div",
+      {className:"status-header"},
+
+      React.createElement(
+        "div",
+        null,
+        React.createElement("h1",null,"Status"),
+        React.createElement(
+          "p",
+          null,
+          "Share updates with your contacts."
+        )
+      ),
+
+      React.createElement(
+        "button",
+        {
+          className:"status-add",
+          onClick:addStatus,
+          "aria-label":"Add status"
+        },
+        "+"
+      )
+    ),
+
+    React.createElement(
+      "button",
+      {
+        className:"my-status",
+        onClick:addStatus
+      },
+
+      React.createElement(
+        "div",
+        {className:"status-avatar"},
+        "+"
+      ),
+
+      React.createElement(
+        "div",
+        {className:"status-info"},
+
+        React.createElement(
+          "strong",
+          null,
+          "My Status"
+        ),
+
+        React.createElement(
+          "span",
+          null,
+          "Tap to add a status"
+        )
+      )
+    ),
+
+    React.createElement(
+      "h3",
+      {className:"status-title"},
+      "Recent updates"
+    ),
+
+    React.createElement(
+      "div",
+      {className:"status-list"},
+
+      statuses.map((status,index)=>
+        React.createElement(
+          "div",
+          {
+            className:"status-card",
+            key:index
+          },
+
+          React.createElement(
+            "div",
+            {className:"status-ring"},
+
+            React.createElement(
+              "div",
+              {className:"status-avatar"},
+              status.name.charAt(0).toUpperCase()
+            )
+          ),
+
+          React.createElement(
+            "div",
+            {className:"status-info"},
+
+            React.createElement(
+              "strong",
+              null,
+              status.name
+            ),
+
+            React.createElement(
+              "span",
+              null,
+              status.text
+            ),
+
+            React.createElement(
+              "small",
+              null,
+              status.time
+            )
+          )
+        )
+      )
+    )
+  );
+}
+  function Kite(){const[e,n]=useState(!1),[r,s]=useState(null),[i,l]=useState({theme:"light",saver:!0}),[N,S]=useState("chats"),[d,b]=useState(null),[h,p]=useState([]),[w,R]=useState({}),[c,y]=useState({}),[f,$]=useState([]),[I,D]=useState([]),[A,B]=useState(typeof navigator=="undefined"?!0:navigator.onLine!==!1),[J,P]=useState(""),[F,m]=useState(null),E=useRef(null),X=useRef(i),Q=useRef(N),K=useRef(new Set),V=useRef(new Set),W=useRef(new Set),_=useRef({inbox:void 0,feed:void 0}),T=useRef([]),G=useRef(!1),ee=useRef(0),te=useRef(null),x=r?r.number:null,O=a=>{P(a),clearTimeout(te.current),te.current=setTimeout(()=>P(""),2600)};
 X.current=i,Q.current=N;
 const Y=useCallback(async(a=!1)=>{const t=E.current;
 if(!t)return;
@@ -193,7 +340,10 @@ const a=new Map;
 for(const t of h){const o=t.from===x?t.to:t.from,u=a.get(o)||{partner:o,last:t,unread:0};
 u.last=t,t.from!==x&&t.ts>(w[o]||0)&&(u.unread+=1),a.set(o,u)}return[...a.values()].sort((t,o)=>o.last.ts-t.last.ts)},[h,w,x]),q=ae.reduce((a,t)=>a+t.unread,0),he=useMemo(()=>d&&x?h.filter(a=>a.from===d&&a.to===x||a.from===x&&a.to===d):[],[h,d,x]),re=a=>r&&a===r.number?`${r.name} (you)`:c[a]&&c[a].name||pretty(a);
 let U;
-return e?r?d?U=React.createElement(ChatView,{me:r,partner:d,name:re(d),about:c[d]&&c[d].about,list:he,online:A,onBack:()=>b(null),onSend:le,onRefresh:fe}):U=React.createElement(React.Fragment,null,React.createElement("header",{className:"top"},React.createElement("div",{className:"brand"},React.createElement("div",{className:"logo sm"},React.createElement(Logo,{size:30})),"Kite"),React.createElement("div",{className:"spacer"}),React.createElement(DataPill,{online:A,onClick:()=>S("me")}),React.createElement("button",{className:"iconbtn",onClick:ne,"aria-label":"Switch between light and dark blue"},React.createElement(Ic,{n:i.theme==="dark"?"sun":"moon"}))),React.createElement("main",{className:"main"},N==="chats"&&React.createElement(ChatList,{me:r,convos:ae,nameOf:re,onOpen:b,onStart:ce}),N==="feed"&&React.createElement(Feed,{me:r,posts:f,likeKeys:I,saver:i.saver,onPost:ue,onLike:pe,onMessage:de,onRefresh:me}),N==="me"&&React.createElement(Me,{me:r,prefs:i,setPrefs:l,onSave:ie,onSignOut:se})),React.createElement("nav",{className:"tabs"},[["chats","chat","Chats"],["feed","feed","Feed"],["me","user","Me"]].map(([a,t,o])=>React.createElement("button",{key:a,className:"tab","aria-current":N===a,onClick:()=>S(a)},React.createElement(Ic,{n:t,s:22}),o,a==="chats"&&q>0&&React.createElement("span",{className:"count"},q>9?"9+":q))))):U=React.createElement(Auth,{onAuthed:oe,theme:i.theme,onTheme:ne}):U=React.createElement("div",{className:"boot"},React.createElement(Logo,{size:44})),React.createElement("div",{className:"kite","data-theme":i.theme,style:F?{top:F.top,height:F.height,bottom:"auto"}:void 0},React.createElement("style",null,CSS),React.createElement("div",{className:"shell"},U,J&&React.createElement("div",{className:"toast",role:"status"},J)))}class KiteErrorBoundary extends React.Component{
+return e?r?d?U=React.createElement(ChatView,{me:r,partner:d,name:re(d),about:c[d]&&c[d].about,list:he,online:A,onBack:()=>b(null),onSend:le,onRefresh:fe}):U=React.createElement(React.Fragment,null,React.createElement("header",{className:"top"},React.createElement("div",{className:"brand"},React.createElement("div",{className:"logo sm"},React.createElement(Logo,{size:30})),"Kite"),React.createElement("div",{className:"spacer"}),React.createElement(DataPill,{online:A,onClick:()=>S("me")}),React.createElement("button",{className:"iconbtn",onClick:ne,"aria-label":"Switch between light and dark blue"},React.createElement(Ic,{n:i.theme==="dark"?"sun":"moon"}))),React.createElement("main",{className:"main"},N==="chats"&&React.createElement(ChatList,{me:r,convos:ae,nameOf:re,onOpen:b,onStart:ce}),
+N==="feed"&&React.createElement(Feed,{me:r,posts:f,likeKeys:I,saver:i.saver,onPost:ue,onLike:pe,onMessage:de,onRefresh:me}),
+N==="status"&&React.createElement(Status),
+N==="me"&&React.createElement(Me,{me:r,prefs:i,setPrefs:l,onSave:ie,onSignOut:se})
 constructor(props){
 super(props);
 this.state={error:null};
@@ -299,7 +449,171 @@ textarea.field{resize:none}
 .sub{font-size:14px;color:var(--mute)}
 .time{flex:none;font-size:12px;font-weight:500;color:var(--mute)}
 .count{display:grid;place-items:center;flex:none;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--btn);color:#fff;font-size:12px;font-weight:700}
+.status-page{
+  padding:6px 0 20px;
+}
 
+.status-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:6px 0 18px;
+}
+
+.status-header h1{
+  margin:0;
+  font-size:32px;
+  font-weight:800;
+  letter-spacing:-.035em;
+  line-height:1.1;
+}
+
+.status-header p{
+  margin:6px 0 0;
+  color:var(--mute);
+  font-size:14px;
+}
+
+.status-add{
+  display:grid;
+  place-items:center;
+  flex:none;
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:14px;
+  background:var(--tint);
+  color:var(--accent);
+  font-size:26px;
+  font-weight:500;
+  cursor:pointer;
+  transition:
+    transform .2s ease,
+    background .2s ease,
+    box-shadow .2s ease;
+}
+
+.status-add:hover{
+  transform:translateY(-2px) scale(1.04);
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+.status-add:active{
+  transform:scale(.94);
+}
+
+.my-status,
+.status-card{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--bg);
+  color:var(--ink);
+  text-align:left;
+  transition:
+    transform .2s ease,
+    background .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+.my-status{
+  cursor:pointer;
+}
+
+.my-status:hover,
+.status-card:hover{
+  background:var(--sky);
+  transform:translateY(-2px);
+  border-color:var(--accent);
+  box-shadow:0 8px 24px rgba(0,0,0,.06);
+}
+
+.status-avatar{
+  display:grid;
+  place-items:center;
+  width:48px;
+  height:48px;
+  flex:none;
+  border-radius:50%;
+  background:var(--tint);
+  color:var(--accent);
+  font-size:18px;
+  font-weight:800;
+}
+
+.status-ring{
+  display:grid;
+  place-items:center;
+  width:54px;
+  height:54px;
+  flex:none;
+  border:2px solid var(--accent);
+  border-radius:50%;
+  padding:2px;
+}
+
+.status-info{
+  display:flex;
+  flex:1;
+  min-width:0;
+  flex-direction:column;
+  gap:3px;
+}
+
+.status-info strong{
+  font-size:15px;
+  font-weight:750;
+}
+
+.status-info span{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:var(--mute);
+  font-size:14px;
+}
+
+.status-info small{
+  color:var(--mute);
+  font-size:12px;
+}
+
+.status-title{
+  margin:24px 4px 10px;
+  color:var(--mute);
+  font-size:13px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+
+.status-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.status-card{
+  animation:statusIn .35s ease both;
+}
+
+@keyframes statusIn{
+  from{
+    opacity:0;
+    transform:translateY(8px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
 .tabs{display:flex;gap:6px;padding:8px 10px;padding-bottom:max(8px,env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg)}
 .tab{position:relative;display:flex;flex:1;flex-direction:column;align-items:center;gap:3px;padding:8px 0 7px;border:0;border-radius:16px;background:none;color:var(--mute);font-size:12px;font-weight:700}
 .tab[aria-current=true]{background:var(--tint);color:var(--accent)}

@@ -125,7 +125,7 @@ const {useState,useEffect,useRef,useCallback,useMemo,Fragment,createElement:h}=R
 
 /* ---------- config & helpers ---------- */
 const API="https://kite-backend-pqsm.onrender.com";
-const TOKEN_KEY="kite_token", OTP_MS=5*60*1000, RESEND_MS=30*1000, KEEP_MSGS=500;
+const TOKEN_KEY="kite_token", OTP_MS=10*60*1000, RESEND_MS=30*1000, KEEP_MSGS=500;
 
 const store={
   get(k){try{return localStorage.getItem(k)}catch(e){return null}},
@@ -175,6 +175,8 @@ const PATHS={
   check:"M20 6 9 17l-5-5",clock:"M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z",
   heart:"M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z",
   logout:"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",
+  eye:"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+  trash:"M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6",
   off:"M2 2l20 20M8.5 16.4a5 5 0 0 1 7 0M5 12.9a10 10 0 0 1 5.2-2.7M12 20h.01"
 };
 const Icon=({n,s=20,fill})=>h("svg",{width:s,height:s,viewBox:"0 0 24 24",fill:fill?"currentColor":"none",stroke:"currentColor",strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round","aria-hidden":true},h("path",{d:PATHS[n]}));
@@ -349,32 +351,66 @@ function Feed({me,onMessage,notify}){
         p.by!==me.number&&h("button",{className:"act",onClick:()=>onMessage(p.by,p.name)},h(Icon,{n:"chat",s:16}),"Message")))));
 }
 
-/* ---------- Status (24h updates, stored on the server) ---------- */
+/* ---------- Status (24h updates with visibility control) ---------- */
+const VIS={contacts:"My contacts",everyone:"Everyone",only_me:"Only me"};
 function Status({me,notify}){
-  const [items,setItems]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false);
+  const [items,setItems]=useState([]),[text,setText]=useState(""),[vis,setVis]=useState("contacts"),[hide,setHide]=useState("");
+  const [busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[open,setOpen]=useState(null),[viewers,setViewers]=useState([]);
   const load=useCallback(async()=>{
-    try{const r=await api("/api/statuses");setItems(r.statuses||[]);setLoaded(true)}catch(e){notify(e.message)}
+    try{
+      const list=(await api("/api/statuses")).statuses||[];
+      setItems(list);setLoaded(true);
+      const unseen=list.filter(x=>!x.mine&&!x.seen).map(x=>x.id);   /* one request records every new view */
+      if(unseen.length)api("/api/statuses/views",{method:"POST",body:{ids:unseen}}).catch(()=>{});
+    }catch(e){notify(e.message)}
   },[notify]);
   useEffect(()=>{load()},[load]);
   const post=async()=>{
     const t=text.trim();if(!t||busy)return;
     setBusy(true);
-    try{const r=await api("/api/statuses",{method:"POST",body:{text:t}});setItems(l=>[r.status,...l]);setText("")}
-    catch(e){notify(e.message)}
+    try{
+      const hidden=hide.split(",").map(x=>x.replace(/\D/g,"")).filter(Boolean);
+      const r=await api("/api/statuses",{method:"POST",body:{text:t,visibility:vis,hidden_from:hidden}});
+      setItems(l=>[r.status,...l]);setText("");setHide("");
+    }catch(e){notify(e.message)}
     setBusy(false);
+  };
+  const remove=async x=>{
+    if(!window.confirm("Delete this status?"))return;
+    try{await api("/api/statuses/"+encodeURIComponent(x.id),{method:"DELETE"});setItems(l=>l.filter(y=>y.id!==x.id))}
+    catch(e){notify(e.message)}
+  };
+  const toggleViewers=async x=>{
+    if(open===x.id)return setOpen(null);
+    setOpen(x.id);setViewers([]);
+    try{setViewers((await api("/api/statuses/"+encodeURIComponent(x.id)+"/viewers")).viewers||[])}
+    catch(e){notify(e.message)}
   };
   return h(Fragment,null,
     h("div",{className:"titlerow"},h("h1",{className:"h1"},"Status"),h("button",{className:"iconbtn",onClick:load,"aria-label":"Refresh statuses"},h(Icon,{n:"refresh"}))),
     h("p",{className:"sub",style:{marginTop:-6,marginBottom:12}},"Updates disappear after 24 hours."),
     h("div",{className:"card"},
       h("textarea",{className:"field",rows:2,maxLength:140,placeholder:"What's happening?","aria-label":"New status",value:text,onChange:e=>setText(e.target.value)}),
+      h("label",{className:"lbl",htmlFor:"vis"},"Who can see this"),
+      h("select",{id:"vis",className:"field",value:vis,onChange:e=>setVis(e.target.value)},
+        Object.keys(VIS).map(k=>h("option",{key:k,value:k},VIS[k]))),
+      vis!=="only_me"&&h(Fragment,null,
+        h("label",{className:"lbl",htmlFor:"hide"},"Hide from (optional)"),
+        h("input",{id:"hide",className:"field",inputMode:"tel",placeholder:"Phone numbers, separated by commas",value:hide,onChange:e=>setHide(e.target.value)})),
+      h("p",{className:"sub",style:{marginTop:8}},"My contacts means people you have chatted with."),
       h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/140"),h("button",{className:"btn sm",onClick:post,disabled:!text.trim()||busy},"Share status"))),
     items.length===0&&h("p",{className:"empty"},loaded?"No updates in the last 24 hours.":"Loading…"),
-    items.map(s=>h("div",{className:"row",key:s.id,style:{cursor:"default"}},
-      h(Avatar,{id:s.by,name:s.name}),
-      h("div",{className:"grow"},
-        h("div",{className:"line name"},h("span",{className:"trunc"},s.by===me.number?"You":s.name),h("span",{className:"time"},ago(s.ts))),
-        h("div",{className:"text"},s.text)))));
+    items.map(x=>h("div",{className:"post",key:x.id},
+      h("div",{className:"posthead"},h(Avatar,{id:x.by,name:x.name,size:38}),
+        h("div",{className:"grow"},h("div",{className:"name trunc"},x.mine?"You":x.name),
+          h("div",{className:"sub"},ago(x.ts)+(x.mine?" · "+VIS[x.visibility]:"")))),
+      h("div",{className:"text"},x.text),
+      x.mine&&h("div",{className:"actions"},
+        h("button",{className:"act","aria-expanded":open===x.id,onClick:()=>toggleViewers(x)},h(Icon,{n:"eye",s:16}),x.views+(x.views===1?" view":" views")),
+        h("button",{className:"act",onClick:()=>remove(x),"aria-label":"Delete status"},h(Icon,{n:"trash",s:16}),"Delete")),
+      x.mine&&open===x.id&&h("div",{className:"card",style:{marginTop:10}},
+        viewers.length===0?h("p",{className:"sub"},"No views yet."):
+        viewers.map(v=>h("div",{className:"line",key:v.number,style:{padding:"4px 0"}},h("span",{className:"trunc"},v.name),h("span",{className:"time"},ago(v.ts))))))));
 }
 
 /* ---------- Me ---------- */
@@ -514,7 +550,7 @@ function App(){
   },[msgs,number,lookup]);
 
   const startChat=async n=>{
-    if(n===number){setPartner(n);return""}
+    if(n===number)return"That's your own number.";
     if(!online)return"You're offline. Connect once to look up a number.";
     try{
       const u=await lookup(n);

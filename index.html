@@ -129,6 +129,22 @@ textarea.field{resize:none}
 .ring.seen{border-color:var(--line)}
 .plus{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:20px;height:20px;border:2px solid var(--bg);border-radius:50%;background:#2f8bff;color:#fff}
 .filecard{display:flex;align-items:center;gap:10px;width:230px;max-width:100%;padding:10px;border:0;border-radius:14px;background:rgba(128,128,128,.22);color:inherit;text-align:left}
+.iconbtn:hover,.act:hover,.pill:hover{background:var(--tint)}
+.btn:not(:disabled):hover,.send:not(:disabled):hover,.fab:hover{filter:brightness(1.12)}
+.tab:hover{background:var(--sky)}
+.fabopt:hover{filter:brightness(.94)}
+.row:active,.btn:active,.act:active,.iconbtn:active,.tab:active,.fab:active,.fabopt:active,.attopt:active,.sb:active{transform:scale(.97)}
+.shell .send.attach{background:var(--tint);color:var(--ink)}
+.attmenu{position:absolute;left:12px;bottom:76px;z-index:7;display:flex;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:22px;background:var(--bg);box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.attopt{display:flex;flex-direction:column;align-items:center;gap:6px;width:64px;border:0;background:none;color:var(--ink);font-size:12px;font-weight:700;text-align:center}
+.attopt i{display:grid;place-items:center;width:54px;height:54px;border-radius:50%;color:#fff;transition:transform .15s,box-shadow .15s}
+.attopt:hover i,.attopt:focus-visible i{transform:scale(1.12);box-shadow:0 0 0 4px rgba(47,139,255,.4)}
+.wpgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.wp{height:84px;border:2px solid var(--line);border-radius:14px;background:var(--sky) center/120px;color:var(--ink);display:grid;place-items:center}
+.wp[aria-pressed=true],.swatch[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.wp:hover,.swatch:hover{border-color:var(--accent)}
+.swatch{width:38px;height:38px;border:2px solid var(--line);border-radius:50%}
+.msgs[data-bub] .bub.me,.shell[data-skin=dark] .msgs[data-bub] .bub.me{color:#fff}
 </style>
 </head>
 <body>
@@ -226,9 +242,31 @@ function FileView({f}){
   return h("button",{className:"filecard",onClick:()=>saveFile(f)},h(Icon,{n:"file",s:22}),h("div",{className:"grow"},h("div",{className:"name trunc"},f.name),h("div",{className:"sub",style:{color:"inherit",opacity:.8}},fmtSize(f.size))));
 }
 
+const P={kite:"M30 4L50 24L30 52L10 24Z M30 4V52 M10 24H50 M30 52q-8 6 0 12q8 6 0 12",bubble:"M8 10h40a6 6 0 0 1 6 6v20a6 6 0 0 1-6 6H26l-10 9v-9H8a6 6 0 0 1-6-6V16a6 6 0 0 1 6-6z M14 22h28 M14 30h18",phone:"M20 4h20a5 5 0 0 1 5 5v42a5 5 0 0 1-5 5H20a5 5 0 0 1-5-5V9a5 5 0 0 1 5-5z M26 49h8 M50 18a12 12 0 0 1 0 18 M56 12a20 20 0 0 1 0 30",heart:"M30 50S6 34 6 20a12 12 0 0 1 24-4 12 12 0 0 1 24 4c0 14-24 30-24 30z",star:"M30 4l7 17 18 2-14 12 5 18-16-10-16 10 5-18L5 23l18-2z",cloud:"M16 40a10 10 0 0 1 2-20 14 14 0 0 1 27 4 8 8 0 0 1 1 16z",wave:"M0 20q10-12 20 0t20 0t20 0"};
+const WALLS=[["mix","Kites and chats",[["kite",14,10,.7,-15],["bubble",118,14,.75,0],["phone",24,128,.75,10],["kite",150,128,.6,14],["heart",104,96,.4,0],["star",196,70,.32,0]]],
+ ["kites","Kites",[["kite",12,8,.7,-12],["kite",120,24,.55,10],["kite",40,128,.6,8],["kite",150,140,.7,-14]]],
+ ["chats","Chat bubbles",[["bubble",10,10,.7,-6],["bubble",120,40,.65,5],["bubble",30,130,.65,3],["heart",160,150,.4,0]]],
+ ["calls","Calls",[["phone",12,12,.7,-10],["phone",120,40,.6,8],["phone",40,136,.65,6],["wave",130,170,.9,0]]],
+ ["clouds","Clouds",[["cloud",10,20,1,0],["cloud",130,70,.9,0],["cloud",30,140,.8,0],["star",170,160,.3,0]]],
+ ["stars","Stars",[["star",10,10,.35,0],["star",110,40,.3,12],["star",180,20,.25,-8],["star",40,120,.3,5],["star",150,130,.35,0],["heart",90,190,.3,0]]],
+ ["waves","Waves",[["wave",0,30,3,0],["wave",0,90,3,0],["wave",0,150,3,0],["wave",0,210,3,0]]]];
+const BUBBLES=[["blue","Blue",null],["sky","Sky","#3b9cff"],["ocean","Ocean","#0e8aa0"],["violet","Violet","#6b5bd6"],["mint","Mint","#1f9d6b"]];
+const ATT=[["media","Photos & videos","image","image/*,video/*","#2f8bff","#6bb6ff"],["doc","Documents","file",".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar","#4a63e7","#8aa0ff"],["audio","Audio","mic","audio/*","#12a5b5","#5fd8e0"],["any","Files","folder","","#2c6fd6","#7fb2ff"]];
+function wallSvg(id){
+  const w=WALLS.find(x=>x[0]===id);if(!w)return"none";
+  const body=w[2].map(([k,x,y,sc,r])=>'<path transform="translate('+x+' '+y+') rotate('+r+') scale('+sc+')" d="'+P[k]+'"/>').join("");
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240" fill="none" stroke="#4f93f0" stroke-opacity=".3" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+body+'</svg>';
+  return 'url("data:image/svg+xml,'+encodeURIComponent(svg)+'")';
+}
+function wallBg(p){
+  if(p.wall==="none")return{};
+  if(p.wall==="custom"&&p.wallUrl)return{backgroundImage:'url("'+p.wallUrl+'")',backgroundSize:"cover",backgroundPosition:"center"};
+  return{backgroundImage:wallSvg(p.wall||"mix"),backgroundSize:"240px 240px"};
+}
+
 /* ---------- UI atoms ---------- */
 const PATHS={
-  back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",clip:"M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5",file:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",camera:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",image:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
+  back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",mic:"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3",folder:"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",clip:"M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5",file:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",camera:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",image:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
   chat:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
   feed:"M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M5 19h.01",
   status:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 8v8M8 12h8",
@@ -394,12 +432,16 @@ function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf}){
     h("button",{className:"fab","aria-label":"New chat options","aria-expanded":fab,onClick:()=>setFab(!fab)},h(Icon,{n:"plus",s:26})));
 }
 
-function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar,notify}){
+function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar,notify,prefs}){
   const [text,setText]=useState(""),[up,setUp]=useState(false),box=useRef(null),input=useRef(null);
   const coarse=window.matchMedia&&matchMedia("(pointer: coarse)").matches;
   useEffect(()=>{if(box.current)box.current.scrollTop=box.current.scrollHeight},[list.length]);
   useEffect(()=>{const el=input.current;if(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,120)+"px"}},[text]);
   const send=()=>{const t=text.trim();if(t){onSend(partner,t.slice(0,1000));setText("")}};
+  const [menu,setMenu]=useState(false),fileIn=useRef(null);
+  const pickFile=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;setUp(true);try{const file=await uploadAttachment(f);onSend(partner,text.trim().slice(0,1000),file);setText("")}catch(x){notify(x.message)}setUp(false)};
+  const choose=a=>{setMenu(false);const el=fileIn.current;if(a)el.setAttribute("accept",a);else el.removeAttribute("accept");el.click()};
+  const bc=(BUBBLES.find(b=>b[0]===prefs.bubble)||[])[2];
   let prev=0;
   return h(Fragment,null,
     h("div",{className:"chathead"},
@@ -407,7 +449,7 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
       h(Avatar,{id:partner,name,size:40,src:avatar,onClick:()=>onProfile(partner,name)}),
       h("div",{className:"grow"},h("div",{className:"name trunc"},name),h("div",{className:"sub trunc"},about||pretty(partner))),
       h("button",{className:"iconbtn",onClick:onRefresh,"aria-label":"Check for new messages"},h(Icon,{n:"refresh"}))),
-    h("div",{className:"msgs",ref:box},
+    h("div",{className:"msgs",ref:box,"data-bub":bc?"1":undefined,style:{...wallBg(prefs),...(bc?{"--btn":bc}:{})}},
       list.length===0&&h("p",{className:"empty"},"No messages yet. Say hello."),
       list.map(m=>{
         const showDay=!prev||!sameDay(m.ts,prev);prev=m.ts;
@@ -418,9 +460,12 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
             h("div",{className:"meta"},clock(m.ts),mine&&h(Icon,{n:m.pending?"clock":"check",s:12}))));
       })),
     !online&&h("div",{className:"banner"},"You're offline. Messages will send when you reconnect."),
+    menu&&h(Fragment,null,h("div",{className:"scrim",style:{zIndex:6,background:"transparent"},onClick:()=>setMenu(false)}),
+      h("div",{className:"attmenu",role:"menu"},ATT.map(([k,label,ic,acc,c1,c2])=>h("button",{key:k,className:"attopt",role:"menuitem",onClick:()=>choose(acc)},h("i",{style:{background:"linear-gradient(135deg,"+c1+","+c2+")"}},h(Icon,{n:ic,s:22})),label)))),
     up&&h("div",{className:"banner"},"Uploading file…"),
     h("div",{className:"composer"},
-      h("label",{className:"send",style:{background:"var(--tint)",color:"var(--ink)",cursor:"pointer",opacity:up?.5:1},"aria-label":"Attach file"},h(Icon,{n:"clip",s:20}),h("input",{type:"file",style:{display:"none"},disabled:up,onChange:async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;setUp(true);try{const file=await uploadAttachment(f);onSend(partner,text.trim().slice(0,1000),file);setText("")}catch(x){notify(x.message)}setUp(false)}})),
+      h("button",{className:"send attach","aria-label":"Attach","aria-expanded":menu,disabled:up,onClick:()=>setMenu(!menu)},h(Icon,{n:menu?"close":"clip",s:20})),
+      h("input",{ref:fileIn,type:"file",style:{display:"none"},onChange:pickFile}),
       h("textarea",{ref:input,rows:1,value:text,maxLength:1000,placeholder:"Message","aria-label":"Message",onChange:e=>setText(e.target.value),
         onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey&&!coarse){e.preventDefault();send()}}}),
       h("button",{className:"send",onClick:send,disabled:!text.trim(),"aria-label":"Send"},h(Icon,{n:"send"}))));
@@ -553,14 +598,14 @@ function Status({me,notify,onProfile,forward,only}){
 }
 
 /* ---------- Me ---------- */
-function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar}){
+function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify}){
   const [view,setView]=useState("home"),[name,setName]=useState(me.name),[about,setAbout]=useState(me.about||"");
   const dirty=name.trim()!==me.name||about.trim()!==(me.about||"");
   const Row=(k,label,hint)=>h("button",{className:"row",onClick:()=>setView(k)},h("div",{className:"grow"},h("div",{className:"name"},label),h("div",{className:"sub"},hint)),h(Icon,{n:"chev",s:18}));
   const Head=t=>h("div",{className:"titlerow",style:{justifyContent:"flex-start",gap:10,marginBottom:10}},
     h("button",{className:"iconbtn",onClick:()=>setView(view==="settings"?"home":"settings"),"aria-label":"Back"},h(Icon,{n:"back"})),
     h("h1",{className:"h1",style:{margin:0}},t));
-  if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("data","Data","Data saver"));
+  if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("chats","Chats","Wallpaper and bubbles"),Row("data","Data","Data saver"));
   if(view==="account")return h(Fragment,null,Head("Account"),
     h("div",{style:{display:"flex",alignItems:"center",gap:14,margin:"6px 0 4px"}},h(Avatar,{id:me.number,name:me.name,size:72,src:me.avatarUrl}),h("label",{className:"act",style:{cursor:"pointer"}},h(Icon,{n:"camera",s:16}),"Change profile photo",h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)onAvatar(f)}}))),
     h("label",{className:"lbl",htmlFor:"myname"},"Name"),
@@ -574,6 +619,14 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar}){
       h("button",{"aria-pressed":prefs.theme==="dim",onClick:()=>setPrefs(p=>({...p,theme:"dim"}))},h(Icon,{n:"moon",s:16}),"Dim"),
       h("button",{"aria-pressed":prefs.theme==="dark",onClick:()=>setPrefs(p=>({...p,theme:"dark"}))},h(Icon,{n:"moon",s:16}),"Dark")),
     h("p",{className:"sub",style:{marginTop:12}},"Light is blue and white. Dim is deep blue with white writing. Dark is black. This applies inside the app only."));
+  if(view==="chats")return h(Fragment,null,Head("Chats"),
+    h("h2",{className:"h2",style:{marginTop:6}},"Wallpaper"),
+    h("div",{className:"wpgrid"},
+      h("button",{className:"wp","aria-pressed":prefs.wall==="none","aria-label":"No wallpaper",onClick:()=>setPrefs(p=>({...p,wall:"none"}))},h("span",{className:"sub"},"None")),
+      WALLS.map(([id,name])=>h("button",{key:id,className:"wp","aria-pressed":prefs.wall===id,"aria-label":name,title:name,onClick:()=>setPrefs(p=>({...p,wall:id})),style:{backgroundImage:wallSvg(id),backgroundSize:"120px 120px"}})),
+      h("label",{className:"wp","aria-pressed":prefs.wall==="custom",style:{cursor:"pointer"}},h("span",{className:"sub"},"My photo"),h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const u=await uploadImage(f);setPrefs(q=>({...q,wall:"custom",wallUrl:u}))}catch(x){notify(x.message)}}}))),
+    h("h2",{className:"h2"},"Chat bubbles"),
+    h("div",{style:{display:"flex",gap:12}},BUBBLES.map(([id,name,c])=>h("button",{key:id,className:"swatch","aria-label":name,title:name,"aria-pressed":prefs.bubble===id,onClick:()=>setPrefs(q=>({...q,bubble:id})),style:{background:c||"var(--btn)"}}))));
   if(view==="data")return h(Fragment,null,Head("Data"),
     h("div",{className:"card"},h("div",{className:"setrow"},
       h("div",null,h("div",{className:"name"},"Data saver"),h("p",{className:"sub"},"Checks for new messages every 20 seconds instead of 6.")),
@@ -590,7 +643,7 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar}){
 /* ---------- App ---------- */
 function App(){
   const [booting,setBooting]=useState(true),[me,setMe]=useState(null);
-  const [prefs,setPrefs]=useState(()=>({theme:document.documentElement.dataset.theme||"light",saver:true,...store.json("kite:prefs",{})}));
+  const [prefs,setPrefs]=useState(()=>({theme:document.documentElement.dataset.theme||"light",saver:true,wall:"mix",bubble:"blue",...store.json("kite:prefs",{})}));
   const [tab,setTab]=useState("chats"),[partner,setPartner]=useState(null);
   const [msgs,setMsgs]=useState([]),[outbox,setOutbox]=useState([]),[reads,setReads]=useState({}),[names,setNames]=useState({});
   const [online,setOnline]=useState(navigator.onLine!==false),[toast,setToast]=useState(""),[polls,setPolls]=useState(0);
@@ -749,7 +802,7 @@ function App(){
   let body;
   if(booting)body=h("div",{className:"boot"},h(Logo,{size:56}));
   else if(!me)body=h(Auth,{onDone:onAuthed,theme:prefs.theme,onTheme:toggleTheme});
-  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner),notify});
+  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner),notify,prefs});
   else body=h(Fragment,null,
     h("header",{className:"top"},
       h("div",{className:"brand"},h(Logo,{size:30}),"Kite"),h("div",{className:"spacer"}),
@@ -758,7 +811,7 @@ function App(){
     h("main",{className:"main"},
       tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:startChat,notify,onProfile:openProfile,avatarOf}),
       tab==="feed"&&h(FeedTab,{me,convos,nameOf,avatarOf,notify,onMessage:messageFromFeed,onProfile:openProfile,forward:setFwd}),
-      tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut,onAvatar:saveAvatar})),
+      tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut,onAvatar:saveAvatar,notify})),
     !online&&h("div",{className:"banner"},"You're offline. Showing saved chats."),
     h("nav",{className:"tabs","aria-label":"Main"},
       TABS.map(([id,label,icon])=>h("button",{key:id,className:"tab","aria-current":tab===id?"page":undefined,onClick:()=>setTab(id)},

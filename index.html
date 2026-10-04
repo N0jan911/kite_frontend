@@ -9,15 +9,11 @@
 <link rel="icon" type="image/png" href="icon-light.png">
 <script>
 /* Apply saved theme before first paint so dark mode never flashes white. */
-try{
-  var t=localStorage.getItem("kite:theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
-  document.documentElement.dataset.theme=t;
-  document.querySelector('meta[name=theme-color]').content=t==="dark"?"#0a1730":"#1668e3";
-}catch(e){document.documentElement.dataset.theme="light"}
+document.documentElement.dataset.theme="light";
 </script>
 <style>
 :root{--bg:#fff;--sky:#f1f6ff;--tint:#e2edff;--line:#d9e5fa;--ink:#0b1b3a;--mute:#566789;--accent:#1668e3;--btn:#1668e3;--bad:#c22f2f;--theirs:#fff}
-:root[data-theme=dark]{--bg:#0a1730;--sky:#0d1f45;--tint:#16305f;--line:#1e3a72;--ink:#eaf1ff;--mute:#94aad6;--accent:#7fb2ff;--btn:#2f6fe4;--bad:#ff9090;--theirs:#14295a}
+
 *{box-sizing:border-box}
 html,body,#root{margin:0;height:100%}
 body{background:var(--sky);color:var(--ink);font:16px/1.35 ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
@@ -104,6 +100,17 @@ textarea.field{resize:none}
 .links{display:flex;gap:8px;margin-top:14px}
 .toast{position:absolute;left:50%;bottom:92px;z-index:9;max-width:88%;padding:10px 16px;border-radius:99px;background:var(--ink);color:var(--bg);font-size:14px;font-weight:600;transform:translateX(-50%)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.shell[data-skin=dark]{--bg:#000;--sky:#0b0b0b;--tint:#1c1c1c;--line:#2a2a2a;--ink:#fff;--mute:#9a9a9a;--accent:#fff;--btn:#fff;--bad:#ff8a8a;--theirs:#161616}
+.shell[data-skin=dark] .btn,.shell[data-skin=dark] .send,.shell[data-skin=dark] .count,.shell[data-skin=dark] .bub.me,.shell[data-skin=dark] .seg button[aria-pressed=true],.shell[data-skin=dark] .fab{color:#000}
+.shell[data-skin=dark] .btn.soft{color:#fff}
+.shell[data-skin=dark] .avatar{background:#222;color:#fff}
+.shell[data-skin=dark] .logo-light{display:none}
+.shell[data-skin=dark] .logo-dark{display:block}
+.shell[data-skin=dark] .switch[aria-checked=true]::after{background:#000}
+.fab{position:absolute;right:18px;bottom:88px;z-index:5;display:grid;place-items:center;width:56px;height:56px;border:0;border-radius:50%;background:var(--btn);color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.scrim{position:absolute;inset:0;z-index:4;background:rgba(0,0,0,.4)}
+.fabmenu{position:absolute;right:18px;bottom:156px;z-index:5;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.fabopt{padding:11px 18px;border:0;border-radius:99px;background:var(--bg);color:var(--ink);font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 </style>
 </head>
 <body>
@@ -164,7 +171,7 @@ async function api(path,{method="GET",body,auth=true}={}){
 
 /* ---------- UI atoms ---------- */
 const PATHS={
-  back:"M19 12H5M12 19l-7-7 7-7",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
+  back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
   chat:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
   feed:"M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M5 19h.01",
   status:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 8v8M8 12h8",
@@ -226,7 +233,7 @@ function Auth({onDone,theme,onTheme}){
 
   return h("div",{className:"auth"},
     h("div",{className:"top",style:{justifyContent:"flex-end",padding:"max(12px,env(safe-area-inset-top)) 0 0"}},
-      h("button",{className:"iconbtn",onClick:onTheme,"aria-label":theme==="dark"?"Switch to light theme":"Switch to dark theme"},h(Icon,{n:theme==="dark"?"sun":"moon"}))),
+      h("button",{className:"iconbtn",onClick:onTheme,style:{display:"none"},"aria-label":theme==="dark"?"Switch to light theme":"Switch to dark theme"},h(Icon,{n:theme==="dark"?"sun":"moon"}))),
     h("div",{className:"hero"},h(Logo,{size:64}),h("h1",null,"Kite"),h("p",null,"Connect · Share · Belong")),
     step==="form"
       ? h(Fragment,null,
@@ -271,19 +278,26 @@ function NewChat({onStart}){
     h(Err,{text:err}));
 }
 
-function ChatList({me,convos,nameOf,onOpen,onStart}){
+function ChatList({me,convos,nameOf,onOpen,onStart,notify}){
+  const [fab,setFab]=useState(false),[adding,setAdding]=useState(false);
+  const pick=k=>{setFab(false);if(k==="contact")setAdding(true);else notify((k==="call"?"Calls":"Groups")+" are coming soon.")};
   return h(Fragment,null,
     h("h1",{className:"h1"},"Chats"),
-    h(NewChat,{onStart}),
+    adding&&h(Fragment,null,
+      h(NewChat,{onStart:async n=>{const e=await onStart(n);if(!e)setAdding(false);return e}}),
+      h("button",{className:"act",style:{margin:"8px 0"},onClick:()=>setAdding(false)},"Cancel")),
     h("div",{style:{marginTop:8}},
-      convos.length===0&&h("p",{className:"empty"},"No chats yet. Enter a friend's number above to start one. They need to be registered on Kite first."),
+      convos.length===0&&h("p",{className:"empty"},"No chats yet. Tap + to start one. They need to be registered on Kite first."),
       convos.map(c=>h("button",{key:c.partner,className:"row",onClick:()=>onOpen(c.partner)},
         h(Avatar,{id:c.partner,name:nameOf(c.partner)}),
         h("div",{className:"grow"},
           h("div",{className:"line name"},h("span",{className:"trunc"},nameOf(c.partner)),h("span",{className:"time"},shortWhen(c.last.ts))),
           h("div",{className:"line"},
             h("span",{className:"sub trunc"},(c.last.from===me.number?"You: ":"")+c.last.text),
-            c.unread>0&&h("span",{className:"count"},c.unread)))))));
+            c.unread>0&&h("span",{className:"count"},c.unread)))))),
+    fab&&h("div",{className:"scrim",onClick:()=>setFab(false)}),
+    fab&&h("div",{className:"fabmenu"},[["group","New group"],["call","New call"],["contact","New contact"]].map(([k,l])=>h("button",{key:k,className:"fabopt",onClick:()=>pick(k)},l))),
+    h("button",{className:"fab","aria-label":"New chat options","aria-expanded":fab,onClick:()=>setFab(!fab)},h(Icon,{n:"plus",s:26})));
 }
 
 function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh}){
@@ -355,7 +369,7 @@ function Feed({me,onMessage,notify}){
 const VIS={contacts:"My contacts",everyone:"Everyone",only_me:"Only me"};
 function Status({me,notify}){
   const [items,setItems]=useState([]),[text,setText]=useState(""),[vis,setVis]=useState("contacts"),[hide,setHide]=useState("");
-  const [busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[open,setOpen]=useState(null),[viewers,setViewers]=useState([]);
+  const [busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[open,setOpen]=useState(null),[compose,setCompose]=useState(false),[viewers,setViewers]=useState([]);
   const load=useCallback(async()=>{
     try{
       const list=(await api("/api/statuses")).statuses||[];
@@ -371,7 +385,7 @@ function Status({me,notify}){
     try{
       const hidden=hide.split(",").map(x=>x.replace(/\D/g,"")).filter(Boolean);
       const r=await api("/api/statuses",{method:"POST",body:{text:t,visibility:vis,hidden_from:hidden}});
-      setItems(l=>[r.status,...l]);setText("");setHide("");
+      setItems(l=>[r.status,...l]);setText("");setHide("");setCompose(false);
     }catch(e){notify(e.message)}
     setBusy(false);
   };
@@ -389,7 +403,8 @@ function Status({me,notify}){
   return h(Fragment,null,
     h("div",{className:"titlerow"},h("h1",{className:"h1"},"Status"),h("button",{className:"iconbtn",onClick:load,"aria-label":"Refresh statuses"},h(Icon,{n:"refresh"}))),
     h("p",{className:"sub",style:{marginTop:-6,marginBottom:12}},"Updates disappear after 24 hours."),
-    h("div",{className:"card"},
+    h("button",{className:"btn",style:{display:compose?"none":undefined},onClick:()=>setCompose(true)},"Add status"),
+    compose&&h("div",{className:"card"},
       h("textarea",{className:"field",rows:2,maxLength:140,placeholder:"What's happening?","aria-label":"New status",value:text,onChange:e=>setText(e.target.value)}),
       h("label",{className:"lbl",htmlFor:"vis"},"Who can see this"),
       h("select",{id:"vis",className:"field",value:vis,onChange:e=>setVis(e.target.value)},
@@ -398,7 +413,7 @@ function Status({me,notify}){
         h("label",{className:"lbl",htmlFor:"hide"},"Hide from (optional)"),
         h("input",{id:"hide",className:"field",inputMode:"tel",placeholder:"Phone numbers, separated by commas",value:hide,onChange:e=>setHide(e.target.value)})),
       h("p",{className:"sub",style:{marginTop:8}},"My contacts means people you have chatted with."),
-      h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/140"),h("button",{className:"btn sm",onClick:post,disabled:!text.trim()||busy},"Share status"))),
+      h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/140"),h("div",{className:"inline"},h("button",{className:"act",onClick:()=>setCompose(false)},"Cancel"),h("button",{className:"btn sm",onClick:post,disabled:!text.trim()||busy},"Share status")))),
     items.length===0&&h("p",{className:"empty"},loaded?"No updates in the last 24 hours.":"Loading…"),
     items.map(x=>h("div",{className:"post",key:x.id},
       h("div",{className:"posthead"},h(Avatar,{id:x.by,name:x.name,size:38}),
@@ -415,28 +430,35 @@ function Status({me,notify}){
 
 /* ---------- Me ---------- */
 function Me({me,prefs,setPrefs,onSave,onSignOut}){
-  const [name,setName]=useState(me.name),[about,setAbout]=useState(me.about||"");
+  const [view,setView]=useState("home"),[name,setName]=useState(me.name),[about,setAbout]=useState(me.about||"");
   const dirty=name.trim()!==me.name||about.trim()!==(me.about||"");
+  const Row=(k,label,hint)=>h("button",{className:"row",onClick:()=>setView(k)},h("div",{className:"grow"},h("div",{className:"name"},label),h("div",{className:"sub"},hint)),h(Icon,{n:"chev",s:18}));
+  const Head=t=>h("div",{className:"titlerow",style:{justifyContent:"flex-start",gap:10,marginBottom:10}},
+    h("button",{className:"iconbtn",onClick:()=>setView(view==="settings"?"home":"settings"),"aria-label":"Back"},h(Icon,{n:"back"})),
+    h("h1",{className:"h1",style:{margin:0}},t));
+  if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("data","Data","Data saver"));
+  if(view==="account")return h(Fragment,null,Head("Account"),
+    h("label",{className:"lbl",htmlFor:"myname"},"Name"),
+    h("input",{id:"myname",className:"field",maxLength:24,value:name,onChange:e=>setName(e.target.value)}),
+    h("label",{className:"lbl",htmlFor:"myabout"},"About"),
+    h("input",{id:"myabout",className:"field",maxLength:60,placeholder:"A short line about you",value:about,onChange:e=>setAbout(e.target.value)}),
+    h("button",{className:"btn",disabled:!dirty||name.trim().length<2,onClick:()=>onSave(name.trim(),about.trim())},"Save changes"));
+  if(view==="appearance")return h(Fragment,null,Head("Appearance"),
+    h("div",{className:"seg"},
+      h("button",{"aria-pressed":prefs.theme==="light",onClick:()=>setPrefs(p=>({...p,theme:"light"}))},h(Icon,{n:"sun",s:16}),"Light"),
+      h("button",{"aria-pressed":prefs.theme==="dark",onClick:()=>setPrefs(p=>({...p,theme:"dark"}))},h(Icon,{n:"moon",s:16}),"Dark")),
+    h("p",{className:"sub",style:{marginTop:12}},"Light is blue and white. Dark is black with white highlights. This applies inside the app only."));
+  if(view==="data")return h(Fragment,null,Head("Data"),
+    h("div",{className:"card"},h("div",{className:"setrow"},
+      h("div",null,h("div",{className:"name"},"Data saver"),h("p",{className:"sub"},"Checks for new messages every 20 seconds instead of 6.")),
+      h("button",{className:"switch",role:"switch","aria-checked":prefs.saver,"aria-label":"Data saver",onClick:()=>setPrefs(p=>({...p,saver:!p.saver}))}))));
   return h(Fragment,null,
     h("h1",{className:"h1"},"Me"),
     h("div",{className:"card",style:{display:"flex",alignItems:"center",gap:14}},
       h(Avatar,{id:me.number,name:me.name,size:60}),
       h("div",{className:"grow"},h("div",{className:"name trunc"},me.name),h("div",{className:"sub"},pretty(me.number)))),
-    h("label",{className:"lbl",htmlFor:"myname"},"Name"),
-    h("input",{id:"myname",className:"field",maxLength:24,value:name,onChange:e=>setName(e.target.value)}),
-    h("label",{className:"lbl",htmlFor:"myabout"},"About"),
-    h("input",{id:"myabout",className:"field",maxLength:60,placeholder:"A short line about you",value:about,onChange:e=>setAbout(e.target.value)}),
-    dirty&&name.trim().length>=2&&h("button",{className:"btn",onClick:()=>onSave(name.trim(),about.trim())},"Save profile"),
-    h("h2",{className:"h2"},"Appearance"),
-    h("div",{className:"seg"},
-      h("button",{"aria-pressed":prefs.theme==="light",onClick:()=>setPrefs(p=>({...p,theme:"light"}))},h(Icon,{n:"sun",s:16}),"Blue and white"),
-      h("button",{"aria-pressed":prefs.theme==="dark",onClick:()=>setPrefs(p=>({...p,theme:"dark"}))},h(Icon,{n:"moon",s:16}),"Dark blue")),
-    h("h2",{className:"h2"},"Data"),
-    h("div",{className:"card"},
-      h("div",{className:"setrow"},
-        h("div",null,h("div",{className:"name"},"Data saver"),h("p",{className:"sub"},"Checks for new messages every 20 seconds instead of 6.")),
-        h("button",{className:"switch",role:"switch","aria-checked":prefs.saver,"aria-label":"Data saver",onClick:()=>setPrefs(p=>({...p,saver:!p.saver}))}))),
-    h("button",{className:"btn soft",style:{marginTop:22},onClick:onSignOut},h(Icon,{n:"logout",s:18}),"Sign out"));
+    h("div",{style:{marginTop:10}},Row("settings","Settings","Account, appearance, data")),
+    h("button",{className:"btn soft",style:{marginTop:18},onClick:onSignOut},h(Icon,{n:"logout",s:18}),"Sign out"));
 }
 
 /* ---------- App ---------- */
@@ -453,8 +475,7 @@ function App(){
 
   /* theme + prefs */
   useEffect(()=>{
-    document.documentElement.dataset.theme=prefs.theme;
-    document.querySelector("meta[name=theme-color]").content=prefs.theme==="dark"?"#0a1730":"#1668e3";
+    document.querySelector("meta[name=theme-color]").content=number&&prefs.theme==="dark"?"#000000":"#1668e3";
     store.set("kite:theme",prefs.theme);store.set("kite:prefs",JSON.stringify(prefs));
   },[prefs]);
 
@@ -602,7 +623,7 @@ function App(){
       !online&&h("span",{className:"pill"},h(Icon,{n:"off",s:15}),"Offline"),
       h("button",{className:"iconbtn",onClick:toggleTheme,"aria-label":prefs.theme==="dark"?"Switch to light theme":"Switch to dark theme"},h(Icon,{n:prefs.theme==="dark"?"sun":"moon"}))),
     h("main",{className:"main"},
-      tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:startChat}),
+      tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:startChat,notify}),
       tab==="feed"&&h(Feed,{me,onMessage:messageFromFeed,notify}),
       tab==="status"&&h(Status,{me,notify}),
       tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut})),
@@ -611,7 +632,7 @@ function App(){
       TABS.map(([id,label,icon])=>h("button",{key:id,className:"tab","aria-current":tab===id?"page":undefined,onClick:()=>setTab(id)},
         h(Icon,{n:icon,s:22}),label,id==="chats"&&unread>0&&h("span",{className:"count"},unread)))));
 
-  return h("div",{className:"shell"},body,toast&&h("div",{className:"toast",role:"status"},toast));
+  return h("div",{className:"shell","data-skin":me?prefs.theme:undefined},body,toast&&h("div",{className:"toast",role:"status"},toast));
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(h(React.StrictMode,null,h(App)));

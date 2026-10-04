@@ -145,6 +145,8 @@ textarea.field{resize:none}
 .wp:hover,.swatch:hover{border-color:var(--accent)}
 .swatch{width:38px;height:38px;border:2px solid var(--line);border-radius:50%}
 .msgs[data-bub] .bub.me,.shell[data-skin=dark] .msgs[data-bub] .bub.me{color:#fff}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.55)}100%{transform:scale(1)}}
+.act[aria-pressed=true] svg{animation:pop .4s ease}
 </style>
 </head>
 <body>
@@ -540,7 +542,7 @@ function Status({me,notify,onProfile,forward,only}){
     try{
       const list=(await api("/api/statuses")).statuses||[];
       setItems(list);setLoaded(true);
-      const unseen=list.filter(x=>!x.mine&&!x.seen).map(x=>x.id);   /* one request records every new view */
+      const unseen=only?list.filter(x=>!x.mine&&!x.seen&&x.by===only).map(x=>x.id):[];   /* one request records every new view */
       if(unseen.length)api("/api/statuses/views",{method:"POST",body:{ids:unseen}}).catch(()=>{});
     }catch(e){notify(e.message)}
   },[notify]);

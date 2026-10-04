@@ -112,6 +112,9 @@ textarea.field{resize:none}
 .fabmenu{position:absolute;right:18px;bottom:156px;z-index:5;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
 .fabopt{padding:11px 18px;border:0;border-radius:99px;background:var(--bg);color:var(--ink);font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .sheet{position:absolute;left:0;right:0;bottom:0;z-index:7;max-height:72%;overflow-y:auto;padding:16px 16px max(18px,env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:var(--bg);box-shadow:0 -8px 30px rgba(0,0,0,.3)}
+.pic{display:block;width:100%;max-height:360px;margin-top:10px;border-radius:16px;object-fit:cover}
+.cam{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--btn);color:#fff;border:2px solid var(--bg)}
+.shell[data-skin=dark] .cam{color:#000}
 </style>
 </head>
 <body>
@@ -170,9 +173,22 @@ async function api(path,{method="GET",body,auth=true}={}){
   return data;
 }
 
+const CLOUD="fic8wg7w",PRESET="kite_uploads",MAX_PIC=5*1024*1024;
+async function uploadImage(file){
+  if(!file||!/^image\//.test(file.type))throw new Error("Choose an image file.");
+  if(file.size>MAX_PIC)throw new Error("Photo must be under 5 MB.");
+  const fd=new FormData();fd.append("file",file);fd.append("upload_preset",PRESET);
+  let res;
+  try{res=await fetch("https://api.cloudinary.com/v1_1/"+CLOUD+"/image/upload",{method:"POST",body:fd})}
+  catch(e){throw new Error("Couldn't upload the photo. Check your connection.")}
+  const d=await res.json().catch(()=>({}));
+  if(!res.ok||!d.secure_url)throw new Error("Photo upload failed. Try again.");
+  return d.secure_url;
+}
+
 /* ---------- UI atoms ---------- */
 const PATHS={
-  back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
+  back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",camera:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",image:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
   chat:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
   feed:"M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M5 19h.01",
   status:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 8v8M8 12h8",
@@ -191,7 +207,7 @@ const Icon=({n,s=20,fill})=>h("svg",{width:s,height:s,viewBox:"0 0 24 24",fill:f
 const Logo=({size=30})=>h(Fragment,null,
   h("img",{className:"logo-light",src:"logo-light.png",alt:"Kite",width:size,height:size}),
   h("img",{className:"logo-dark",src:"logo-dark.png",alt:"Kite",width:size,height:size}));
-const Avatar=({id,name,size=46,onClick})=>h("div",{className:"avatar",onClick:onClick&&(e=>{e.stopPropagation();onClick()}),style:{"--h":hue(id),width:size,height:size,fontSize:Math.round(size*.4),cursor:onClick?"pointer":undefined}},((name||"?").trim().charAt(0)||"?").toUpperCase());
+const Avatar=({id,name,size=46,onClick,src})=>h("div",{className:"avatar",onClick:onClick&&(e=>{e.stopPropagation();onClick()}),style:{"--h":hue(id),width:size,height:size,fontSize:Math.round(size*.4),overflow:"hidden",cursor:onClick?"pointer":undefined}},src?h("img",{src,alt:"",style:{width:"100%",height:"100%",objectFit:"cover"}}):((name||"?").trim().charAt(0)||"?").toUpperCase());
 const Err=({text})=>text?h("div",{className:"err",role:"alert"},text):null;
 
 /* ---------- Sheets: profile card, forward, status menu ---------- */
@@ -205,7 +221,7 @@ function ProfileCard({card,me,onClose,onMessage}){
   const mine=card.number===me.number;
   return h(Sheet,{title:"Profile",onClose},
     h("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:8,padding:"8px 0 14px"}},
-      h(Avatar,{id:card.number,name:card.name,size:96}),
+      h(Avatar,{id:card.number,name:card.name,size:96,src:mine?me.avatarUrl:card.avatar}),
       h("div",{className:"h2",style:{margin:"6px 0 0"}},mine?me.name:card.name),
       h("div",{className:"sub"},pretty(card.number))),
     !mine&&h("button",{className:"btn",onClick:()=>onMessage(card.number,card.name)},"Message"));
@@ -219,6 +235,16 @@ function StatusMenu({x,onClose,onForward,onDelete}){
   return h(Sheet,{title:"Status",onClose},
     h("button",{className:"row",onClick:()=>{onClose();onForward((x.mine?"My status":x.name+"'s status")+": "+x.text)}},h("div",{className:"grow name"},"Forward")),
     x.mine&&h("button",{className:"row",onClick:()=>{onClose();onDelete(x)}},h("div",{className:"grow name",style:{color:"var(--bad)"}},"Delete")));
+}
+
+function PhotoPick({photo,setPhoto}){
+  const [url,setUrl]=useState("");
+  useEffect(()=>{if(!photo){setUrl("");return}const u=URL.createObjectURL(photo);setUrl(u);return()=>URL.revokeObjectURL(u)},[photo]);
+  return h(Fragment,null,
+    url&&h("img",{className:"pic",src:url,alt:"Selected photo"}),
+    h("div",{style:{display:"flex",gap:8,marginTop:8}},
+      h("label",{className:"act"},h(Icon,{n:"image",s:16}),photo?"Change photo":"Add photo",h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)setPhoto(f)}})),
+      photo&&h("button",{className:"act",onClick:()=>setPhoto(null)},"Remove")));
 }
 
 /* ---------- Auth ---------- */
@@ -306,7 +332,7 @@ function NewChat({onStart}){
     h(Err,{text:err}));
 }
 
-function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile}){
+function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf}){
   const [fab,setFab]=useState(false),[adding,setAdding]=useState(false);
   const pick=k=>{setFab(false);if(k==="contact")setAdding(true);else notify((k==="call"?"Calls":"Groups")+" are coming soon.")};
   return h(Fragment,null,
@@ -317,7 +343,7 @@ function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile}){
     h("div",{style:{marginTop:8}},
       convos.length===0&&h("p",{className:"empty"},"No chats yet. Tap + to start one. They need to be registered on Kite first."),
       convos.map(c=>h("button",{key:c.partner,className:"row",onClick:()=>onOpen(c.partner)},
-        h(Avatar,{id:c.partner,name:nameOf(c.partner),onClick:()=>onProfile(c.partner,nameOf(c.partner))}),
+        h(Avatar,{id:c.partner,name:nameOf(c.partner),src:avatarOf(c.partner),onClick:()=>onProfile(c.partner,nameOf(c.partner))}),
         h("div",{className:"grow"},
           h("div",{className:"line name"},h("span",{className:"trunc"},nameOf(c.partner)),h("span",{className:"time"},shortWhen(c.last.ts))),
           h("div",{className:"line"},
@@ -328,7 +354,7 @@ function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile}){
     h("button",{className:"fab","aria-label":"New chat options","aria-expanded":fab,onClick:()=>setFab(!fab)},h(Icon,{n:"plus",s:26})));
 }
 
-function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile}){
+function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar}){
   const [text,setText]=useState(""),box=useRef(null),input=useRef(null);
   const coarse=window.matchMedia&&matchMedia("(pointer: coarse)").matches;
   useEffect(()=>{if(box.current)box.current.scrollTop=box.current.scrollHeight},[list.length]);
@@ -338,7 +364,7 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
   return h(Fragment,null,
     h("div",{className:"chathead"},
       h("button",{className:"iconbtn",onClick:onBack,"aria-label":"Back to chats"},h(Icon,{n:"back"})),
-      h(Avatar,{id:partner,name,size:40,onClick:()=>onProfile(partner,name)}),
+      h(Avatar,{id:partner,name,size:40,src:avatar,onClick:()=>onProfile(partner,name)}),
       h("div",{className:"grow"},h("div",{className:"name trunc"},name),h("div",{className:"sub trunc"},about||pretty(partner))),
       h("button",{className:"iconbtn",onClick:onRefresh,"aria-label":"Check for new messages"},h(Icon,{n:"refresh"}))),
     h("div",{className:"msgs",ref:box},
@@ -360,16 +386,16 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
 
 /* ---------- Feed ---------- */
 function Feed({me,onMessage,notify,onProfile}){
-  const [posts,setPosts]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false);
+  const [posts,setPosts]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[photo,setPhoto]=useState(null);
   const load=useCallback(async(quiet)=>{
     try{const r=await api("/api/posts?limit=30");setPosts(r.posts||[]);setLoaded(true);if(!quiet)notify("Feed updated")}
     catch(e){notify(e.message)}
   },[notify]);
   useEffect(()=>{load(true)},[load]);
   const post=async()=>{
-    const t=text.trim();if(!t||busy)return;
+    const t=text.trim();if((!t&&!photo)||busy)return;
     setBusy(true);
-    try{const r=await api("/api/posts",{method:"POST",body:{text:t}});setPosts(p=>[r.post,...p]);setText("")}
+    try{const media=photo?await uploadImage(photo):undefined;const r=await api("/api/posts",{method:"POST",body:{text:t,media}});setPosts(p=>[r.post,...p]);setText("");setPhoto(null)}
     catch(e){notify(e.message)}
     setBusy(false);
   };
@@ -382,12 +408,12 @@ function Feed({me,onMessage,notify,onProfile}){
     h("div",{className:"titlerow"},h("h1",{className:"h1"},"Feed"),h("button",{className:"iconbtn",onClick:()=>load(false),"aria-label":"Refresh feed"},h(Icon,{n:"refresh"}))),
     h("div",{className:"card"},
       h("textarea",{className:"field",rows:3,maxLength:280,placeholder:"Share something short","aria-label":"New post",value:text,onChange:e=>setText(e.target.value)}),
-      h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/280"),h("button",{className:"btn sm",onClick:post,disabled:!text.trim()||busy},"Post"))),
+      h(PhotoPick,{photo,setPhoto}),h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/280"),h("button",{className:"btn sm",onClick:post,disabled:(!text.trim()&&!photo)||busy},busy?"Posting\u2026":"Post"))),
     posts.length===0&&h("p",{className:"empty"},loaded?"Nothing here yet. Post the first update.":"Loading…"),
     posts.map(p=>h("article",{className:"post",key:p.id},
-      h("div",{className:"posthead"},h(Avatar,{id:p.by,name:p.name,size:38,onClick:()=>onProfile(p.by,p.name)}),
+      h("div",{className:"posthead"},h(Avatar,{id:p.by,name:p.name,size:38,src:p.avatar,onClick:()=>onProfile(p.by,p.name,p.avatar)}),
         h("div",{className:"grow"},h("div",{className:"name trunc"},p.name),h("div",{className:"sub"},ago(p.ts)))),
-      h("div",{className:"text"},p.text),
+      h("div",{className:"text"},p.text),p.media&&h("img",{className:"pic",src:p.media,alt:"Photo"}),
       h("div",{className:"actions"},
         h("button",{className:"act","aria-pressed":!!p.liked,"aria-label":p.liked?"Remove like":"Like",onClick:()=>like(p)},h(Icon,{n:"heart",s:16,fill:p.liked}),p.likes||0),
         p.by!==me.number&&h("button",{className:"act",onClick:()=>onMessage(p.by,p.name)},h(Icon,{n:"chat",s:16}),"Message")))));
@@ -397,7 +423,7 @@ function Feed({me,onMessage,notify,onProfile}){
 const VIS={contacts:"My contacts",everyone:"Everyone",only_me:"Only me"};
 function Status({me,notify,onProfile,forward}){
   const [items,setItems]=useState([]),[text,setText]=useState(""),[vis,setVis]=useState("contacts"),[hide,setHide]=useState("");
-  const [busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[open,setOpen]=useState(null),[compose,setCompose]=useState(false),[menu,setMenu]=useState(null),[viewers,setViewers]=useState([]);
+  const [busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[open,setOpen]=useState(null),[compose,setCompose]=useState(false),[menu,setMenu]=useState(null),[photo,setPhoto]=useState(null),[viewers,setViewers]=useState([]);
   const load=useCallback(async()=>{
     try{
       const list=(await api("/api/statuses")).statuses||[];
@@ -408,12 +434,13 @@ function Status({me,notify,onProfile,forward}){
   },[notify]);
   useEffect(()=>{load()},[load]);
   const post=async()=>{
-    const t=text.trim();if(!t||busy)return;
+    const t=text.trim();if((!t&&!photo)||busy)return;
     setBusy(true);
     try{
       const hidden=hide.split(",").map(x=>x.replace(/\D/g,"")).filter(Boolean);
-      const r=await api("/api/statuses",{method:"POST",body:{text:t,visibility:vis,hidden_from:hidden}});
-      setItems(l=>[r.status,...l]);setText("");setHide("");setCompose(false);
+      const media=photo?await uploadImage(photo):undefined;
+      const r=await api("/api/statuses",{method:"POST",body:{text:t,media,visibility:vis,hidden_from:hidden}});
+      setItems(l=>[r.status,...l]);setText("");setHide("");setPhoto(null);setCompose(false);
     }catch(e){notify(e.message)}
     setBusy(false);
   };
@@ -435,6 +462,7 @@ function Status({me,notify,onProfile,forward}){
     h("button",{className:"btn",style:{display:compose?"none":undefined},onClick:()=>setCompose(true)},"Add status"),
     compose&&h("div",{className:"card"},
       h("textarea",{className:"field",rows:2,maxLength:140,placeholder:"What's happening?","aria-label":"New status",value:text,onChange:e=>setText(e.target.value)}),
+      h(PhotoPick,{photo,setPhoto}),
       h("label",{className:"lbl",htmlFor:"vis"},"Who can see this"),
       h("select",{id:"vis",className:"field",value:vis,onChange:e=>setVis(e.target.value)},
         Object.keys(VIS).map(k=>h("option",{key:k,value:k},VIS[k]))),
@@ -442,13 +470,13 @@ function Status({me,notify,onProfile,forward}){
         h("label",{className:"lbl",htmlFor:"hide"},"Hide from (optional)"),
         h("input",{id:"hide",className:"field",inputMode:"tel",placeholder:"Phone numbers, separated by commas",value:hide,onChange:e=>setHide(e.target.value)})),
       h("p",{className:"sub",style:{marginTop:8}},"My contacts means people you have chatted with."),
-      h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/140"),h("div",{className:"inline"},h("button",{className:"act",onClick:()=>setCompose(false)},"Cancel"),h("button",{className:"btn sm",onClick:post,disabled:!text.trim()||busy},"Share status")))),
+      h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/140"),h("div",{className:"inline"},h("button",{className:"act",onClick:()=>setCompose(false)},"Cancel"),h("button",{className:"btn sm",onClick:post,disabled:(!text.trim()&&!photo)||busy},"Share status")))),
     items.length===0&&h("p",{className:"empty"},loaded?"No updates in the last 24 hours.":"Loading…"),
     items.map(x=>h("div",{className:"post",key:x.id},
-      h("div",{className:"posthead"},h(Avatar,{id:x.by,name:x.name,size:38,onClick:()=>onProfile(x.by,x.mine?me.name:x.name)}),
+      h("div",{className:"posthead"},h(Avatar,{id:x.by,name:x.name,size:38,src:x.avatar,onClick:()=>onProfile(x.by,x.mine?me.name:x.name,x.avatar)}),
         h("div",{className:"grow"},h("div",{className:"name trunc"},x.mine?"You":x.name),
           h("div",{className:"sub"},ago(x.ts)+(x.mine?" · "+VIS[x.visibility]:""))),h("button",{className:"iconbtn","aria-label":"Status options",onClick:()=>setMenu(x)},h("span",{style:{fontSize:22,lineHeight:1,fontWeight:800}},"\u22ef"))),
-      h("div",{className:"text"},x.text),
+      h("div",{className:"text"},x.text),x.media&&h("img",{className:"pic",src:x.media,alt:"Photo"}),
       x.mine&&h("div",{className:"actions"},
         h("button",{className:"act","aria-expanded":open===x.id,onClick:()=>toggleViewers(x)},h(Icon,{n:"eye",s:16}),x.views+(x.views===1?" view":" views")),
         h("button",{className:"act",onClick:()=>remove(x),"aria-label":"Delete status"},h(Icon,{n:"trash",s:16}),"Delete")),
@@ -458,7 +486,7 @@ function Status({me,notify,onProfile,forward}){
 }
 
 /* ---------- Me ---------- */
-function Me({me,prefs,setPrefs,onSave,onSignOut}){
+function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar}){
   const [view,setView]=useState("home"),[name,setName]=useState(me.name),[about,setAbout]=useState(me.about||"");
   const dirty=name.trim()!==me.name||about.trim()!==(me.about||"");
   const Row=(k,label,hint)=>h("button",{className:"row",onClick:()=>setView(k)},h("div",{className:"grow"},h("div",{className:"name"},label),h("div",{className:"sub"},hint)),h(Icon,{n:"chev",s:18}));
@@ -484,7 +512,7 @@ function Me({me,prefs,setPrefs,onSave,onSignOut}){
   return h(Fragment,null,
     h("h1",{className:"h1"},"Me"),
     h("div",{className:"card",style:{display:"flex",alignItems:"center",gap:14}},
-      h(Avatar,{id:me.number,name:me.name,size:60}),
+      h("label",{style:{position:"relative",cursor:"pointer"},"aria-label":"Change profile photo"},h(Avatar,{id:me.number,name:me.name,size:64,src:me.avatarUrl}),h("span",{className:"cam"},h(Icon,{n:"camera",s:14})),h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)onAvatar(f)}})),
       h("div",{className:"grow"},h("div",{className:"name trunc"},me.name),h("div",{className:"sub"},pretty(me.number)))),
     h("div",{style:{marginTop:10}},Row("settings","Settings","Account, appearance, data")),
     h("button",{className:"btn soft",style:{marginTop:18},onClick:onSignOut},h(Icon,{n:"logout",s:18}),"Sign out"));
@@ -500,7 +528,7 @@ function App(){
   const cursor=useRef(""),sending=useRef(false),toastTimer=useRef(0),asked=useRef(new Set());
   const number=me&&me.number;
   const [card,setCard]=useState(null),[fwd,setFwd]=useState(null);
-  const openProfile=(n,name)=>setCard({number:n,name});
+  const openProfile=(n,name,avatar)=>setCard({number:n,name,avatar:avatar||avatarOf(n)});
 
   const notify=useCallback(t=>{setToast(t);clearTimeout(toastTimer.current);toastTimer.current=setTimeout(()=>setToast(""),2600)},[]);
 
@@ -590,7 +618,7 @@ function App(){
 
   /* contacts */
   const lookup=useCallback(async n=>{
-    try{const u=await api("/api/users/"+n);setNames(x=>({...x,[n]:{name:u.name,about:u.about}}));return u}
+    try{const u=await api("/api/users/"+n);setNames(x=>({...x,[n]:{name:u.name,about:u.about,avatar:u.avatar}}));return u}
     catch(e){return e.status===404?null:Promise.reject(e)}
   },[]);
   useEffect(()=>{
@@ -615,10 +643,15 @@ function App(){
     try{const r=await api("/api/me",{method:"POST",body:{name,about}});store.set("kite:profile",JSON.stringify(r.profile));setMe(r.profile);setNames(x=>({...x,[r.profile.number]:{name:r.profile.name,about:r.profile.about}}));notify("Profile saved")}
     catch(e){notify(e.message)}
   };
+  const saveAvatar=async file=>{
+    try{notify("Uploading photo\u2026");const url=await uploadImage(file);const r=await api("/api/users/avatar",{method:"POST",body:{url}});store.set("kite:profile",JSON.stringify(r.profile));setMe(r.profile);notify("Profile photo updated")}
+    catch(e){notify(e.message)}
+  };
   const manualRefresh=()=>{setPolls(n=>n+1);notify(online?"Checking for messages…":"You're offline.")};
 
   /* derived */
   const nameOf=n=>n===number?me.name+" (you)":(names[n]&&names[n].name)||pretty(n);
+  const avatarOf=n=>n===number?(me.avatarUrl||""):(names[n]&&names[n].avatar)||"";
   const all=useMemo(()=>[...msgs,...outbox.map(m=>({...m,pending:true}))].sort((a,b)=>a.ts-b.ts),[msgs,outbox]);
   const convos=useMemo(()=>{
     if(!number)return[];
@@ -647,17 +680,17 @@ function App(){
   let body;
   if(booting)body=h("div",{className:"boot"},h(Logo,{size:56}));
   else if(!me)body=h(Auth,{onDone:onAuthed,theme:prefs.theme,onTheme:toggleTheme});
-  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile});
+  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner)});
   else body=h(Fragment,null,
     h("header",{className:"top"},
       h("div",{className:"brand"},h(Logo,{size:30}),"Kite"),h("div",{className:"spacer"}),
       !online&&h("span",{className:"pill"},h(Icon,{n:"off",s:15}),"Offline"),
       h("button",{className:"iconbtn",onClick:toggleTheme,"aria-label":prefs.theme==="dark"?"Switch to light theme":"Switch to dark theme"},h(Icon,{n:prefs.theme==="dark"?"sun":"moon"}))),
     h("main",{className:"main"},
-      tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:startChat,notify,onProfile:openProfile}),
+      tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:startChat,notify,onProfile:openProfile,avatarOf}),
       tab==="feed"&&h(Feed,{me,onMessage:messageFromFeed,notify,onProfile:openProfile}),
       tab==="status"&&h(Status,{me,notify,onProfile:openProfile,forward:setFwd}),
-      tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut})),
+      tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut,onAvatar:saveAvatar})),
     !online&&h("div",{className:"banner"},"You're offline. Showing saved chats."),
     h("nav",{className:"tabs","aria-label":"Main"},
       TABS.map(([id,label,icon])=>h("button",{key:id,className:"tab","aria-current":tab===id?"page":undefined,onClick:()=>setTab(id)},

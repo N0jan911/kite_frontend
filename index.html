@@ -111,6 +111,7 @@ textarea.field{resize:none}
 .scrim{position:absolute;inset:0;z-index:4;background:rgba(0,0,0,.4)}
 .fabmenu{position:absolute;right:18px;bottom:156px;z-index:5;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
 .fabopt{padding:11px 18px;border:0;border-radius:99px;background:var(--bg);color:var(--ink);font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:7;max-height:72%;overflow-y:auto;padding:16px 16px max(18px,env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:var(--bg);box-shadow:0 -8px 30px rgba(0,0,0,.3)}
 </style>
 </head>
 <body>
@@ -171,7 +172,7 @@ async function api(path,{method="GET",body,auth=true}={}){
 
 /* ---------- UI atoms ---------- */
 const PATHS={
-  back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
+  back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
   chat:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
   feed:"M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M5 19h.01",
   status:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 8v8M8 12h8",
@@ -190,8 +191,35 @@ const Icon=({n,s=20,fill})=>h("svg",{width:s,height:s,viewBox:"0 0 24 24",fill:f
 const Logo=({size=30})=>h(Fragment,null,
   h("img",{className:"logo-light",src:"logo-light.png",alt:"Kite",width:size,height:size}),
   h("img",{className:"logo-dark",src:"logo-dark.png",alt:"Kite",width:size,height:size}));
-const Avatar=({id,name,size=46})=>h("div",{className:"avatar",style:{"--h":hue(id),width:size,height:size,fontSize:Math.round(size*.4)}},((name||"?").trim().charAt(0)||"?").toUpperCase());
+const Avatar=({id,name,size=46,onClick})=>h("div",{className:"avatar",onClick:onClick&&(e=>{e.stopPropagation();onClick()}),style:{"--h":hue(id),width:size,height:size,fontSize:Math.round(size*.4),cursor:onClick?"pointer":undefined}},((name||"?").trim().charAt(0)||"?").toUpperCase());
 const Err=({text})=>text?h("div",{className:"err",role:"alert"},text):null;
+
+/* ---------- Sheets: profile card, forward, status menu ---------- */
+function Sheet({title,onClose,children}){
+  return h(Fragment,null,h("div",{className:"scrim",style:{zIndex:6},onClick:onClose}),
+    h("div",{className:"sheet",role:"dialog","aria-label":title},
+      h("div",{className:"titlerow",style:{marginBottom:8}},h("div",{className:"name"},title),h("button",{className:"iconbtn",onClick:onClose,"aria-label":"Close"},h(Icon,{n:"close"}))),
+      children));
+}
+function ProfileCard({card,me,onClose,onMessage}){
+  const mine=card.number===me.number;
+  return h(Sheet,{title:"Profile",onClose},
+    h("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:8,padding:"8px 0 14px"}},
+      h(Avatar,{id:card.number,name:card.name,size:96}),
+      h("div",{className:"h2",style:{margin:"6px 0 0"}},mine?me.name:card.name),
+      h("div",{className:"sub"},pretty(card.number))),
+    !mine&&h("button",{className:"btn",onClick:()=>onMessage(card.number,card.name)},"Message"));
+}
+function ForwardSheet({convos,nameOf,onClose,onSend}){
+  return h(Sheet,{title:"Forward to",onClose},
+    convos.length===0&&h("p",{className:"empty"},"No chats yet. Start a chat first, then forward."),
+    convos.map(c=>h("button",{key:c.partner,className:"row",onClick:()=>onSend(c.partner)},h(Avatar,{id:c.partner,name:nameOf(c.partner)}),h("div",{className:"grow name trunc"},nameOf(c.partner)))));
+}
+function StatusMenu({x,onClose,onForward,onDelete}){
+  return h(Sheet,{title:"Status",onClose},
+    h("button",{className:"row",onClick:()=>{onClose();onForward((x.mine?"My status":x.name+"'s status")+": "+x.text)}},h("div",{className:"grow name"},"Forward")),
+    x.mine&&h("button",{className:"row",onClick:()=>{onClose();onDelete(x)}},h("div",{className:"grow name",style:{color:"var(--bad)"}},"Delete")));
+}
 
 /* ---------- Auth ---------- */
 function Auth({onDone,theme,onTheme}){
@@ -278,7 +306,7 @@ function NewChat({onStart}){
     h(Err,{text:err}));
 }
 
-function ChatList({me,convos,nameOf,onOpen,onStart,notify}){
+function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile}){
   const [fab,setFab]=useState(false),[adding,setAdding]=useState(false);
   const pick=k=>{setFab(false);if(k==="contact")setAdding(true);else notify((k==="call"?"Calls":"Groups")+" are coming soon.")};
   return h(Fragment,null,
@@ -289,7 +317,7 @@ function ChatList({me,convos,nameOf,onOpen,onStart,notify}){
     h("div",{style:{marginTop:8}},
       convos.length===0&&h("p",{className:"empty"},"No chats yet. Tap + to start one. They need to be registered on Kite first."),
       convos.map(c=>h("button",{key:c.partner,className:"row",onClick:()=>onOpen(c.partner)},
-        h(Avatar,{id:c.partner,name:nameOf(c.partner)}),
+        h(Avatar,{id:c.partner,name:nameOf(c.partner),onClick:()=>onProfile(c.partner,nameOf(c.partner))}),
         h("div",{className:"grow"},
           h("div",{className:"line name"},h("span",{className:"trunc"},nameOf(c.partner)),h("span",{className:"time"},shortWhen(c.last.ts))),
           h("div",{className:"line"},
@@ -300,7 +328,7 @@ function ChatList({me,convos,nameOf,onOpen,onStart,notify}){
     h("button",{className:"fab","aria-label":"New chat options","aria-expanded":fab,onClick:()=>setFab(!fab)},h(Icon,{n:"plus",s:26})));
 }
 
-function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh}){
+function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile}){
   const [text,setText]=useState(""),box=useRef(null),input=useRef(null);
   const coarse=window.matchMedia&&matchMedia("(pointer: coarse)").matches;
   useEffect(()=>{if(box.current)box.current.scrollTop=box.current.scrollHeight},[list.length]);
@@ -310,7 +338,7 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh}){
   return h(Fragment,null,
     h("div",{className:"chathead"},
       h("button",{className:"iconbtn",onClick:onBack,"aria-label":"Back to chats"},h(Icon,{n:"back"})),
-      h(Avatar,{id:partner,name,size:40}),
+      h(Avatar,{id:partner,name,size:40,onClick:()=>onProfile(partner,name)}),
       h("div",{className:"grow"},h("div",{className:"name trunc"},name),h("div",{className:"sub trunc"},about||pretty(partner))),
       h("button",{className:"iconbtn",onClick:onRefresh,"aria-label":"Check for new messages"},h(Icon,{n:"refresh"}))),
     h("div",{className:"msgs",ref:box},
@@ -331,7 +359,7 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh}){
 }
 
 /* ---------- Feed ---------- */
-function Feed({me,onMessage,notify}){
+function Feed({me,onMessage,notify,onProfile}){
   const [posts,setPosts]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false);
   const load=useCallback(async(quiet)=>{
     try{const r=await api("/api/posts?limit=30");setPosts(r.posts||[]);setLoaded(true);if(!quiet)notify("Feed updated")}
@@ -357,7 +385,7 @@ function Feed({me,onMessage,notify}){
       h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/280"),h("button",{className:"btn sm",onClick:post,disabled:!text.trim()||busy},"Post"))),
     posts.length===0&&h("p",{className:"empty"},loaded?"Nothing here yet. Post the first update.":"Loading…"),
     posts.map(p=>h("article",{className:"post",key:p.id},
-      h("div",{className:"posthead"},h(Avatar,{id:p.by,name:p.name,size:38}),
+      h("div",{className:"posthead"},h(Avatar,{id:p.by,name:p.name,size:38,onClick:()=>onProfile(p.by,p.name)}),
         h("div",{className:"grow"},h("div",{className:"name trunc"},p.name),h("div",{className:"sub"},ago(p.ts)))),
       h("div",{className:"text"},p.text),
       h("div",{className:"actions"},
@@ -367,9 +395,9 @@ function Feed({me,onMessage,notify}){
 
 /* ---------- Status (24h updates with visibility control) ---------- */
 const VIS={contacts:"My contacts",everyone:"Everyone",only_me:"Only me"};
-function Status({me,notify}){
+function Status({me,notify,onProfile,forward}){
   const [items,setItems]=useState([]),[text,setText]=useState(""),[vis,setVis]=useState("contacts"),[hide,setHide]=useState("");
-  const [busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[open,setOpen]=useState(null),[compose,setCompose]=useState(false),[viewers,setViewers]=useState([]);
+  const [busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[open,setOpen]=useState(null),[compose,setCompose]=useState(false),[menu,setMenu]=useState(null),[viewers,setViewers]=useState([]);
   const load=useCallback(async()=>{
     try{
       const list=(await api("/api/statuses")).statuses||[];
@@ -401,6 +429,7 @@ function Status({me,notify}){
     catch(e){notify(e.message)}
   };
   return h(Fragment,null,
+    menu&&h(StatusMenu,{x:menu,onClose:()=>setMenu(null),onForward:forward,onDelete:remove}),
     h("div",{className:"titlerow"},h("h1",{className:"h1"},"Status"),h("button",{className:"iconbtn",onClick:load,"aria-label":"Refresh statuses"},h(Icon,{n:"refresh"}))),
     h("p",{className:"sub",style:{marginTop:-6,marginBottom:12}},"Updates disappear after 24 hours."),
     h("button",{className:"btn",style:{display:compose?"none":undefined},onClick:()=>setCompose(true)},"Add status"),
@@ -416,9 +445,9 @@ function Status({me,notify}){
       h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/140"),h("div",{className:"inline"},h("button",{className:"act",onClick:()=>setCompose(false)},"Cancel"),h("button",{className:"btn sm",onClick:post,disabled:!text.trim()||busy},"Share status")))),
     items.length===0&&h("p",{className:"empty"},loaded?"No updates in the last 24 hours.":"Loading…"),
     items.map(x=>h("div",{className:"post",key:x.id},
-      h("div",{className:"posthead"},h(Avatar,{id:x.by,name:x.name,size:38}),
+      h("div",{className:"posthead"},h(Avatar,{id:x.by,name:x.name,size:38,onClick:()=>onProfile(x.by,x.mine?me.name:x.name)}),
         h("div",{className:"grow"},h("div",{className:"name trunc"},x.mine?"You":x.name),
-          h("div",{className:"sub"},ago(x.ts)+(x.mine?" · "+VIS[x.visibility]:"")))),
+          h("div",{className:"sub"},ago(x.ts)+(x.mine?" · "+VIS[x.visibility]:""))),h("button",{className:"iconbtn","aria-label":"Status options",onClick:()=>setMenu(x)},h("span",{style:{fontSize:22,lineHeight:1,fontWeight:800}},"\u22ef"))),
       h("div",{className:"text"},x.text),
       x.mine&&h("div",{className:"actions"},
         h("button",{className:"act","aria-expanded":open===x.id,onClick:()=>toggleViewers(x)},h(Icon,{n:"eye",s:16}),x.views+(x.views===1?" view":" views")),
@@ -470,6 +499,8 @@ function App(){
   const [online,setOnline]=useState(navigator.onLine!==false),[toast,setToast]=useState(""),[polls,setPolls]=useState(0);
   const cursor=useRef(""),sending=useRef(false),toastTimer=useRef(0),asked=useRef(new Set());
   const number=me&&me.number;
+  const [card,setCard]=useState(null),[fwd,setFwd]=useState(null);
+  const openProfile=(n,name)=>setCard({number:n,name});
 
   const notify=useCallback(t=>{setToast(t);clearTimeout(toastTimer.current);toastTimer.current=setTimeout(()=>setToast(""),2600)},[]);
 
@@ -616,23 +647,26 @@ function App(){
   let body;
   if(booting)body=h("div",{className:"boot"},h(Logo,{size:56}));
   else if(!me)body=h(Auth,{onDone:onAuthed,theme:prefs.theme,onTheme:toggleTheme});
-  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh});
+  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile});
   else body=h(Fragment,null,
     h("header",{className:"top"},
       h("div",{className:"brand"},h(Logo,{size:30}),"Kite"),h("div",{className:"spacer"}),
       !online&&h("span",{className:"pill"},h(Icon,{n:"off",s:15}),"Offline"),
       h("button",{className:"iconbtn",onClick:toggleTheme,"aria-label":prefs.theme==="dark"?"Switch to light theme":"Switch to dark theme"},h(Icon,{n:prefs.theme==="dark"?"sun":"moon"}))),
     h("main",{className:"main"},
-      tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:startChat,notify}),
-      tab==="feed"&&h(Feed,{me,onMessage:messageFromFeed,notify}),
-      tab==="status"&&h(Status,{me,notify}),
+      tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:startChat,notify,onProfile:openProfile}),
+      tab==="feed"&&h(Feed,{me,onMessage:messageFromFeed,notify,onProfile:openProfile}),
+      tab==="status"&&h(Status,{me,notify,onProfile:openProfile,forward:setFwd}),
       tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut})),
     !online&&h("div",{className:"banner"},"You're offline. Showing saved chats."),
     h("nav",{className:"tabs","aria-label":"Main"},
       TABS.map(([id,label,icon])=>h("button",{key:id,className:"tab","aria-current":tab===id?"page":undefined,onClick:()=>setTab(id)},
         h(Icon,{n:icon,s:22}),label,id==="chats"&&unread>0&&h("span",{className:"count"},unread)))));
 
-  return h("div",{className:"shell","data-skin":me?prefs.theme:undefined},body,toast&&h("div",{className:"toast",role:"status"},toast));
+  return h("div",{className:"shell","data-skin":me?prefs.theme:undefined},body,
+    card&&h(ProfileCard,{card,me,onClose:()=>setCard(null),onMessage:(n,nm)=>{setCard(null);messageFromFeed(n,nm)}}),
+    fwd&&h(ForwardSheet,{convos,nameOf,onClose:()=>setFwd(null),onSend:to=>{sendMessage(to,fwd);setFwd(null);notify("Forwarded")}}),
+    toast&&h("div",{className:"toast",role:"status"},toast));
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(h(React.StrictMode,null,h(App)));

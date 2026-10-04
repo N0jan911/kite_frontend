@@ -128,6 +128,7 @@ textarea.field{resize:none}
 .ring.new{border-color:#2f8bff}
 .ring.seen{border-color:var(--line)}
 .plus{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:20px;height:20px;border:2px solid var(--bg);border-radius:50%;background:#2f8bff;color:#fff}
+.filecard{display:flex;align-items:center;gap:10px;width:230px;max-width:100%;padding:10px;border:0;border-radius:14px;background:rgba(128,128,128,.22);color:inherit;text-align:left}
 </style>
 </head>
 <body>
@@ -199,9 +200,35 @@ async function uploadImage(file){
   return d.secure_url;
 }
 
+const fmtSize=b=>b<1024?b+" B":b<1048576?(b/1024).toFixed(0)+" KB":(b/1048576).toFixed(1)+" MB";
+async function uploadAttachment(file){
+  const kind=/^image\//.test(file.type)?"image":/^video\//.test(file.type)?"video":/^audio\//.test(file.type)?"audio":"file";
+  const limit=kind==="video"||kind==="audio"?50*1024*1024:10*1024*1024;
+  if(file.size>limit)throw new Error("File too large. The limit is "+(limit>>20)+" MB for this type.");
+  const rt=kind==="image"?"image":kind==="file"?"raw":"video";
+  const fd=new FormData();fd.append("file",file);fd.append("upload_preset",PRESET);
+  if(rt==="raw")fd.append("public_id","kite/"+uid()+"-"+file.name.replace(/[^\w.\-]+/g,"_"));
+  let res;
+  try{res=await fetch("https://api.cloudinary.com/v1_1/"+CLOUD+"/"+rt+"/upload",{method:"POST",body:fd})}
+  catch(e){throw new Error("Couldn't upload the file. Check your connection.")}
+  const d=await res.json().catch(()=>({}));
+  if(!res.ok||!d.secure_url)throw new Error("Upload failed: "+((d.error&&d.error.message)||("error "+res.status)));
+  return {url:d.secure_url,kind,name:file.name.slice(0,120),size:file.size};
+}
+async function saveFile(f){
+  try{const r=await fetch(f.url);const b=await r.blob();const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}
+  catch(e){window.open(f.url,"_blank","noopener")}
+}
+function FileView({f}){
+  if(f.kind==="image")return h("a",{href:f.url,target:"_blank",rel:"noopener noreferrer"},h("img",{className:"pic",style:{marginTop:0,marginBottom:6},src:f.url,alt:f.name}));
+  if(f.kind==="video")return h("video",{className:"pic",style:{marginTop:0,marginBottom:6},src:f.url,controls:true,preload:"metadata"});
+  if(f.kind==="audio")return h("audio",{src:f.url,controls:true,preload:"metadata",style:{width:"100%",maxWidth:240,marginBottom:6}});
+  return h("button",{className:"filecard",onClick:()=>saveFile(f)},h(Icon,{n:"file",s:22}),h("div",{className:"grow"},h("div",{className:"name trunc"},f.name),h("div",{className:"sub",style:{color:"inherit",opacity:.8}},fmtSize(f.size))));
+}
+
 /* ---------- UI atoms ---------- */
 const PATHS={
-  back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",camera:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",image:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
+  back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",clip:"M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5",file:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",camera:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",image:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
   chat:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
   feed:"M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M5 19h.01",
   status:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 8v8M8 12h8",
@@ -360,15 +387,15 @@ function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf}){
         h("div",{className:"grow"},
           h("div",{className:"line name"},h("span",{className:"trunc"},nameOf(c.partner)),h("span",{className:"time"},shortWhen(c.last.ts))),
           h("div",{className:"line"},
-            h("span",{className:"sub trunc"},(c.last.from===me.number?"You: ":"")+c.last.text),
+            h("span",{className:"sub trunc"},(c.last.from===me.number?"You: ":"")+(c.last.text||(c.last.file?"📎 "+c.last.file.name:""))),
             c.unread>0&&h("span",{className:"count"},c.unread)))))),
     fab&&h("div",{className:"scrim",onClick:()=>setFab(false)}),
     fab&&h("div",{className:"fabmenu"},[["group","New group"],["call","New call"],["contact","New contact"]].map(([k,l])=>h("button",{key:k,className:"fabopt",onClick:()=>pick(k)},l))),
     h("button",{className:"fab","aria-label":"New chat options","aria-expanded":fab,onClick:()=>setFab(!fab)},h(Icon,{n:"plus",s:26})));
 }
 
-function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar}){
-  const [text,setText]=useState(""),box=useRef(null),input=useRef(null);
+function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar,notify}){
+  const [text,setText]=useState(""),[up,setUp]=useState(false),box=useRef(null),input=useRef(null);
   const coarse=window.matchMedia&&matchMedia("(pointer: coarse)").matches;
   useEffect(()=>{if(box.current)box.current.scrollTop=box.current.scrollHeight},[list.length]);
   useEffect(()=>{const el=input.current;if(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,120)+"px"}},[text]);
@@ -387,11 +414,13 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
         const mine=m.from===me.number;
         return h(Fragment,{key:m.id},
           showDay&&h("div",{className:"day"},dayName(m.ts)),
-          h("div",{className:"bub "+(mine?"me":"them")},m.text,
+          h("div",{className:"bub "+(mine?"me":"them")},m.file&&h(FileView,{f:m.file}),m.text,
             h("div",{className:"meta"},clock(m.ts),mine&&h(Icon,{n:m.pending?"clock":"check",s:12}))));
       })),
     !online&&h("div",{className:"banner"},"You're offline. Messages will send when you reconnect."),
+    up&&h("div",{className:"banner"},"Uploading file…"),
     h("div",{className:"composer"},
+      h("label",{className:"send",style:{background:"var(--tint)",color:"var(--ink)",cursor:"pointer",opacity:up?.5:1},"aria-label":"Attach file"},h(Icon,{n:"clip",s:20}),h("input",{type:"file",style:{display:"none"},disabled:up,onChange:async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;setUp(true);try{const file=await uploadAttachment(f);onSend(partner,text.trim().slice(0,1000),file);setText("")}catch(x){notify(x.message)}setUp(false)}})),
       h("textarea",{ref:input,rows:1,value:text,maxLength:1000,placeholder:"Message","aria-label":"Message",onChange:e=>setText(e.target.value),
         onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey&&!coarse){e.preventDefault();send()}}}),
       h("button",{className:"send",onClick:send,disabled:!text.trim(),"aria-label":"Send"},h(Icon,{n:"send"}))));
@@ -533,6 +562,7 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar}){
     h("h1",{className:"h1",style:{margin:0}},t));
   if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("data","Data","Data saver"));
   if(view==="account")return h(Fragment,null,Head("Account"),
+    h("div",{style:{display:"flex",alignItems:"center",gap:14,margin:"6px 0 4px"}},h(Avatar,{id:me.number,name:me.name,size:72,src:me.avatarUrl}),h("label",{className:"act",style:{cursor:"pointer"}},h(Icon,{n:"camera",s:16}),"Change profile photo",h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)onAvatar(f)}}))),
     h("label",{className:"lbl",htmlFor:"myname"},"Name"),
     h("input",{id:"myname",className:"field",maxLength:24,value:name,onChange:e=>setName(e.target.value)}),
     h("label",{className:"lbl",htmlFor:"myabout"},"About"),
@@ -644,7 +674,7 @@ function App(){
     if(!number||!online||!outbox.length||sending.current)return;
     sending.current=true;
     const m=outbox[0];
-    api("/api/messages",{method:"POST",body:{id:m.id,to:m.to,text:m.text,ts:m.ts}})
+    api("/api/messages",{method:"POST",body:{id:m.id,to:m.to,text:m.text,ts:m.ts,file:m.file}})
       .then(()=>{setMsgs(old=>old.some(x=>x.id===m.id)?old:[...old,m].sort((a,b)=>a.ts-b.ts));setOutbox(o=>o.filter(x=>x.id!==m.id))})
       .catch(e=>{
         if(e.status===401)return signOut();
@@ -653,7 +683,7 @@ function App(){
       .finally(()=>{sending.current=false});
   },[outbox,online,number,polls,signOut,notify]);
 
-  const sendMessage=(to,text)=>setOutbox(o=>[...o,{id:uid(),from:number,to,text,ts:Date.now()}]);
+  const sendMessage=(to,text,file)=>setOutbox(o=>[...o,{id:uid(),from:number,to,text,ts:Date.now(),file}]);
 
   /* contacts */
   const lookup=useCallback(async n=>{
@@ -719,7 +749,7 @@ function App(){
   let body;
   if(booting)body=h("div",{className:"boot"},h(Logo,{size:56}));
   else if(!me)body=h(Auth,{onDone:onAuthed,theme:prefs.theme,onTheme:toggleTheme});
-  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner)});
+  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner),notify});
   else body=h(Fragment,null,
     h("header",{className:"top"},
       h("div",{className:"brand"},h(Logo,{size:30}),"Kite"),h("div",{className:"spacer"}),

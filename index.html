@@ -100,7 +100,7 @@ textarea.field{resize:none}
 .links{display:flex;gap:8px;margin-top:14px}
 .toast{position:absolute;left:50%;bottom:92px;z-index:9;max-width:88%;padding:10px 16px;border-radius:99px;background:var(--ink);color:var(--bg);font-size:14px;font-weight:600;transform:translateX(-50%)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-.shell[data-skin=dark]{--bg:#000;--sky:#0b0b0b;--tint:#1c1c1c;--line:#2a2a2a;--ink:#fff;--mute:#9a9a9a;--accent:#fff;--btn:#fff;--bad:#ff8a8a;--theirs:#161616}
+.shell[data-skin=dark]{--bg:#000;--sky:#0b0b0b;--tint:#1c1c1c;--line:#3d3d3d;--ink:#fff;--mute:#b8b8b8;--accent:#fff;--btn:#fff;--bad:#ff8a8a;--theirs:#161616}
 .shell[data-skin=dark] .btn,.shell[data-skin=dark] .send,.shell[data-skin=dark] .count,.shell[data-skin=dark] .bub.me,.shell[data-skin=dark] .seg button[aria-pressed=true],.shell[data-skin=dark] .fab{color:#000}
 .shell[data-skin=dark] .btn.soft{color:#fff}
 .shell[data-skin=dark] .avatar{background:#222;color:#fff}
@@ -115,6 +115,19 @@ textarea.field{resize:none}
 .pic{display:block;width:100%;max-height:360px;margin-top:10px;border-radius:16px;object-fit:cover}
 .cam{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--btn);color:#fff;border:2px solid var(--bg)}
 .shell[data-skin=dark] .cam{color:#000}
+.shell{color:var(--ink)}
+.shell[data-skin=dim]{--bg:#0b2559;--sky:#0e2f6b;--tint:#18408a;--line:#4a78c9;--ink:#fff;--mute:#c2d5f7;--accent:#a9ccff;--btn:#2f7bf0;--bad:#ffb0b0;--theirs:#123a7a}
+.shell[data-skin=dim] .avatar{background:#1d4a96;color:#fff}
+.shell[data-skin=dim] .logo-light{display:none}
+.shell[data-skin=dim] .logo-dark{display:block}
+.seg:has(button:nth-child(3)){grid-template-columns:1fr 1fr 1fr}
+.stories{display:flex;gap:12px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}
+.sb{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;width:68px;padding:0;border:0;background:none;color:var(--ink);font-size:12px;font-weight:600}
+.sb span{max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ring{position:relative;padding:3px;border:3px solid transparent;border-radius:50%}
+.ring.new{border-color:#2f8bff}
+.ring.seen{border-color:var(--line)}
+.plus{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:20px;height:20px;border:2px solid var(--bg);border-radius:50%;background:#2f8bff;color:#fff}
 </style>
 </head>
 <body>
@@ -182,7 +195,7 @@ async function uploadImage(file){
   try{res=await fetch("https://api.cloudinary.com/v1_1/"+CLOUD+"/image/upload",{method:"POST",body:fd})}
   catch(e){throw new Error("Couldn't upload the photo. Check your connection.")}
   const d=await res.json().catch(()=>({}));
-  if(!res.ok||!d.secure_url)throw new Error("Photo upload failed. Try again.");
+  if(!res.ok||!d.secure_url)throw new Error("Photo upload failed: "+((d.error&&d.error.message)||("error "+res.status)));
   return d.secure_url;
 }
 
@@ -384,6 +397,31 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
       h("button",{className:"send",onClick:send,disabled:!text.trim(),"aria-label":"Send"},h(Icon,{n:"send"}))));
 }
 
+/* ---------- Stories row + Feed tab ---------- */
+function Stories({me,convos,nameOf,avatarOf,onOpen}){
+  const [list,setList]=useState([]);
+  useEffect(()=>{let on=true;const load=async()=>{try{const r=await api("/api/statuses");if(on)setList(r.statuses||[])}catch(e){}};load();const t=setInterval(load,60000);return()=>{on=false;clearInterval(t)}},[]);
+  const by=new Map();
+  for(const x of list){if(x.mine)continue;const c=by.get(x.by)||{n:x.by,name:x.name,avatar:x.avatar,unseen:false,story:true};if(!x.seen)c.unseen=true;by.set(x.by,c)}
+  for(const c of convos)if(!by.has(c.partner))by.set(c.partner,{n:c.partner,name:nameOf(c.partner),avatar:avatarOf(c.partner),unseen:false,story:false});
+  const people=[...by.values()].sort((a,b)=>(b.unseen-a.unseen)||(b.story-a.story));
+  const Bub=(n,name,avatar,cls,badge)=>h("button",{key:n,className:"sb",onClick:()=>onOpen(n)},h("div",{className:"ring "+cls},h(Avatar,{id:n,name,size:54,src:avatar}),badge&&h("span",{className:"plus"},h(Icon,{n:"plus",s:12}))),h("span",null,name));
+  const hasMine=list.some(x=>x.mine);
+  return h("div",{className:"stories"},Bub(me.number,"Your story",me.avatarUrl,hasMine?"new":"seen",!hasMine),people.map(c=>Bub(c.n,c.name,c.avatar,c.story?(c.unseen?"new":"seen"):"",false)));
+}
+function FeedTab(p){
+  const [story,setStory]=useState(null);
+  if(story)return h(Fragment,null,
+    h("div",{className:"titlerow",style:{justifyContent:"flex-start",gap:10,marginBottom:10}},
+      h("button",{className:"iconbtn",onClick:()=>setStory(null),"aria-label":"Back"},h(Icon,{n:"back"})),
+      h("h1",{className:"h1",style:{margin:0}},story===p.me.number?"Your story":p.nameOf(story))),
+    h(Status,{me:p.me,notify:p.notify,onProfile:p.onProfile,forward:p.forward,only:story}));
+  return h(Fragment,null,
+    h(Stories,{me:p.me,convos:p.convos,nameOf:p.nameOf,avatarOf:p.avatarOf,onOpen:setStory}),
+    h("div",{className:"stories"},[["Sports","https://www.bbc.com/sport"],["Music","https://open.spotify.com"],["News","https://www.bbc.com/news"]].map(([l,u])=>h("a",{key:l,className:"act",href:u,target:"_blank",rel:"noopener noreferrer"},l))),
+    h(Feed,{me:p.me,onMessage:p.onMessage,notify:p.notify,onProfile:p.onProfile}));
+}
+
 /* ---------- Feed ---------- */
 function Feed({me,onMessage,notify,onProfile}){
   const [posts,setPosts]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[photo,setPhoto]=useState(null);
@@ -421,7 +459,7 @@ function Feed({me,onMessage,notify,onProfile}){
 
 /* ---------- Status (24h updates with visibility control) ---------- */
 const VIS={contacts:"My contacts",everyone:"Everyone",only_me:"Only me"};
-function Status({me,notify,onProfile,forward}){
+function Status({me,notify,onProfile,forward,only}){
   const [items,setItems]=useState([]),[text,setText]=useState(""),[vis,setVis]=useState("contacts"),[hide,setHide]=useState("");
   const [busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[open,setOpen]=useState(null),[compose,setCompose]=useState(false),[menu,setMenu]=useState(null),[photo,setPhoto]=useState(null),[viewers,setViewers]=useState([]);
   const load=useCallback(async()=>{
@@ -457,10 +495,10 @@ function Status({me,notify,onProfile,forward}){
   };
   return h(Fragment,null,
     menu&&h(StatusMenu,{x:menu,onClose:()=>setMenu(null),onForward:forward,onDelete:remove}),
-    h("div",{className:"titlerow"},h("h1",{className:"h1"},"Status"),h("button",{className:"iconbtn",onClick:load,"aria-label":"Refresh statuses"},h(Icon,{n:"refresh"}))),
-    h("p",{className:"sub",style:{marginTop:-6,marginBottom:12}},"Updates disappear after 24 hours."),
-    h("button",{className:"btn",style:{display:compose?"none":undefined},onClick:()=>setCompose(true)},"Add status"),
-    compose&&h("div",{className:"card"},
+    !only&&h("div",{className:"titlerow"},h("h1",{className:"h1"},"Status"),h("button",{className:"iconbtn",onClick:load,"aria-label":"Refresh statuses"},h(Icon,{n:"refresh"}))),
+    !only&&h("p",{className:"sub",style:{marginTop:-6,marginBottom:12}},"Updates disappear after 24 hours."),
+    (!only||only===me.number)&&h("button",{className:"btn",style:{display:compose?"none":undefined},onClick:()=>setCompose(true)},"Add status"),
+    compose&&(!only||only===me.number)&&h("div",{className:"card"},
       h("textarea",{className:"field",rows:2,maxLength:140,placeholder:"What's happening?","aria-label":"New status",value:text,onChange:e=>setText(e.target.value)}),
       h(PhotoPick,{photo,setPhoto}),
       h("label",{className:"lbl",htmlFor:"vis"},"Who can see this"),
@@ -471,8 +509,8 @@ function Status({me,notify,onProfile,forward}){
         h("input",{id:"hide",className:"field",inputMode:"tel",placeholder:"Phone numbers, separated by commas",value:hide,onChange:e=>setHide(e.target.value)})),
       h("p",{className:"sub",style:{marginTop:8}},"My contacts means people you have chatted with."),
       h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/140"),h("div",{className:"inline"},h("button",{className:"act",onClick:()=>setCompose(false)},"Cancel"),h("button",{className:"btn sm",onClick:post,disabled:(!text.trim()&&!photo)||busy},"Share status")))),
-    items.length===0&&h("p",{className:"empty"},loaded?"No updates in the last 24 hours.":"Loading…"),
-    items.map(x=>h("div",{className:"post",key:x.id},
+    (only?items.filter(x=>x.by===only):items).length===0&&h("p",{className:"empty"},loaded?"No updates in the last 24 hours.":"Loading…"),
+    (only?items.filter(x=>x.by===only):items).map(x=>h("div",{className:"post",key:x.id},
       h("div",{className:"posthead"},h(Avatar,{id:x.by,name:x.name,size:38,src:x.avatar,onClick:()=>onProfile(x.by,x.mine?me.name:x.name,x.avatar)}),
         h("div",{className:"grow"},h("div",{className:"name trunc"},x.mine?"You":x.name),
           h("div",{className:"sub"},ago(x.ts)+(x.mine?" · "+VIS[x.visibility]:""))),h("button",{className:"iconbtn","aria-label":"Status options",onClick:()=>setMenu(x)},h("span",{style:{fontSize:22,lineHeight:1,fontWeight:800}},"\u22ef"))),
@@ -503,8 +541,9 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar}){
   if(view==="appearance")return h(Fragment,null,Head("Appearance"),
     h("div",{className:"seg"},
       h("button",{"aria-pressed":prefs.theme==="light",onClick:()=>setPrefs(p=>({...p,theme:"light"}))},h(Icon,{n:"sun",s:16}),"Light"),
+      h("button",{"aria-pressed":prefs.theme==="dim",onClick:()=>setPrefs(p=>({...p,theme:"dim"}))},h(Icon,{n:"moon",s:16}),"Dim"),
       h("button",{"aria-pressed":prefs.theme==="dark",onClick:()=>setPrefs(p=>({...p,theme:"dark"}))},h(Icon,{n:"moon",s:16}),"Dark")),
-    h("p",{className:"sub",style:{marginTop:12}},"Light is blue and white. Dark is black with white highlights. This applies inside the app only."));
+    h("p",{className:"sub",style:{marginTop:12}},"Light is blue and white. Dim is deep blue with white writing. Dark is black. This applies inside the app only."));
   if(view==="data")return h(Fragment,null,Head("Data"),
     h("div",{className:"card"},h("div",{className:"setrow"},
       h("div",null,h("div",{className:"name"},"Data saver"),h("p",{className:"sub"},"Checks for new messages every 20 seconds instead of 6.")),
@@ -674,8 +713,8 @@ function App(){
     if(latest>(reads[partner]||0))setReads(r=>({...r,[partner]:latest}));
   },[partner,thread,reads]);
 
-  const toggleTheme=()=>setPrefs(p=>({...p,theme:p.theme==="dark"?"light":"dark"}));
-  const TABS=[["chats","Chats","chat"],["feed","Feed","feed"],["status","Status","status"],["me","Me","user"]];
+  const toggleTheme=()=>setPrefs(p=>({...p,theme:({light:"dim",dim:"dark",dark:"light"})[p.theme]||"light"}));
+  const TABS=[["chats","Chats","chat"],["feed","Feed","feed"],["me","Me","user"]];
 
   let body;
   if(booting)body=h("div",{className:"boot"},h(Logo,{size:56}));
@@ -688,8 +727,7 @@ function App(){
       h("button",{className:"iconbtn",onClick:toggleTheme,"aria-label":prefs.theme==="dark"?"Switch to light theme":"Switch to dark theme"},h(Icon,{n:prefs.theme==="dark"?"sun":"moon"}))),
     h("main",{className:"main"},
       tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:startChat,notify,onProfile:openProfile,avatarOf}),
-      tab==="feed"&&h(Feed,{me,onMessage:messageFromFeed,notify,onProfile:openProfile}),
-      tab==="status"&&h(Status,{me,notify,onProfile:openProfile,forward:setFwd}),
+      tab==="feed"&&h(FeedTab,{me,convos,nameOf,avatarOf,notify,onMessage:messageFromFeed,onProfile:openProfile,forward:setFwd}),
       tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut,onAvatar:saveAvatar})),
     !online&&h("div",{className:"banner"},"You're offline. Showing saved chats."),
     h("nav",{className:"tabs","aria-label":"Main"},

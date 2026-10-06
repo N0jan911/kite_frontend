@@ -167,7 +167,9 @@ if(!window.React||!window.ReactDOM){
 const {useState,useEffect,useRef,useCallback,useMemo,Fragment,createElement:h}=React;
 
 /* ---------- config & helpers ---------- */
-const API="https://kite-backend-pqsm.onrender.com";
+const API = ["localhost","127.0.0.1"].includes(location.hostname)
+  ? "http://localhost:5000"
+  : "https://kite-backend-pqsm.onrender.com";
 const TOKEN_KEY="kite_token", OTP_MS=10*60*1000, RESEND_MS=30*1000, KEEP_MSGS=500;
 
 const store={

@@ -152,6 +152,7 @@ textarea.field{resize:none}
 .shell .avatar.src-memes{background:#d97706;color:#fff}
 .tag{margin-left:8px;padding:2px 8px;border-radius:99px;background:var(--tint);color:var(--accent);font-size:11px;font-weight:700}
 .tk{display:inline-flex}.tk.read{color:#8ff0ff}.shell[data-skin=dark] .tk.read{color:#0369a1}.msgs[data-bub] .tk.read{color:#8ff0ff}.sub.onl{color:#16a34a;font-weight:600}
+.emopanel{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;padding:8px;max-height:190px;overflow-y:auto;background:var(--bg);border-top:1px solid var(--line)}.emopanel button{border:0;background:none;font-size:22px;padding:6px;border-radius:10px}.emopanel button:hover{background:var(--sky)}.chathead{gap:6px}.chathead .iconbtn{width:36px;height:36px}
 </style>
 </head>
 <body>
@@ -300,7 +301,7 @@ const PATHS={
   moon:"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z",
   sun:"M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4",
   refresh:"M23 4v6h-6M1 20v-6h6M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15",
-  check:"M20 6 9 17l-5-5",checks:"M2 12.5l4.5 4.5L16 7.5M11 15.5l1.5 1.5L22 7.5",clock:"M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z",
+  check:"M20 6 9 17l-5-5",checks:"M2 12.5l4.5 4.5L16 7.5M11 15.5l1.5 1.5L22 7.5",video:"M23 7l-7 5 7 5V7zM3 5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z",smile:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01",search:"M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",dots:"M12 5h.01M12 12h.01M12 19h.01",clock:"M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z",
   heart:"M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z",
   logout:"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",
   eye:"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
@@ -321,14 +322,20 @@ function Sheet({title,onClose,children}){
       h("div",{className:"titlerow",style:{marginBottom:8}},h("div",{className:"name"},title),h("button",{className:"iconbtn",onClick:onClose,"aria-label":"Close"},h(Icon,{n:"close"}))),
       children));
 }
-function ProfileCard({card,me,onClose,onMessage}){
+function ProfileCard({card,me,onClose,onMessage,notify}){
   const mine=card.number===me.number;
+  const [pr,setPr]=useState(null);
+  useEffect(()=>{if(mine)return;let on=true;api("/api/users/presence/"+encodeURIComponent(card.number)).then(r=>{if(on)setPr(r)}).catch(()=>{});return()=>{on=false}},[card.number,mine]);
   return h(Sheet,{title:"Profile",onClose},
     h("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:8,padding:"8px 0 14px"}},
       h(Avatar,{id:card.number,name:card.name,size:96,src:mine?me.avatarUrl:card.avatar}),
       h("div",{className:"h2",style:{margin:"6px 0 0"}},mine?me.name:card.name),
-      h("div",{className:"sub"},pretty(card.number))),
-    !mine&&h("button",{className:"btn",onClick:()=>onMessage(card.number,card.name)},"Message"));
+      h("div",{className:"sub"},pretty(card.number)),
+      pr&&!pr.hidden&&h("div",{className:"sub"+(pr.online?" onl":"")},pr.online?"online":seenText(pr.lastSeen))),
+    !mine&&h("div",{style:{display:"flex",gap:10,alignItems:"center"}},
+      h("button",{className:"btn",style:{flex:1},onClick:()=>onMessage(card.number,card.name)},"Message"),
+      h("button",{className:"iconbtn",onClick:()=>notify("Voice calls are coming soon"),"aria-label":"Voice call"},h(Icon,{n:"phone",s:18})),
+      h("button",{className:"iconbtn",onClick:()=>notify("Video calls are coming soon"),"aria-label":"Video call"},h(Icon,{n:"video",s:18}))));
 }
 function ForwardSheet({convos,nameOf,onClose,onSend}){
   return h(Sheet,{title:"Forward to",onClose},
@@ -347,7 +354,7 @@ function PhotoPick({photo,setPhoto}){
   return h(Fragment,null,
     url&&h("img",{className:"pic",src:url,alt:"Selected photo"}),
     h("div",{style:{display:"flex",gap:8,marginTop:8}},
-      h("label",{className:"act"},h(Icon,{n:"image",s:16}),photo?"Change photo":"Add photo",h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)setPhoto(f)}})),
+      h("label",{className:"act","aria-label":photo?"Change photo":"Add photo",title:photo?"Change photo":"Add photo",style:{padding:"8px 14px",cursor:"pointer"}},h(Icon,{n:"plus",s:20}),h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)setPhoto(f)}})),
       photo&&h("button",{className:"act",onClick:()=>setPhoto(null)},"Remove")));
 }
 
@@ -458,6 +465,7 @@ function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf}){
     h("button",{className:"fab","aria-label":"New chat options","aria-expanded":fab,onClick:()=>setFab(!fab)},h(Icon,{n:"plus",s:26})));
 }
 
+const EMOJI=Array.from("😀😃😄😁😆😅😂🤣😊😇🙂😉😍🥰😘😋😎🤩🥳😏😒😞😔😢😭😤😠🤯😳🥺😱😴🤔🙄😬🤗🫡🙏👍👎👏🙌💪🤝✌️🤞👌👋🔥💯✨🎉❤️🧡💛💚💙💜🖤💔😈👀🎶⚽🏀🎮🍕🍔🍟🍺☕🚗✈️🌍🌙☀️🌧️🎁📸💰📱💻");
 const Tick=({rc,pending})=>{if(pending)return h(Icon,{n:"clock",s:12});if(!rc||!rc.d)return h("span",{className:"tk",title:"Sent"},h(Icon,{n:"check",s:13}));return h("span",{className:"tk"+(rc.r?" read":""),title:rc.r?"Read":"Delivered"},h(Icon,{n:"checks",s:15}))};
 const seenText=ts=>{const n=Date.now();if(sameDay(ts,n))return"last seen today at "+clock(ts);if(sameDay(ts,n-864e5))return"last seen yesterday at "+clock(ts);return"last seen "+dayName(ts)};
 function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar,notify,prefs,rcpts,presence}){
@@ -466,7 +474,13 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
   useEffect(()=>{if(box.current)box.current.scrollTop=box.current.scrollHeight},[list.length]);
   useEffect(()=>{const el=input.current;if(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,120)+"px"}},[text]);
   const send=()=>{const t=text.trim();if(t){onSend(partner,t.slice(0,1000));setText("")}};
-  const [menu,setMenu]=useState(false),fileIn=useRef(null);
+  const [menu,setMenu]=useState(false),fileIn=useRef(null),camIn=useRef(null);
+  const [opts,setOpts]=useState(false),[emo,setEmo]=useState(false),[find,setFind]=useState(null);
+  const clrKey="kite:clr:"+me.number+":"+partner;
+  const [cleared,setCleared]=useState(()=>Number(store.get(clrKey))||0);
+  useEffect(()=>{setCleared(Number(store.get(clrKey))||0);setFind(null);setEmo(false)},[clrKey]);
+  const vis=list.filter(m=>m.ts>cleared&&(!find||(m.text||"").toLowerCase().includes(find.toLowerCase())));
+  const soon=w=>notify(w+" calls are coming soon");
   const pickFile=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;setUp(true);try{const file=await uploadAttachment(f);onSend(partner,text.trim().slice(0,1000),file);setText("")}catch(x){notify(x.message)}setUp(false)};
   const choose=a=>{setMenu(false);const el=fileIn.current;if(a)el.setAttribute("accept",a);else el.removeAttribute("accept");el.click()};
   const bc=(BUBBLES.find(b=>b[0]===prefs.bubble)||[])[2];
@@ -476,10 +490,14 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
       h("button",{className:"iconbtn",onClick:onBack,"aria-label":"Back to chats"},h(Icon,{n:"back"})),
       h(Avatar,{id:partner,name,size:40,src:avatar,onClick:()=>onProfile(partner,name)}),
       h("div",{className:"grow"},h("div",{className:"name trunc"},name),h("div",{className:"sub trunc"+(presence&&presence.online?" onl":"")},presence&&presence.online?"online":presence&&presence.lastSeen?seenText(presence.lastSeen):(about||pretty(partner)))),
-      h("button",{className:"iconbtn",onClick:onRefresh,"aria-label":"Check for new messages"},h(Icon,{n:"refresh"}))),
+      h("button",{className:"iconbtn",onClick:()=>soon("Voice"),"aria-label":"Voice call"},h(Icon,{n:"phone",s:18})),
+      h("button",{className:"iconbtn",onClick:()=>soon("Video"),"aria-label":"Video call"},h(Icon,{n:"video",s:18})),
+      h("button",{className:"iconbtn",onClick:onRefresh,"aria-label":"Check for new messages"},h(Icon,{n:"refresh",s:18})),
+      h("button",{className:"iconbtn",onClick:()=>setOpts(true),"aria-label":"Chat options"},h(Icon,{n:"dots",s:18}))),
+    find!==null&&h("div",{style:{display:"flex",gap:8,padding:"8px 12px",borderBottom:"1px solid var(--line)"}},h("input",{className:"field",autoFocus:true,placeholder:"Search in this chat","aria-label":"Search in this chat",value:find,onChange:e=>setFind(e.target.value)}),h("button",{className:"btn sm",onClick:()=>setFind(null)},"Done")),
     h("div",{className:"msgs",ref:box,"data-bub":bc?"1":undefined,style:{...wallBg(prefs),...(bc?{"--btn":bc}:{})}},
-      list.length===0&&h("p",{className:"empty"},"No messages yet. Say hello."),
-      list.map(m=>{
+      vis.length===0&&h("p",{className:"empty"},find?"No matches.":"No messages yet. Say hello."),
+      vis.map(m=>{
         const showDay=!prev||!sameDay(m.ts,prev);prev=m.ts;
         const mine=m.from===me.number;
         return h(Fragment,{key:m.id},
@@ -491,9 +509,18 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
     menu&&h(Fragment,null,h("div",{className:"scrim",style:{zIndex:6,background:"transparent"},onClick:()=>setMenu(false)}),
       h("div",{className:"attmenu",role:"menu"},ATT.map(([k,label,ic,acc,c1,c2])=>h("button",{key:k,className:"attopt",role:"menuitem",onClick:()=>choose(acc)},h("i",{style:{background:"linear-gradient(135deg,"+c1+","+c2+")"}},h(Icon,{n:ic,s:22})),label)))),
     up&&h("div",{className:"banner"},"Uploading file…"),
+    emo&&h("div",{className:"emopanel"},EMOJI.map(e=>h("button",{key:e,"aria-label":e,onClick:()=>setText(t=>(t+e).slice(0,1000))},e))),
+    opts&&h(Sheet,{title:"Chat options",onClose:()=>setOpts(false)},
+      h("button",{className:"row",onClick:()=>{setOpts(false);onProfile(partner,name)}},h("div",{className:"grow name"},"View profile")),
+      h("button",{className:"row",onClick:()=>{setOpts(false);setFind("")}},h("div",{className:"grow name"},"Search in chat")),
+      h("button",{className:"row",onClick:()=>{setOpts(false);try{navigator.clipboard.writeText(partner);notify("Number copied")}catch(e){notify("Couldn't copy")}}},h("div",{className:"grow name"},"Copy number")),
+      h("button",{className:"row",onClick:()=>{setOpts(false);const t=Date.now();store.set(clrKey,String(t));setCleared(t);notify("Chat cleared on this device")}},h("div",{className:"grow name",style:{color:"var(--bad)"}},"Clear chat (this device)"))),
     h("div",{className:"composer"},
-      h("button",{className:"send attach","aria-label":"Attach","aria-expanded":menu,disabled:up,onClick:()=>setMenu(!menu)},h(Icon,{n:menu?"close":"clip",s:20})),
+      h("button",{className:"send attach","aria-label":"Attach","aria-expanded":menu,disabled:up,onClick:()=>setMenu(!menu)},h(Icon,{n:menu?"close":"plus",s:22})),
       h("input",{ref:fileIn,type:"file",style:{display:"none"},onChange:pickFile}),
+      h("input",{ref:camIn,type:"file",accept:"image/*,video/*",style:{display:"none"},onChange:pickFile}),
+      h("button",{className:"send attach","aria-label":"Emoji","aria-expanded":emo,onClick:()=>{setEmo(!emo);setMenu(false)}},h(Icon,{n:emo?"close":"smile",s:20})),
+      h("button",{className:"send attach","aria-label":"Photo or video",disabled:up,onClick:()=>camIn.current.click()},h(Icon,{n:"camera",s:20})),
       h("textarea",{ref:input,rows:1,value:text,maxLength:1000,placeholder:"Message","aria-label":"Message",onChange:e=>setText(e.target.value),
         onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey&&!coarse){e.preventDefault();send()}}}),
       h("button",{className:"send",onClick:send,disabled:!text.trim(),"aria-label":"Send"},h(Icon,{n:"send"}))));
@@ -551,16 +578,39 @@ function ItemCard({it,forward,onReact}){
 }
 
 /* ---------- Feed ---------- */
+function InterestSheet({tags,mine,onClose,onSave}){
+  const [sel,setSel]=useState(()=>new Set(mine)),[busy,setBusy]=useState(false);
+  const groups=[...new Set(tags.map(t=>t.group))];
+  const tog=id=>setSel(o=>{const n=new Set(o);if(n.has(id))n.delete(id);else if(n.size<15)n.add(id);return n});
+  return h(Sheet,{title:"Your interests",onClose},
+    h("p",{className:"sub",style:{marginBottom:6}},"Pick up to 15. They shape your For you feed and appear as tabs."),
+    groups.map(g=>h("div",{key:g,style:{margin:"12px 0"}},h("div",{className:"name",style:{marginBottom:8}},g),
+      h("div",{style:{display:"flex",flexWrap:"wrap",gap:8}},tags.filter(t=>t.group===g).map(t=>h("button",{key:t.id,className:"act","aria-pressed":sel.has(t.id),onClick:()=>tog(t.id)},t.label))))),
+    h("button",{className:"btn",style:{width:"100%",marginTop:8},disabled:busy,onClick:async()=>{setBusy(true);await onSave([...sel]);setBusy(false)}},busy?"Saving\u2026":"Save ("+sel.size+")"));
+}
 function Feed({me,onMessage,notify,onProfile,forward}){
-  const [posts,setPosts]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[photo,setPhoto]=useState(null),[items,setItems]=useState([]),[topic,setTopic]=useState("all");
+  const [posts,setPosts]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[photo,setPhoto]=useState(null),[items,setItems]=useState([]),[topic,setTopic]=useState("all"),
+    [more,setMore]=useState(false),[busyMore,setBusyMore]=useState(false),[tags,setTags]=useState([]),[mine,setMine]=useState([]),[searching,setSearching]=useState(false),[qtext,setQtext]=useState(""),[query,setQuery]=useState(""),[prefOpen,setPrefOpen]=useState(false);
+  const seed=useRef("a"),nextOff=useRef(0),sentinel=useRef(null),moreBusy=useRef(false);
   const load=useCallback(async(quiet)=>{
     try{const r=await api("/api/posts?limit=30");setPosts(r.posts||[]);setLoaded(true);if(!quiet)notify("Feed updated")}
     catch(e){notify(e.message)}
   },[notify]);
   useEffect(()=>{load(true)},[load]);
-  const loadItems=useCallback(async t=>{try{const r=await api("/api/discover?limit=20"+(t&&t!=="all"?"&topic="+t:""));setItems(r.items||[])}catch(e){}},[]);
-  useEffect(()=>{loadItems(topic)},[topic,loadItems]);
-  const mixed=useMemo(()=>weave(posts,items,topic),[posts,items,topic]);
+  const loadItems=useCallback(async(t,reset=true,qq="")=>{
+    if(reset){seed.current=Math.random().toString(36).slice(2,10);nextOff.current=0}
+    const off=nextOff.current;
+    const qs="limit=20&offset="+off+"&seed="+seed.current+(qq?"&q="+encodeURIComponent(qq):"")+(t&&t!=="all"?(t.startsWith("t:")?"&tag="+t.slice(2):"&topic="+t):"");
+    try{const r=await api("/api/discover?"+qs);const got=r.items||[];nextOff.current=r.next||off+got.length;setMore(!!r.hasMore);setItems(old=>reset?got:[...old,...got.filter(g=>!old.some(o=>o.id===g.id))])}catch(e){}
+  },[]);
+  useEffect(()=>{loadItems(topic,true,query)},[topic,query,loadItems]);
+  useEffect(()=>{api("/api/discover/tags").then(r=>{setTags(r.tags||[]);setMine(r.mine||[])}).catch(()=>{})},[]);
+  const loadMore=useCallback(async()=>{if(moreBusy.current)return;moreBusy.current=true;setBusyMore(true);await loadItems(topic,false,query);moreBusy.current=false;setBusyMore(false)},[topic,query,loadItems]);
+  useEffect(()=>{const el=sentinel.current;if(!el||!more)return;const io=new IntersectionObserver(es=>{if(es[0].isIntersecting)loadMore()},{rootMargin:"600px"});io.observe(el);return()=>io.disconnect()},[more,loadMore,items.length]);
+  const saveInterests=async ids=>{try{const r=await api("/api/discover/interests",{method:"POST",body:{tags:ids}});const m=r.mine||[];setMine(m);setPrefOpen(false);if(topic.startsWith("t:")&&!m.includes(topic.slice(2)))setTopic("all");else loadItems(topic,true,query);notify("Interests saved")}catch(e){notify(e.message)}};
+  const toggleSearch=()=>{if(searching){setSearching(false);setQtext("");setQuery("")}else setSearching(true)};
+  const shown=useMemo(()=>query?posts.filter(p=>(p.text||"").toLowerCase().includes(query.toLowerCase())):posts,[posts,query]);
+  const mixed=useMemo(()=>weave(shown,items,topic),[shown,items,topic]);
   const react=async(it,kind)=>{
     const on=!it.mine[kind];if(kind==="repost"&&!on)return;
     const key={like:"likes",repost:"reposts",fav:"favs"}[kind];
@@ -568,7 +618,7 @@ function Feed({me,onMessage,notify,onProfile,forward}){
     try{
       await api("/api/discover/react",{method:"POST",body:{id:it.id,kind,on}});
       if(kind==="repost"){const r=await api("/api/posts",{method:"POST",body:{text:(it.title.slice(0,150)+"\n"+it.link).slice(0,280)}});setPosts(p=>[r.post,...p]);notify("Reposted to your feed")}
-    }catch(e){loadItems(topic);notify(e.message)}
+    }catch(e){loadItems(topic,true,query);notify(e.message)}
   };
   const post=async()=>{
     const t=text.trim();if((!t&&!photo)||busy)return;
@@ -583,9 +633,14 @@ function Feed({me,onMessage,notify,onProfile,forward}){
     catch(e){setPosts(l=>l.map(x=>x.id===p.id?p:x));notify(e.message)}
   };
   return h(Fragment,null,
-    h("div",{className:"titlerow"},h("h1",{className:"h1"},"Feed"),h("button",{className:"iconbtn",onClick:()=>{load(false);loadItems(topic)},"aria-label":"Refresh feed"},h(Icon,{n:"refresh"}))),
-    h("div",{className:"stories"},[["all","For you"],["news","News"],["sports","Sports"],["memes","Memes"]].map(([k,l])=>h("button",{key:k,className:"act","aria-pressed":topic===k,onClick:()=>setTopic(k)},l))),
-    h("div",{className:"card"},
+    h("div",{className:"titlerow"},h("h1",{className:"h1"},"Feed"),h("div",{style:{display:"flex",gap:2}},
+      h("button",{className:"iconbtn",onClick:toggleSearch,"aria-label":"Search feed"},h(Icon,{n:searching?"close":"search"})),
+      h("button",{className:"iconbtn",onClick:()=>setPrefOpen(true),"aria-label":"Your interests"},h(Icon,{n:"dots"})),
+      h("button",{className:"iconbtn",onClick:()=>{load(false);loadItems(topic,true,query)},"aria-label":"Refresh feed"},h(Icon,{n:"refresh"})))),
+    searching&&h("div",{style:{display:"flex",gap:8,margin:"0 0 10px"}},h("input",{className:"field",autoFocus:true,maxLength:60,placeholder:"Search news, memes, tags","aria-label":"Search feed",value:qtext,onChange:e=>setQtext(e.target.value),onKeyDown:e=>{if(e.key==="Enter")setQuery(qtext.trim())}}),h("button",{className:"btn sm",onClick:()=>setQuery(qtext.trim())},"Search")),
+    query&&h("p",{className:"sub",style:{margin:"0 0 8px"}},"Results for \u201c"+query+"\u201d"),
+    h("div",{className:"stories"},[["all","For you"],["news","News"],["sports","Sports"],["memes","Memes"],...mine.map(id=>["t:"+id,(tags.find(t=>t.id===id)||{}).label||id])].map(([k,l])=>h("button",{key:k,className:"act","aria-pressed":topic===k,onClick:()=>setTopic(k)},l))),
+    !query&&h("div",{className:"card"},
       h("textarea",{className:"field",rows:3,maxLength:280,placeholder:"Share something short","aria-label":"New post",value:text,onChange:e=>setText(e.target.value)}),
       h(PhotoPick,{photo,setPhoto}),h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/280"),h("button",{className:"btn sm",onClick:post,disabled:(!text.trim()&&!photo)||busy},busy?"Posting\u2026":"Post"))),
     mixed.length===0&&h("p",{className:"empty"},loaded?"Nothing here yet. Post the first update.":"Loading…"),
@@ -595,7 +650,11 @@ function Feed({me,onMessage,notify,onProfile,forward}){
       h("div",{className:"text"},p.text),p.media&&h(Img,{className:"pic",src:p.media,w:900,alt:"Photo"}),
       h("div",{className:"actions"},
         h("button",{className:"act","aria-pressed":!!p.liked,"aria-label":p.liked?"Remove like":"Like",onClick:()=>like(p)},h(Icon,{n:"heart",s:16,fill:p.liked}),p.likes||0),
-        p.by!==me.number&&h("button",{className:"act",onClick:()=>onMessage(p.by,p.name)},h(Icon,{n:"chat",s:16}),"Message")))));
+        p.by!==me.number&&h("button",{className:"act",onClick:()=>onMessage(p.by,p.name)},h(Icon,{n:"chat",s:16}),"Message")))),
+    h("div",{ref:sentinel,style:{height:1}}),
+    busyMore&&h("p",{className:"sub",style:{textAlign:"center",padding:"10px 0"}},"Loading more\u2026"),
+    !more&&!busyMore&&items.length>0&&h("p",{className:"sub",style:{textAlign:"center",padding:"12px 0"}},"You're all caught up. Tap refresh for a new mix."),
+    prefOpen&&h(InterestSheet,{tags,mine,onClose:()=>setPrefOpen(false),onSave:saveInterests}));
 }
 
 /* ---------- Status (24h updates with visibility control) ---------- */
@@ -902,7 +961,7 @@ function App(){
         h(Icon,{n:icon,s:22}),label,id==="chats"&&unread>0&&h("span",{className:"count"},unread)))));
 
   return h("div",{className:"shell","data-skin":me?prefs.theme:undefined},body,
-    card&&h(ProfileCard,{card,me,onClose:()=>setCard(null),onMessage:(n,nm)=>{setCard(null);messageFromFeed(n,nm)}}),
+    card&&h(ProfileCard,{card,me,notify,onClose:()=>setCard(null),onMessage:(n,nm)=>{setCard(null);messageFromFeed(n,nm)}}),
     fwd&&h(ForwardSheet,{convos,nameOf,onClose:()=>setFwd(null),onSend:to=>{sendMessage(to,fwd);setFwd(null);notify("Forwarded")}}),
     toast&&h("div",{className:"toast",role:"status"},toast));
 }

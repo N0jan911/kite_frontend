@@ -13,7 +13,7 @@ document.documentElement.dataset.theme="light";
 </script>
 <style>
 :root{--bg:#fff;--sky:#f1f6ff;--tint:#e2edff;--line:#d9e5fa;--ink:#0b1b3a;--mute:#566789;--accent:#1668e3;--btn:#1668e3;--bad:#c22f2f;--theirs:#fff}
- 
+
 *{box-sizing:border-box}
 html,body,#root{margin:0;height:100%}
 body{background:var(--sky);color:var(--ink);font:16px/1.35 ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
@@ -151,6 +151,7 @@ textarea.field{resize:none}
 .shell .avatar.src-sports{background:#0f9d58;color:#fff}
 .shell .avatar.src-memes{background:#d97706;color:#fff}
 .tag{margin-left:8px;padding:2px 8px;border-radius:99px;background:var(--tint);color:var(--accent);font-size:11px;font-weight:700}
+.tk{display:inline-flex}.tk.read{color:#8ff0ff}.shell[data-skin=dark] .tk.read{color:#0369a1}.msgs[data-bub] .tk.read{color:#8ff0ff}.sub.onl{color:#16a34a;font-weight:600}
 </style>
 </head>
 <body>
@@ -169,13 +170,11 @@ if(!window.React||!window.ReactDOM){
   document.getElementById("root").innerHTML='<div style="font-family:system-ui;padding:32px;text-align:center"><h2>Kite could not load</h2><p>Check your connection and reload this page.</p></div>';
 }else{
 const {useState,useEffect,useRef,useCallback,useMemo,Fragment,createElement:h}=React;
- 
+
 /* ---------- config & helpers ---------- */
-const API = ["localhost","127.0.0.1"].includes(location.hostname)
-  ? "http://localhost:5000"
-  : "https://kite-backend-pqsm.onrender.com";
+const API="https://kite-backend-pqsm.onrender.com";
 const TOKEN_KEY="kite_token", OTP_MS=10*60*1000, RESEND_MS=30*1000, KEEP_MSGS=500;
- 
+
 const store={
   get(k){try{return localStorage.getItem(k)}catch(e){return null}},
   set(k,v){try{localStorage.setItem(k,v)}catch(e){}},
@@ -192,7 +191,7 @@ const clock=t=>new Date(t).toLocaleTimeString([],{hour:"numeric",minute:"2-digit
 const dayName=t=>sameDay(t,Date.now())?"Today":sameDay(t,Date.now()-864e5)?"Yesterday":new Date(t).toLocaleDateString([],{weekday:"long",day:"numeric",month:"short"});
 const shortWhen=t=>sameDay(t,Date.now())?clock(t):Date.now()-t<6*864e5?new Date(t).toLocaleDateString([],{weekday:"short"}):new Date(t).toLocaleDateString([],{day:"numeric",month:"short"});
 const ago=t=>{const s=Math.max(0,(Date.now()-t)/1e3);return s<60?"now":s<3600?Math.floor(s/60)+"m":s<86400?Math.floor(s/3600)+"h":new Date(t).toLocaleDateString([],{day:"numeric",month:"short"})};
- 
+
 /* Every backend call goes through here. Errors carry .status (0 = network/timeout). */
 async function api(path,{method="GET",body,auth=true}={}){
   const headers={"Content-Type":"application/json"};
@@ -210,7 +209,7 @@ async function api(path,{method="GET",body,auth=true}={}){
   if(!res.ok){const err=new Error(data.error||"Something went wrong. Try again.");err.status=res.status;throw err}
   return data;
 }
- 
+
 const CLOUD="fic8wg7w",PRESET="kite_uploads",MAX_PIC=5*1024*1024;
 async function uploadImage(file,max){
   if(!file||!/^image\//.test(file.type))throw new Error("Choose an image file.");
@@ -224,7 +223,7 @@ async function uploadImage(file,max){
   if(!res.ok||!d.secure_url)throw new Error("Photo upload failed: "+((d.error&&d.error.message)||("error "+res.status)));
   return d.secure_url;
 }
- 
+
 async function shrinkImage(file,max,q){
   if(!/^image\/(jpeg|png|webp)$/.test(file.type))return file;
   try{
@@ -268,7 +267,7 @@ function FileView({f}){
   if(f.kind==="audio")return h("audio",{src:f.url,controls:true,preload:"metadata",style:{width:"100%",maxWidth:240,marginBottom:6}});
   return h("button",{className:"filecard",onClick:()=>saveFile(f)},h(Icon,{n:"file",s:22}),h("div",{className:"grow"},h("div",{className:"name trunc"},f.name),h("div",{className:"sub",style:{color:"inherit",opacity:.8}},fmtSize(f.size))));
 }
- 
+
 const P={kite:"M30 4L50 24L30 52L10 24Z M30 4V52 M10 24H50 M30 52q-8 6 0 12q8 6 0 12",bubble:"M8 10h40a6 6 0 0 1 6 6v20a6 6 0 0 1-6 6H26l-10 9v-9H8a6 6 0 0 1-6-6V16a6 6 0 0 1 6-6z M14 22h28 M14 30h18",phone:"M20 4h20a5 5 0 0 1 5 5v42a5 5 0 0 1-5 5H20a5 5 0 0 1-5-5V9a5 5 0 0 1 5-5z M26 49h8 M50 18a12 12 0 0 1 0 18 M56 12a20 20 0 0 1 0 30",heart:"M30 50S6 34 6 20a12 12 0 0 1 24-4 12 12 0 0 1 24 4c0 14-24 30-24 30z",star:"M30 4l7 17 18 2-14 12 5 18-16-10-16 10 5-18L5 23l18-2z",cloud:"M16 40a10 10 0 0 1 2-20 14 14 0 0 1 27 4 8 8 0 0 1 1 16z",wave:"M0 20q10-12 20 0t20 0t20 0"};
 const WALLS=[["mix","Kites and chats",[["kite",14,10,.7,-15],["bubble",118,14,.75,0],["phone",24,128,.75,10],["kite",150,128,.6,14],["heart",104,96,.4,0],["star",196,70,.32,0]]],
  ["kites","Kites",[["kite",12,8,.7,-12],["kite",120,24,.55,10],["kite",40,128,.6,8],["kite",150,140,.7,-14]]],
@@ -290,7 +289,7 @@ function wallBg(p){
   if(p.wall==="custom"&&p.wallUrl)return{backgroundImage:'url("'+p.wallUrl+'")',backgroundSize:"cover",backgroundPosition:"center"};
   return{backgroundImage:wallSvg(p.wall||"mix"),backgroundSize:"240px 240px"};
 }
- 
+
 /* ---------- UI atoms ---------- */
 const PATHS={
   back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",mic:"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3",folder:"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",repeat:"M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3",star:"M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z",clip:"M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5",file:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",camera:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",image:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
@@ -301,7 +300,7 @@ const PATHS={
   moon:"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z",
   sun:"M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4",
   refresh:"M23 4v6h-6M1 20v-6h6M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15",
-  check:"M20 6 9 17l-5-5",clock:"M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z",
+  check:"M20 6 9 17l-5-5",checks:"M2 12.5l4.5 4.5L16 7.5M11 15.5l1.5 1.5L22 7.5",clock:"M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z",
   heart:"M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z",
   logout:"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",
   eye:"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
@@ -314,7 +313,7 @@ const Logo=({size=30})=>h(Fragment,null,
   h("img",{className:"logo-dark",src:"logo-dark.png",alt:"Kite",width:size,height:size}));
 const Avatar=({id,name,size=46,onClick,src})=>h("div",{className:"avatar",onClick:onClick&&(e=>{e.stopPropagation();onClick()}),style:{"--h":hue(id),width:size,height:size,fontSize:Math.round(size*.4),overflow:"hidden",cursor:onClick?"pointer":undefined}},src?h(Img,{src,t:"c_fill,g_face,w_"+size*2+",h_"+size*2+",f_auto,q_auto",alt:"",style:{width:"100%",height:"100%",objectFit:"cover"}}):((name||"?").trim().charAt(0)||"?").toUpperCase());
 const Err=({text})=>text?h("div",{className:"err",role:"alert"},text):null;
- 
+
 /* ---------- Sheets: profile card, forward, status menu ---------- */
 function Sheet({title,onClose,children}){
   return h(Fragment,null,h("div",{className:"scrim",style:{zIndex:6},onClick:onClose}),
@@ -341,7 +340,7 @@ function StatusMenu({x,onClose,onForward,onDelete}){
     h("button",{className:"row",onClick:()=>{onClose();onForward((x.mine?"My status":x.name+"'s status")+": "+x.text)}},h("div",{className:"grow name"},"Forward")),
     x.mine&&h("button",{className:"row",onClick:()=>{onClose();onDelete(x)}},h("div",{className:"grow name",style:{color:"var(--bad)"}},"Delete")));
 }
- 
+
 function PhotoPick({photo,setPhoto}){
   const [url,setUrl]=useState("");
   useEffect(()=>{if(!photo){setUrl("");return}const u=URL.createObjectURL(photo);setUrl(u);return()=>URL.revokeObjectURL(u)},[photo]);
@@ -351,7 +350,7 @@ function PhotoPick({photo,setPhoto}){
       h("label",{className:"act"},h(Icon,{n:"image",s:16}),photo?"Change photo":"Add photo",h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)setPhoto(f)}})),
       photo&&h("button",{className:"act",onClick:()=>setPhoto(null)},"Remove")));
 }
- 
+
 /* ---------- Auth ---------- */
 function Auth({onDone,theme,onTheme}){
   const [mode,setMode]=useState("register"),[phone,setPhone]=useState(""),[name,setName]=useState("");
@@ -360,17 +359,17 @@ function Auth({onDone,theme,onTheme}){
   const [expiresAt,setExpiresAt]=useState(0),[resendAt,setResendAt]=useState(0),[now,setNow]=useState(Date.now());
   const num=digits(phone);
   const canSend=validNum(num)&&(mode==="signin"||name.trim().length>=2);
- 
+
   useEffect(()=>{
     if(step!=="code")return;
     const t=setInterval(()=>setNow(Date.now()),1000);
     return()=>clearInterval(t);
   },[step]);
- 
+
   const expired=step==="code"&&now>expiresAt;
   const secs=Math.max(0,Math.ceil((expiresAt-now)/1000));
   const wait=Math.max(0,Math.ceil((resendAt-now)/1000));
- 
+
   const sendCode=async()=>{
     setBusy(true);setErr("");
     try{
@@ -389,7 +388,7 @@ function Auth({onDone,theme,onTheme}){
   };
   const switchMode=m=>{setMode(m);setErr("")};
   const back=()=>{setStep("form");setErr("");setPin("")};
- 
+
   return h("div",{className:"auth"},
     h("div",{className:"top",style:{justifyContent:"flex-end",padding:"max(12px,env(safe-area-inset-top)) 0 0"}},
       h("button",{className:"iconbtn",onClick:onTheme,style:{display:"none"},"aria-label":theme==="dark"?"Switch to light theme":"Switch to dark theme"},h(Icon,{n:theme==="dark"?"sun":"moon"}))),
@@ -417,7 +416,7 @@ function Auth({onDone,theme,onTheme}){
             h("button",{className:"act",disabled:busy||wait>0,onClick:sendCode},wait>0?"Resend in "+wait+"s":"Resend code"),
             h("button",{className:"act",onClick:back},"Use a different number"))));
 }
- 
+
 /* ---------- Chats ---------- */
 function NewChat({onStart}){
   const [num,setNum]=useState(""),[err,setErr]=useState(""),[busy,setBusy]=useState(false);
@@ -436,7 +435,7 @@ function NewChat({onStart}){
       h("button",{className:"btn sm",onClick:go,disabled:busy||!num.trim()},"Start chat")),
     h(Err,{text:err}));
 }
- 
+
 function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf}){
   const [fab,setFab]=useState(false),[adding,setAdding]=useState(false);
   const pick=k=>{setFab(false);if(k==="contact")setAdding(true);else notify((k==="call"?"Calls":"Groups")+" are coming soon.")};
@@ -458,8 +457,10 @@ function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf}){
     fab&&h("div",{className:"fabmenu"},[["group","New group"],["call","New call"],["contact","New contact"]].map(([k,l])=>h("button",{key:k,className:"fabopt",onClick:()=>pick(k)},l))),
     h("button",{className:"fab","aria-label":"New chat options","aria-expanded":fab,onClick:()=>setFab(!fab)},h(Icon,{n:"plus",s:26})));
 }
- 
-function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar,notify,prefs}){
+
+const Tick=({rc,pending})=>{if(pending)return h(Icon,{n:"clock",s:12});if(!rc||!rc.d)return h("span",{className:"tk",title:"Sent"},h(Icon,{n:"check",s:13}));return h("span",{className:"tk"+(rc.r?" read":""),title:rc.r?"Read":"Delivered"},h(Icon,{n:"checks",s:15}))};
+const seenText=ts=>{const n=Date.now();if(sameDay(ts,n))return"last seen today at "+clock(ts);if(sameDay(ts,n-864e5))return"last seen yesterday at "+clock(ts);return"last seen "+dayName(ts)};
+function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar,notify,prefs,rcpts,presence}){
   const [text,setText]=useState(""),[up,setUp]=useState(false),box=useRef(null),input=useRef(null);
   const coarse=window.matchMedia&&matchMedia("(pointer: coarse)").matches;
   useEffect(()=>{if(box.current)box.current.scrollTop=box.current.scrollHeight},[list.length]);
@@ -474,7 +475,7 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
     h("div",{className:"chathead"},
       h("button",{className:"iconbtn",onClick:onBack,"aria-label":"Back to chats"},h(Icon,{n:"back"})),
       h(Avatar,{id:partner,name,size:40,src:avatar,onClick:()=>onProfile(partner,name)}),
-      h("div",{className:"grow"},h("div",{className:"name trunc"},name),h("div",{className:"sub trunc"},about||pretty(partner))),
+      h("div",{className:"grow"},h("div",{className:"name trunc"},name),h("div",{className:"sub trunc"+(presence&&presence.online?" onl":"")},presence&&presence.online?"online":presence&&presence.lastSeen?seenText(presence.lastSeen):(about||pretty(partner)))),
       h("button",{className:"iconbtn",onClick:onRefresh,"aria-label":"Check for new messages"},h(Icon,{n:"refresh"}))),
     h("div",{className:"msgs",ref:box,"data-bub":bc?"1":undefined,style:{...wallBg(prefs),...(bc?{"--btn":bc}:{})}},
       list.length===0&&h("p",{className:"empty"},"No messages yet. Say hello."),
@@ -484,7 +485,7 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
         return h(Fragment,{key:m.id},
           showDay&&h("div",{className:"day"},dayName(m.ts)),
           h("div",{className:"bub "+(mine?"me":"them")},m.file&&h(FileView,{f:m.file}),m.text,
-            h("div",{className:"meta"},clock(m.ts),mine&&h(Icon,{n:m.pending?"clock":"check",s:12}))));
+            h("div",{className:"meta"},clock(m.ts),mine&&h(Tick,{rc:rcpts[m.id],pending:m.pending}))));
       })),
     !online&&h("div",{className:"banner"},"You're offline. Messages will send when you reconnect."),
     menu&&h(Fragment,null,h("div",{className:"scrim",style:{zIndex:6,background:"transparent"},onClick:()=>setMenu(false)}),
@@ -497,7 +498,7 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
         onKeyDown:e=>{if(e.key==="Enter"&&!e.shiftKey&&!coarse){e.preventDefault();send()}}}),
       h("button",{className:"send",onClick:send,disabled:!text.trim(),"aria-label":"Send"},h(Icon,{n:"send"}))));
 }
- 
+
 /* ---------- Stories row + Feed tab ---------- */
 function Stories({me,convos,nameOf,avatarOf,onOpen}){
   const [list,setList]=useState([]);
@@ -521,7 +522,7 @@ function FeedTab(p){
     h(Stories,{me:p.me,convos:p.convos,nameOf:p.nameOf,avatarOf:p.avatarOf,onOpen:setStory}),
     h(Feed,{me:p.me,onMessage:p.onMessage,notify:p.notify,onProfile:p.onProfile,forward:p.forward}));
 }
- 
+
 /* ---------- Server feed cards (news, sports, memes) ---------- */
 const TOPIC={news:"News",sports:"Sports",memes:"Memes"};
 function weave(posts,items,topic){
@@ -548,7 +549,7 @@ function ItemCard({it,forward,onReact}){
       h("button",{className:"act",onClick:()=>forward(it.title+"\n"+it.link)},h(Icon,{n:"send",s:16}),"Share"),
       h("a",{className:"act",href:it.link,target:"_blank",rel:"noopener noreferrer"},"Source \u2197")));
 }
- 
+
 /* ---------- Feed ---------- */
 function Feed({me,onMessage,notify,onProfile,forward}){
   const [posts,setPosts]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[photo,setPhoto]=useState(null),[items,setItems]=useState([]),[topic,setTopic]=useState("all");
@@ -596,7 +597,7 @@ function Feed({me,onMessage,notify,onProfile,forward}){
         h("button",{className:"act","aria-pressed":!!p.liked,"aria-label":p.liked?"Remove like":"Like",onClick:()=>like(p)},h(Icon,{n:"heart",s:16,fill:p.liked}),p.likes||0),
         p.by!==me.number&&h("button",{className:"act",onClick:()=>onMessage(p.by,p.name)},h(Icon,{n:"chat",s:16}),"Message")))));
 }
- 
+
 /* ---------- Status (24h updates with visibility control) ---------- */
 const VIS={contacts:"My contacts",everyone:"Everyone",only_me:"Only me"};
 function Status({me,notify,onProfile,forward,only}){
@@ -662,16 +663,19 @@ function Status({me,notify,onProfile,forward,only}){
         viewers.length===0?h("p",{className:"sub"},"No views yet."):
         viewers.map(v=>h("div",{className:"line",key:v.number,style:{padding:"4px 0"}},h("span",{className:"trunc"},v.name),h("span",{className:"time"},ago(v.ts))))))));
 }
- 
+
 /* ---------- Me ---------- */
 function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify}){
   const [view,setView]=useState("home"),[name,setName]=useState(me.name),[about,setAbout]=useState(me.about||"");
   const dirty=name.trim()!==me.name||about.trim()!==(me.about||"");
+  const [rr,setRr]=useState(null);
+  useEffect(()=>{if(view!=="privacy")return;let on=true;api("/api/users/settings").then(r=>{if(on)setRr(!!r.readReceipts)}).catch(()=>{});return()=>{on=false}},[view]);
+  const toggleRr=async()=>{const nv=!rr;setRr(nv);try{await api("/api/users/settings",{method:"POST",body:{readReceipts:nv}})}catch(e){setRr(!nv);notify("Couldn't save. Try again.")}};
   const Row=(k,label,hint)=>h("button",{className:"row",onClick:()=>setView(k)},h("div",{className:"grow"},h("div",{className:"name"},label),h("div",{className:"sub"},hint)),h(Icon,{n:"chev",s:18}));
   const Head=t=>h("div",{className:"titlerow",style:{justifyContent:"flex-start",gap:10,marginBottom:10}},
     h("button",{className:"iconbtn",onClick:()=>setView(view==="settings"?"home":"settings"),"aria-label":"Back"},h(Icon,{n:"back"})),
     h("h1",{className:"h1",style:{margin:0}},t));
-  if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("chats","Chats","Wallpaper and bubbles"),Row("data","Data","Data saver"));
+  if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("chats","Chats","Wallpaper and bubbles"),Row("privacy","Privacy","Read receipts and last seen"),Row("data","Data","Data saver"));
   if(view==="account")return h(Fragment,null,Head("Account"),
     h("div",{style:{display:"flex",alignItems:"center",gap:14,margin:"6px 0 4px"}},h(Avatar,{id:me.number,name:me.name,size:72,src:me.avatarUrl}),h("label",{className:"act",style:{cursor:"pointer"}},h(Icon,{n:"camera",s:16}),"Change profile photo",h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)onAvatar(f)}}))),
     h("label",{className:"lbl",htmlFor:"myname"},"Name"),
@@ -693,6 +697,10 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify}){
       h("label",{className:"wp","aria-pressed":prefs.wall==="custom",style:{cursor:"pointer"}},h("span",{className:"sub"},"My photo"),h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const u=await uploadImage(f);setPrefs(q=>({...q,wall:"custom",wallUrl:u}))}catch(x){notify(x.message)}}}))),
     h("h2",{className:"h2"},"Chat bubbles"),
     h("div",{style:{display:"flex",gap:12}},BUBBLES.map(([id,name,c])=>h("button",{key:id,className:"swatch","aria-label":name,title:name,"aria-pressed":prefs.bubble===id,onClick:()=>setPrefs(q=>({...q,bubble:id})),style:{background:c||"var(--btn)"}}))));
+  if(view==="privacy")return h(Fragment,null,Head("Privacy"),
+    h("div",{className:"card"},h("div",{className:"setrow"},
+      h("div",null,h("div",{className:"name"},"Read receipts"),h("p",{className:"sub"},"On: people see when you've read their messages, and when you're online or last seen. Off: none of that is shared, and you can't see theirs either. Double ticks still show when a message is delivered.")),
+      h("button",{className:"switch",role:"switch","aria-checked":rr===true,"aria-label":"Read receipts",disabled:rr===null,onClick:toggleRr}))));
   if(view==="data")return h(Fragment,null,Head("Data"),
     h("div",{className:"card"},h("div",{className:"setrow"},
       h("div",null,h("div",{className:"name"},"Data saver"),h("p",{className:"sub"},"Checks for new messages every 20 seconds instead of 6.")),
@@ -705,7 +713,7 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify}){
     h("div",{style:{marginTop:10}},Row("settings","Settings","Account, appearance, data")),
     h("button",{className:"btn soft",style:{marginTop:18},onClick:onSignOut},h(Icon,{n:"logout",s:18}),"Sign out"));
 }
- 
+
 /* ---------- App ---------- */
 function App(){
   const [booting,setBooting]=useState(true),[me,setMe]=useState(null);
@@ -714,31 +722,32 @@ function App(){
   const [msgs,setMsgs]=useState([]),[outbox,setOutbox]=useState([]),[reads,setReads]=useState({}),[names,setNames]=useState({});
   const [online,setOnline]=useState(navigator.onLine!==false),[toast,setToast]=useState(""),[polls,setPolls]=useState(0);
   const cursor=useRef(""),sending=useRef(false),toastTimer=useRef(0),asked=useRef(new Set());
+  const [rcpts,setRcpts]=useState({}),[pres,setPres]=useState(null),rcRef=useRef("0");
   const number=me&&me.number;
   const [card,setCard]=useState(null),[fwd,setFwd]=useState(null);
   const openProfile=(n,name,avatar)=>setCard({number:n,name,avatar:avatar||avatarOf(n)});
- 
+
   const notify=useCallback(t=>{setToast(t);clearTimeout(toastTimer.current);toastTimer.current=setTimeout(()=>setToast(""),2600)},[]);
- 
+
   /* theme + prefs */
   useEffect(()=>{
     document.querySelector("meta[name=theme-color]").content=number&&prefs.theme==="dark"?"#000000":"#1668e3";
     store.set("kite:theme",prefs.theme);store.set("kite:prefs",JSON.stringify(prefs));
   },[prefs]);
- 
+
   /* session */
   const startSession=useCallback(profile=>{
     const n=profile.number;
     store.set("kite:profile",JSON.stringify(profile));
-    cursor.current=store.get("kite:cursor:"+n)||"";
+    cursor.current=store.get("kite:cursor:"+n)||"";rcRef.current=store.get("kite:rcc:"+n)||"0";setRcpts(store.json("kite:rc:"+n,{}));
     asked.current=new Set([n]);
     setMsgs(store.json("kite:msgs:"+n,[]));setOutbox(store.json("kite:out:"+n,[]));
     setReads(store.json("kite:reads:"+n,{}));setNames({[n]:{name:profile.name,about:profile.about}});
     setTab("chats");setPartner(null);setMe(profile);
   },[]);
-  const signOut=useCallback(()=>{store.del(TOKEN_KEY);store.del("kite:profile");setMe(null);setMsgs([]);setOutbox([]);setPartner(null)},[]);
+  const signOut=useCallback(()=>{store.del(TOKEN_KEY);store.del("kite:profile");setMe(null);setMsgs([]);setOutbox([]);setPartner(null);setRcpts({});setPres(null)},[]);
   const onAuthed=({token,profile})=>{store.set(TOKEN_KEY,token);startSession(profile)};
- 
+
   useEffect(()=>{
     (async()=>{
       const token=store.get(TOKEN_KEY);
@@ -752,27 +761,35 @@ function App(){
       setBooting(false);
     })();
   },[startSession]);
- 
+
   /* persist per-user data */
   useEffect(()=>{if(number)store.set("kite:msgs:"+number,JSON.stringify(msgs.filter(m=>!m.pending).slice(-KEEP_MSGS)))},[msgs,number]);
   useEffect(()=>{if(number)store.set("kite:out:"+number,JSON.stringify(outbox))},[outbox,number]);
   useEffect(()=>{if(number)store.set("kite:reads:"+number,JSON.stringify(reads))},[reads,number]);
- 
+  useEffect(()=>{if(number)store.set("kite:rc:"+number,JSON.stringify(rcpts))},[rcpts,number]);
+
   /* connectivity */
   useEffect(()=>{
     const on=()=>setOnline(true),off=()=>setOnline(false);
     addEventListener("online",on);addEventListener("offline",off);
     return()=>{removeEventListener("online",on);removeEventListener("offline",off)};
   },[]);
- 
+
+  /* presence: heartbeat while the app is open, and look up the open chat partner */
+  useEffect(()=>{if(!number)return;const beat=()=>{if(!document.hidden&&navigator.onLine!==false)api("/api/users/presence",{method:"POST"}).catch(()=>{})};beat();const t=setInterval(beat,25000);document.addEventListener("visibilitychange",beat);return()=>{clearInterval(t);document.removeEventListener("visibilitychange",beat)}},[number]);
+  useEffect(()=>{setPres(null);if(!number||!partner)return;let on=true;const look=async()=>{if(document.hidden||navigator.onLine===false)return;try{const r=await api("/api/users/presence/"+encodeURIComponent(partner));if(on)setPres(r.hidden?null:r)}catch(e){}};look();const t=setInterval(look,15000);return()=>{on=false;clearInterval(t)}},[number,partner]);
+  useEffect(()=>{if(!partner)return;const f=()=>{if(!document.hidden)api("/api/messages/read",{method:"POST",body:{with:partner}}).catch(()=>{})};document.addEventListener("visibilitychange",f);return()=>document.removeEventListener("visibilitychange",f)},[partner]);
+
   /* receive: poll for messages newer than the cursor, with backoff on failure */
   useEffect(()=>{
     if(!number)return;
     let stop=false,timer=0,fails=0;
     const pull=async()=>{
-      const r=await api("/api/messages?after="+encodeURIComponent(cursor.current));
+      const r=await api("/api/messages?after="+encodeURIComponent(cursor.current)+"&rc="+rcRef.current);
       const fresh=(r.messages||[]).filter(m=>m&&m.id&&m.from&&m.to&&typeof m.text==="string");
       if(r.cursor){cursor.current=r.cursor;store.set("kite:cursor:"+number,r.cursor)}
+      if(r.receipts&&r.receipts.length)setRcpts(o=>{const n={...o};r.receipts.forEach(x=>{const p=n[x.id]||{};n[x.id]={d:p.d||x.d,r:p.r||x.r}});return n});
+      if(r.rc){rcRef.current=String(r.rc);store.set("kite:rcc:"+number,String(r.rc))}
       if(fresh.length)setMsgs(old=>{const map=new Map(old.map(m=>[m.id,m]));fresh.forEach(m=>map.set(m.id,m));return[...map.values()].sort((a,b)=>a.ts-b.ts)});
     };
     const run=async()=>{
@@ -787,7 +804,7 @@ function App(){
     run();document.addEventListener("visibilitychange",wake);
     return()=>{stop=true;clearTimeout(timer);document.removeEventListener("visibilitychange",wake)};
   },[number,prefs.saver,signOut]);
- 
+
   /* send: the outbox retries in order until the server accepts each message */
   useEffect(()=>{
     if(!number||!online||!outbox.length||sending.current)return;
@@ -801,9 +818,9 @@ function App(){
       })
       .finally(()=>{sending.current=false});
   },[outbox,online,number,polls,signOut,notify]);
- 
+
   const sendMessage=(to,text,file)=>setOutbox(o=>[...o,{id:uid(),from:number,to,text,ts:Date.now(),file}]);
- 
+
   /* contacts */
   const lookup=useCallback(async n=>{
     try{const u=await api("/api/users/"+n);setNames(x=>({...x,[n]:{name:u.name,about:u.about,avatar:u.avatar}}));return u}
@@ -816,7 +833,7 @@ function App(){
       if(!asked.current.has(p)){asked.current.add(p);lookup(p).catch(()=>asked.current.delete(p))}
     }
   },[msgs,number,lookup]);
- 
+
   const startChat=async n=>{
     if(n===number)return"That's your own number.";
     if(!online)return"You're offline. Connect once to look up a number.";
@@ -837,7 +854,7 @@ function App(){
     catch(e){setMe(before);notify(e.message)}
   };
   const manualRefresh=()=>{setPolls(n=>n+1);notify(online?"Checking for messages…":"You're offline.")};
- 
+
   /* derived */
   const nameOf=n=>n===number?me.name+" (you)":(names[n]&&names[n].name)||pretty(n);
   const avatarOf=n=>n===number?(me.avatarUrl||""):(names[n]&&names[n].avatar)||"";
@@ -855,21 +872,21 @@ function App(){
   },[all,reads,number]);
   const unread=convos.reduce((s,c)=>s+c.unread,0);
   const thread=useMemo(()=>partner?all.filter(m=>(m.from===partner&&m.to===number)||(m.from===number&&m.to===partner)):[],[all,partner,number]);
- 
+
   /* mark the open chat as read */
   useEffect(()=>{
     if(!partner)return;
     const latest=thread.reduce((t,m)=>m.from===partner&&m.ts>t?m.ts:t,0);
-    if(latest>(reads[partner]||0))setReads(r=>({...r,[partner]:latest}));
+    if(latest>(reads[partner]||0)){setReads(r=>({...r,[partner]:latest}));if(!document.hidden)api("/api/messages/read",{method:"POST",body:{with:partner}}).catch(()=>{})}
   },[partner,thread,reads]);
- 
+
   const toggleTheme=()=>setPrefs(p=>({...p,theme:({light:"dim",dim:"dark",dark:"light"})[p.theme]||"light"}));
   const TABS=[["chats","Chats","chat"],["feed","Feed","feed"],["me","Me","user"]];
- 
+
   let body;
   if(booting)body=h("div",{className:"boot"},h(Logo,{size:56}));
   else if(!me)body=h(Auth,{onDone:onAuthed,theme:prefs.theme,onTheme:toggleTheme});
-  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner),notify,prefs});
+  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner),notify,prefs,rcpts,presence:pres});
   else body=h(Fragment,null,
     h("header",{className:"top"},
       h("div",{className:"brand"},h(Logo,{size:30}),"Kite"),h("div",{className:"spacer"}),
@@ -883,13 +900,13 @@ function App(){
     h("nav",{className:"tabs","aria-label":"Main"},
       TABS.map(([id,label,icon])=>h("button",{key:id,className:"tab","aria-current":tab===id?"page":undefined,onClick:()=>setTab(id)},
         h(Icon,{n:icon,s:22}),label,id==="chats"&&unread>0&&h("span",{className:"count"},unread)))));
- 
+
   return h("div",{className:"shell","data-skin":me?prefs.theme:undefined},body,
     card&&h(ProfileCard,{card,me,onClose:()=>setCard(null),onMessage:(n,nm)=>{setCard(null);messageFromFeed(n,nm)}}),
     fwd&&h(ForwardSheet,{convos,nameOf,onClose:()=>setFwd(null),onSend:to=>{sendMessage(to,fwd);setFwd(null);notify("Forwarded")}}),
     toast&&h("div",{className:"toast",role:"status"},toast));
 }
- 
+
 ReactDOM.createRoot(document.getElementById("root")).render(h(React.StrictMode,null,h(App)));
 }
 </script>

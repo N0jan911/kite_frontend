@@ -164,6 +164,27 @@ textarea.field{resize:none}
 .callhid{position:absolute;width:1px;height:1px;opacity:0}
 .callpip{position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;width:96px;height:132px;object-fit:cover;border-radius:14px;z-index:3;background:#000}
 .bannerimg{height:120px;border-radius:16px;background:var(--tint) center/cover no-repeat;display:flex;align-items:center;justify-content:center;margin-top:6px}
+/* ---- polish ---- */
+.shell{isolation:isolate}
+.shell::before{content:"";position:absolute;inset:0 0 auto 0;height:300px;z-index:-1;pointer-events:none;background:radial-gradient(120% 100% at 50% -25%,color-mix(in srgb,var(--accent) 26%,transparent),transparent 70%)}
+.brand{background:linear-gradient(90deg,var(--ink) 30%,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.searchbar{display:flex;align-items:center;gap:10px;padding:0 14px;margin:0 0 6px;border-radius:16px;background:var(--sky);border:1px solid var(--line);color:var(--mute)}
+.searchbar input{flex:1;min-width:0;border:0;background:none;outline:none;padding:12px 0;color:var(--ink)}
+.chatrow{margin:7px 0;padding:12px 13px;background:var(--sky);border:1px solid var(--line);border-radius:20px;animation:rise .38s ease both;transition:background .15s,transform .12s,border-color .15s}
+.chatrow:hover{background:var(--tint);border-color:var(--accent)}
+.chatrow .avatar{width:52px!important;height:52px!important}
+.chatrow.unread .name{font-weight:800}
+.chatrow.unread .sub{color:var(--ink);font-weight:600}
+.chatrow.unread .avatar{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+.count{box-shadow:0 2px 8px color-mix(in srgb,var(--btn) 45%,transparent)}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.chatrow{animation:none}}
+.fab{bottom:100px;background:linear-gradient(135deg,var(--btn),color-mix(in srgb,var(--btn) 55%,#8b5cf6));box-shadow:0 10px 26px color-mix(in srgb,var(--btn) 50%,transparent)}
+.fabmenu{bottom:168px}
+.tabs{margin:0 12px max(10px,env(safe-area-inset-bottom));padding:6px;border:1px solid var(--line);border-radius:26px;background:var(--sky);box-shadow:0 10px 28px rgba(0,0,0,.22)}
+.tab{border-radius:20px;transition:background .18s,color .18s,transform .12s}
+.tab[aria-current=page]{background:var(--btn);color:#fff}
+.shell[data-skin=dark] .tab[aria-current=page]{color:#000}
 </style>
 </head>
 <body>
@@ -304,6 +325,7 @@ function wallBg(p){
 
 /* ---------- UI atoms ---------- */
 const PATHS={
+  phone:"M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z",
   back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",mic:"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3",folder:"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",repeat:"M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3",star:"M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z",clip:"M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5",file:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",camera:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",image:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
   chat:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
   feed:"M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M5 19h.01",
@@ -323,7 +345,13 @@ const Icon=({n,s=20,fill})=>h("svg",{width:s,height:s,viewBox:"0 0 24 24",fill:f
 const Logo=({size=30})=>h(Fragment,null,
   h("img",{className:"logo-light",src:"logo-light.png",alt:"Kite",width:size,height:size}),
   h("img",{className:"logo-dark",src:"logo-dark.png",alt:"Kite",width:size,height:size}));
-const Avatar=({id,name,size=46,onClick,src})=>h("div",{className:"avatar",onClick:onClick&&(e=>{e.stopPropagation();onClick()}),style:{"--h":hue(id),width:size,height:size,fontSize:Math.round(size*.4),overflow:"hidden",cursor:onClick?"pointer":undefined}},src?h(Img,{src,t:"c_fill,g_face,w_"+size*2+",h_"+size*2+",f_auto,q_auto",alt:"",style:{width:"100%",height:"100%",objectFit:"cover"}}):((name||"?").trim().charAt(0)||"?").toUpperCase());
+const Avatar=({id,name,size=46,onClick,src})=>{
+  const [st,setSt]=useState(0);
+  useEffect(()=>{setSt(0)},[src]);
+  const letter=((name||"?").trim().charAt(0)||"?").toUpperCase();
+  return h("div",{className:"avatar",onClick:onClick&&(e=>{e.stopPropagation();onClick()}),style:{"--h":hue(id),width:size,height:size,fontSize:Math.round(size*.4),overflow:"hidden",cursor:onClick?"pointer":undefined}},
+    src&&st<2?h("img",{src:st===0?cl(src,"c_fill,g_face,w_"+size*2+",h_"+size*2+",f_auto,q_auto"):src,alt:"",onError:()=>setSt(x=>x+1),style:{width:"100%",height:"100%",objectFit:"cover"}}):letter);
+};
 const Err=({text})=>text?h("div",{className:"err",role:"alert"},text):null;
 
 /* ---------- Sheets: profile card, forward, status menu ---------- */
@@ -594,17 +622,20 @@ function CallsTab({calls,contacts,nameOf,avatarOf,onProfile,notify,onAdd,onChat}
 }
 
 function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf,contacts,onAdd}){
-  const [fab,setFab]=useState(false),[adding,setAdding]=useState(false),[view,setView]=useState(null);
+  const [fab,setFab]=useState(false),[adding,setAdding]=useState(false),[view,setView]=useState(null),[q,setQ]=useState("");
   const pick=k=>{setFab(false);if(k==="contact")setAdding(true);else if(k==="call")setView("call");else notify("Groups are coming soon.")};
   if(view)return h(ContactsScreen,{mode:view,contacts,nameOf,avatarOf,onClose:()=>setView(null),onChat:n=>{setView(null);onOpen(n)},onProfile,onAdd,notify});
+  const ql=q.trim().toLowerCase(),filtered=ql?convos.filter(c=>nameOf(c.partner).toLowerCase().includes(ql)||(c.last.text||"").toLowerCase().includes(ql)):convos;
   return h(Fragment,null,
     h("div",{className:"titlerow"},h("h1",{className:"h1"},"Chats"),h("button",{className:"iconbtn",onClick:()=>setView("contacts"),"aria-label":"Contacts"},h(Icon,{n:"users"}))),
     adding&&h(Fragment,null,
       h(NewChat,{onStart:async n=>{const e=await onStart(n);if(!e)setAdding(false);return e}}),
       h("button",{className:"act",style:{margin:"8px 0"},onClick:()=>setAdding(false)},"Cancel")),
+    convos.length>0&&h("label",{className:"searchbar"},h(Icon,{n:"search",s:18}),h("input",{placeholder:"Search chats","aria-label":"Search chats",value:q,onChange:e=>setQ(e.target.value)})),
     h("div",{style:{marginTop:8}},
-      convos.length===0&&h("p",{className:"empty"},"No chats yet. Tap + to start one. They need to be registered on Kite first."),
-      convos.map(c=>h("button",{key:c.partner,className:"row",onClick:()=>onOpen(c.partner)},
+      convos.length===0&&h("div",{className:"empty",style:{textAlign:"center",padding:"48px 12px"}},h(Icon,{n:"chat",s:46}),h("p",{style:{margin:"12px 0 0"}},"No chats yet. Tap + to start one. They need to be registered on Kite first.")),
+      convos.length>0&&filtered.length===0&&h("p",{className:"empty"},"No chats match your search."),
+      filtered.map((c,i)=>h("button",{key:c.partner,className:"row chatrow"+(c.unread>0?" unread":""),style:{animationDelay:Math.min(i,8)*45+"ms"},onClick:()=>onOpen(c.partner)},
         h(Avatar,{id:c.partner,name:nameOf(c.partner),src:avatarOf(c.partner),onClick:()=>onProfile(c.partner,nameOf(c.partner))}),
         h("div",{className:"grow"},
           h("div",{className:"line name"},h("span",{className:"trunc"},nameOf(c.partner)),h("span",{className:"time"},shortWhen(c.last.ts))),

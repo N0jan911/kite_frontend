@@ -184,9 +184,7 @@ if(!window.React||!window.ReactDOM){
 const {useState,useEffect,useRef,useCallback,useMemo,Fragment,createElement:h}=React;
 
 /* ---------- config & helpers ---------- */
-const API = ["localhost","127.0.0.1"].includes(location.hostname)
-  ? "http://localhost:5000"
-  : "https://kite-backend-pqsm.onrender.com";
+const API="https://kite-backend-pqsm.onrender.com";
 const TOKEN_KEY="kite_token", OTP_MS=10*60*1000, RESEND_MS=30*1000, KEEP_MSGS=500;
 
 const store={
@@ -314,7 +312,7 @@ const PATHS={
   moon:"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z",
   sun:"M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4",
   refresh:"M23 4v6h-6M1 20v-6h6M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15",
-  check:"M20 6 9 17l-5-5",checks:"M2 12.5l4.5 4.5L16 7.5M11 15.5l1.5 1.5L22 7.5",video:"M23 7l-7 5 7 5V7zM3 5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z",smile:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01",search:"M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",dots:"M12 5h.01M12 12h.01M12 19h.01",clock:"M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z",
+  check:"M20 6 9 17l-5-5",checks:"M2 12.5l4.5 4.5L16 7.5M11 15.5l1.5 1.5L22 7.5",users:"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8",video:"M23 7l-7 5 7 5V7zM3 5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z",smile:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01",search:"M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",dots:"M12 5h.01M12 12h.01M12 19h.01",clock:"M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z",
   heart:"M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z",
   logout:"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",
   eye:"M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
@@ -360,14 +358,15 @@ function StatusMenu({x,onClose,onForward,onDelete}){
     x.mine&&h("button",{className:"row",onClick:()=>{onClose();onDelete(x)}},h("div",{className:"grow name",style:{color:"var(--bad)"}},"Delete")));
 }
 
-function PhotoPick({photo,setPhoto}){
+function PhotoPick({photo,setPhoto,right}){
   const [url,setUrl]=useState("");
   useEffect(()=>{if(!photo){setUrl("");return}const u=URL.createObjectURL(photo);setUrl(u);return()=>URL.revokeObjectURL(u)},[photo]);
   return h(Fragment,null,
     url&&h("img",{className:"pic",src:url,alt:"Selected photo"}),
-    h("div",{style:{display:"flex",gap:8,marginTop:8}},
+    h("div",{style:{display:"flex",gap:8,marginTop:8,alignItems:"center"}},
       h("label",{className:"act","aria-label":photo?"Change photo":"Add photo",title:photo?"Change photo":"Add photo",style:{padding:"8px 14px",cursor:"pointer"}},h(Icon,{n:"plus",s:20}),h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)setPhoto(f)}})),
-      photo&&h("button",{className:"act",onClick:()=>setPhoto(null)},"Remove")));
+      photo&&h("button",{className:"act",onClick:()=>setPhoto(null)},"Remove"),
+      right&&h("div",{style:{marginLeft:"auto",display:"flex",alignItems:"center",gap:10}},right)));
 }
 
 /* ---------- In-app calls (WebRTC; the server only passes ringing + connection details) ---------- */
@@ -380,9 +379,9 @@ function CallManager({me,notify}){
   const cleanup=useCallback(msg=>{
     const r=R.current;try{r.pc&&r.pc.close()}catch(e){}
     (r.stream?r.stream.getTracks():[]).forEach(t=>t.stop());clearInterval(r.timer);
-    R.current={};setCall(null);setIncoming(null);setSecs(0);setMuted(false);setCamOff(false);if(msg)notify(msg);
+    R.current={};setCall(null);setIncoming(null);setSecs(0);setMuted(false);setCamOff(false);if(msg)notify(msg);window.dispatchEvent(new Event("kite:calllog"));
   },[notify]);
-  endRef.current=msg=>{const c=callRef.current;if(c)api("/api/rtc/end",{method:"POST",body:{id:c.id}}).catch(()=>{});cleanup(msg)};
+  endRef.current=(msg,failed)=>{const c=callRef.current;if(c)api("/api/rtc/end",{method:"POST",body:{id:c.id,failed:!!failed}}).catch(()=>{});cleanup(msg)};
   const sendCand=(r,id,c)=>{if(r.reg)api("/api/rtc/ice",{method:"POST",body:{id,cand:c}}).catch(()=>{});else r.queue.push(c)};
   const register=r=>{r.reg=true;r.queue.splice(0).forEach(c=>sendCand(r,r.id,c))};
   const addCands=(r,list)=>{for(const c of list){if(r.pc&&r.pc.remoteDescription)r.pc.addIceCandidate(c).catch(()=>{});else r.pend.push(c)}};
@@ -397,7 +396,7 @@ function CallManager({me,notify}){
     pc.onconnectionstatechange=()=>{
       const s=pc.connectionState;
       if(s==="connected"){setCall(c=>c?{...c,phase:"live"}:c);if(!r.timer){const t0=Date.now();r.timer=setInterval(()=>setSecs(Math.floor((Date.now()-t0)/1000)),1000)}}
-      else if(s==="failed"&&R.current===r)endRef.current("Call couldn't connect");
+      else if(s==="failed"&&R.current===r)endRef.current("Call couldn't connect",true);
     };
     return pc;
   };
@@ -428,7 +427,7 @@ function CallManager({me,notify}){
       cleanup(e&&e.name==="NotAllowedError"?"Allow microphone"+(inc.kind==="video"?" and camera":"")+" access to answer":"Couldn't answer the call");
     }
   };
-  const decline=()=>{const inc=incoming;if(inc)api("/api/rtc/decline",{method:"POST",body:{id:inc.id}}).catch(()=>{});setIncoming(null)};
+  const decline=()=>{const inc=incoming;if(inc)api("/api/rtc/decline",{method:"POST",body:{id:inc.id}}).catch(()=>{});setIncoming(null);window.dispatchEvent(new Event("kite:calllog"))};
   const toggleMute=()=>{const r=R.current;(r.stream?r.stream.getAudioTracks():[]).forEach(t=>{t.enabled=muted});setMuted(!muted)};
   const toggleCam=()=>{const r=R.current;(r.stream?r.stream.getVideoTracks():[]).forEach(t=>{t.enabled=camOff});setCamOff(!camOff)};
   useEffect(()=>{
@@ -447,7 +446,7 @@ function CallManager({me,notify}){
           if(k.state==="declined")cleanup("Call declined");
           else if(k.state==="missed")cleanup("No answer");
           else if(k.state==="ended")cleanup("Call ended");
-        }else if(k&&inc&&!c&&k.state!=="ringing")setIncoming(null);
+        }else if(k&&inc&&!c&&k.state!=="ringing"){setIncoming(null);window.dispatchEvent(new Event("kite:calllog"))}
       }catch(e){}
       t=setTimeout(tick,(callRef.current||incRef.current)?1500:3000);
     };
@@ -455,7 +454,9 @@ function CallManager({me,notify}){
   },[cleanup]);
   useEffect(()=>{const r=R.current;if(remoteEl.current&&r.remote&&remoteEl.current.srcObject!==r.remote)remoteEl.current.srcObject=r.remote;if(localEl.current&&r.stream&&localEl.current.srcObject!==r.stream)localEl.current.srcObject=r.stream});
   useEffect(()=>()=>{const r=R.current;try{r.pc&&r.pc.close()}catch(e){}(r.stream?r.stream.getTracks():[]).forEach(t=>t.stop())},[]);
-  const fmt=n=>Math.floor(n/60)+":"+String(n%60).padStart(2,"0");
+  useEffect(()=>{if(incoming)Ring.start("in");else if(call&&call.dir==="out"&&call.phase==="calling")Ring.start("out");else Ring.stop()},[!!incoming,call&&call.phase]);
+  useEffect(()=>()=>Ring.stop(),[]);
+  const fmt=dur;
   if(incoming)return h("div",{className:"callscr",role:"alertdialog","aria-label":"Incoming call"},
     h("div",{className:"callwho"},h(Avatar,{id:incoming.from,name:incoming.name,size:110}),h("div",{className:"h2"},incoming.name),h("div",{className:"sub",style:{color:"#cbd5e1"}},"Incoming "+(incoming.kind==="video"?"video":"voice")+" call\u2026")),
     h("div",{className:"callbar"},
@@ -558,11 +559,46 @@ function NewChat({onStart}){
     h(Err,{text:err}));
 }
 
-function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf}){
-  const [fab,setFab]=useState(false),[adding,setAdding]=useState(false);
-  const pick=k=>{setFab(false);if(k==="contact")setAdding(true);else notify((k==="call"?"Calls":"Groups")+" are coming soon.")};
+function ContactsScreen({mode,contacts,nameOf,avatarOf,onClose,onChat,onProfile,onAdd,notify}){
+  const [adding,setAdding]=useState(false),[q,setQ]=useState("");
+  const call=mode==="call",dq=q.replace(/\D/g,"");
+  const list=contacts.map(n=>({n,name:nameOf(n)})).filter(c=>!q||c.name.toLowerCase().includes(q.toLowerCase())||(dq&&c.n.includes(dq))).sort((a,b)=>a.name.localeCompare(b.name));
   return h(Fragment,null,
-    h("h1",{className:"h1"},"Chats"),
+    h("div",{className:"titlerow",style:{gap:8}},
+      h("button",{className:"iconbtn",onClick:onClose,"aria-label":"Back"},h(Icon,{n:"back"})),
+      h("h1",{className:"h1",style:{flex:1,margin:0}},call?"New call":"Contacts"),
+      h("button",{className:"iconbtn",onClick:()=>setAdding(a=>!a),"aria-label":"Add contact"},h(Icon,{n:adding?"close":"plus"}))),
+    adding&&h(NewChat,{onStart:async n=>{const e=await onAdd(n);if(!e)setAdding(false);return e}}),
+    h("input",{className:"field",style:{margin:"10px 0"},placeholder:"Search contacts","aria-label":"Search contacts",value:q,onChange:e=>setQ(e.target.value)}),
+    list.length===0&&h("p",{className:"empty"},"No contacts yet. Tap + to add a number that's on Kite."),
+    list.map(c=>h("div",{key:c.n,className:"row"},
+      h(Avatar,{id:c.n,name:c.name,src:avatarOf(c.n),onClick:()=>onProfile(c.n,c.name)}),
+      h("button",{className:"grow",style:{textAlign:"left",background:"none",border:0,color:"inherit",minWidth:0},onClick:()=>call?placeCall(c.n,c.name,notify,"voice"):onChat(c.n)},h("div",{className:"name trunc"},c.name),h("div",{className:"sub"},pretty(c.n))),
+      !call&&h("button",{className:"iconbtn","aria-label":"Message "+c.name,onClick:()=>onChat(c.n)},h(Icon,{n:"chat",s:18})),
+      h("button",{className:"iconbtn","aria-label":"Voice call "+c.name,onClick:()=>placeCall(c.n,c.name,notify,"voice")},h(Icon,{n:"phone",s:18})),
+      h("button",{className:"iconbtn","aria-label":"Video call "+c.name,onClick:()=>placeCall(c.n,c.name,notify,"video")},h(Icon,{n:"video",s:18})))));
+}
+
+function CallsTab({calls,contacts,nameOf,avatarOf,onProfile,notify,onAdd,onChat}){
+  const [picking,setPicking]=useState(false);
+  if(picking)return h(ContactsScreen,{mode:"call",contacts,nameOf,avatarOf,onClose:()=>setPicking(false),onChat,onProfile,onAdd,notify});
+  return h(Fragment,null,
+    h("div",{className:"titlerow"},h("h1",{className:"h1",style:{margin:0}},"Calls"),h("button",{className:"iconbtn",onClick:()=>setPicking(true),"aria-label":"New call"},h(Icon,{n:"plus"}))),
+    h("div",{style:{marginTop:8}},
+      calls.length===0&&h("p",{className:"empty"},"No calls yet. Tap + to call a contact."),
+      calls.map(c=>{const name=c.name||nameOf(c.peer);return h("div",{key:c.id,className:"row"},
+        h(Avatar,{id:c.peer,name,src:c.avatar||avatarOf(c.peer),onClick:()=>onProfile(c.peer,name)}),
+        h("div",{className:"grow",style:{minWidth:0}},h("div",{className:"name trunc",style:callBad(c)?{color:"#ef4444"}:undefined},name),h("div",{className:"sub trunc"},(c.dir==="out"?"\u2197 ":"\u2199 ")+callStatus(c)+" \u00b7 "+ago(c.at))),
+        h("button",{className:"iconbtn","aria-label":"Voice call "+name,onClick:()=>placeCall(c.peer,name,notify,"voice")},h(Icon,{n:"phone",s:18})),
+        h("button",{className:"iconbtn","aria-label":"Video call "+name,onClick:()=>placeCall(c.peer,name,notify,"video")},h(Icon,{n:"video",s:18})))})));
+}
+
+function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf,contacts,onAdd}){
+  const [fab,setFab]=useState(false),[adding,setAdding]=useState(false),[view,setView]=useState(null);
+  const pick=k=>{setFab(false);if(k==="contact")setAdding(true);else if(k==="call")setView("call");else notify("Groups are coming soon.")};
+  if(view)return h(ContactsScreen,{mode:view,contacts,nameOf,avatarOf,onClose:()=>setView(null),onChat:n=>{setView(null);onOpen(n)},onProfile,onAdd,notify});
+  return h(Fragment,null,
+    h("div",{className:"titlerow"},h("h1",{className:"h1"},"Chats"),h("button",{className:"iconbtn",onClick:()=>setView("contacts"),"aria-label":"Contacts"},h(Icon,{n:"users"}))),
     adding&&h(Fragment,null,
       h(NewChat,{onStart:async n=>{const e=await onStart(n);if(!e)setAdding(false);return e}}),
       h("button",{className:"act",style:{margin:"8px 0"},onClick:()=>setAdding(false)},"Cancel")),
@@ -606,23 +642,55 @@ const themeVars=(hex,skin)=>{
   if(dark)return{skin:"dark",vars:{"--bg":c(S*.5,8),"--sky":c(S*.5,13),"--tint":c(S*.55,19),"--line":c(S*.5,28),"--ink":"#fff","--mute":c(S*.3,74),"--accent":gray?"#fff":c(S,72),"--btn":gray?"#f1f1f1":c(S,66),"--theirs":c(S*.5,16)}};
   return{skin:"light",vars:{"--bg":c(S*.9,97),"--sky":c(S*.9,94),"--tint":c(S*.9,89),"--line":c(S*.6,86),"--ink":c(S*.6,13),"--mute":c(S*.3,38),"--accent":c(S,42),"--btn":c(S,46),"--theirs":"#fff"}};
 };
+/* a simple ringtone made with the browser's audio (no file to load); rings for incoming calls and "ringback" for outgoing ones */
+const Ring=(()=>{let ctx=null,timer=null;
+  const ensure=()=>{if(!ctx){const A=window.AudioContext||window.webkitAudioContext;if(A)ctx=new A()}if(ctx&&ctx.state==="suspended")ctx.resume().catch(()=>{});return ctx};
+  const beep=(f,t0,dur,vol)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol,t0+.02);g.gain.setValueAtTime(vol,t0+dur-.03);g.gain.linearRampToValueAtTime(0,t0+dur);o.connect(g);g.connect(ctx.destination);o.start(t0);o.stop(t0+dur+.02)};
+  const burst=mode=>{if(!ensure())return;const t=ctx.currentTime;if(mode==="in"){[0,.5].forEach(d=>{beep(880,t+d,.18,.25);beep(660,t+d+.2,.18,.25)})}else{beep(440,t,.8,.12);beep(480,t,.8,.12)}};
+  return{prime:ensure,start(mode){this.stop();burst(mode);timer=setInterval(()=>burst(mode),mode==="in"?2200:3000)},stop(){clearInterval(timer);timer=null}};
+})();
+document.addEventListener("pointerdown",()=>Ring.prime(),{once:true});
+const dur=n=>Math.floor(n/60)+":"+String(n%60).padStart(2,"0");
+const callWord=c=>c.kind==="video"?"video call":"voice call";
+const callStatus=c=>{const out=c.dir==="out";switch(c.outcome){
+  case"completed":return(out?"Outgoing ":"Incoming ")+callWord(c)+" \u00b7 "+dur(c.seconds||0);
+  case"missed":return out?"No answer":"Missed "+callWord(c);
+  case"cancelled":return out?"Cancelled "+callWord(c):"Missed "+callWord(c);
+  case"declined":return"Declined "+callWord(c);
+  case"failed":return"Call failed (connection)";
+  default:return callWord(c)}};
+const callBad=c=>(c.dir==="in"&&(c.outcome==="missed"||c.outcome==="cancelled"))||c.outcome==="failed";
 const placeCall=(number,name,notify,kind)=>{if(window.kiteCall)window.kiteCall(number,name,kind||"voice");else notify("Calls aren't ready yet")};
 const EMOJI=Array.from("😀😃😄😁😆😅😂🤣😊😇🙂😉😍🥰😘😋😎🤩🥳😏😒😞😔😢😭😤😠🤯😳🥺😱😴🤔🙄😬🤗🫡🙏👍👎👏🙌💪🤝✌️🤞👌👋🔥💯✨🎉❤️🧡💛💚💙💜🖤💔😈👀🎶⚽🏀🎮🍕🍔🍟🍺☕🚗✈️🌍🌙☀️🌧️🎁📸💰📱💻");
+function MediaSheet({list,onClose}){
+  const files=list.filter(m=>m.file).slice().reverse().map(m=>({id:m.id,f:m.file}));
+  const pv=files.filter(x=>x.f.kind==="image"||x.f.kind==="video"),au=files.filter(x=>x.f.kind==="audio"),dc=files.filter(x=>!["image","video","audio"].includes(x.f.kind));
+  const strip=(title,arr,tile)=>arr.length>0&&h("div",{key:title,style:{margin:"12px 0"}},
+    h("div",{className:"name",style:{marginBottom:8}},title+" ("+arr.length+")"),
+    h("div",{style:{display:"flex",gap:10,overflowX:"auto",paddingBottom:6}},arr.map(tile)));
+  const box={width:110,height:110,objectFit:"cover",borderRadius:12,display:"block",background:"#000"};
+  return h(Sheet,{title:"Media & files",onClose},
+    files.length===0&&h("p",{className:"empty"},"Nothing has been shared in this chat yet."),
+    strip("Photos & videos",pv,({id,f})=>h("a",{key:id,href:f.url,target:"_blank",rel:"noopener noreferrer",style:{flex:"none"},"aria-label":f.name},
+      f.kind==="image"?h(Img,{src:f.url,w:240,alt:f.name,style:box}):h("video",{src:f.url+"#t=0.1",preload:"metadata",muted:true,style:box}))),
+    strip("Audio",au,({id,f})=>h("audio",{key:id,src:f.url,controls:true,preload:"none",style:{flex:"none",width:220}})),
+    strip("Documents & files",dc,({id,f})=>h("button",{key:id,className:"act",style:{flex:"none",maxWidth:220},onClick:()=>saveFile(f)},h(Icon,{n:"file",s:18}),h("span",{className:"trunc"},f.name))));
+}
 const Tick=({rc,pending})=>{if(pending)return h(Icon,{n:"clock",s:12});if(!rc||!rc.d)return h("span",{className:"tk",title:"Sent"},h(Icon,{n:"check",s:13}));return h("span",{className:"tk"+(rc.r?" read":""),title:rc.r?"Read":"Delivered"},h(Icon,{n:"checks",s:15}))};
 const seenText=ts=>{const n=Date.now();if(sameDay(ts,n))return"last seen today at "+clock(ts);if(sameDay(ts,n-864e5))return"last seen yesterday at "+clock(ts);return"last seen "+dayName(ts)};
-function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar,notify,prefs,rcpts,presence}){
+function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar,notify,prefs,rcpts,presence,calls,blocked,onBlock}){
   const [text,setText]=useState(""),[up,setUp]=useState(false),box=useRef(null),input=useRef(null);
   const coarse=window.matchMedia&&matchMedia("(pointer: coarse)").matches;
-  useEffect(()=>{if(box.current)box.current.scrollTop=box.current.scrollHeight},[list.length]);
+  useEffect(()=>{if(box.current)box.current.scrollTop=box.current.scrollHeight},[list.length,(calls||[]).length]);
   useEffect(()=>{const el=input.current;if(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,120)+"px"}},[text]);
   const send=()=>{const t=text.trim();if(t){onSend(partner,t.slice(0,1000));setText("")}};
   const [menu,setMenu]=useState(false),fileIn=useRef(null),camIn=useRef(null);
   const [opts,setOpts]=useState(false),[emo,setEmo]=useState(false),[find,setFind]=useState(null);
-  const clrKey="kite:clr:"+me.number+":"+partner;
-  const [cleared,setCleared]=useState(()=>Number(store.get(clrKey))||0);
-  useEffect(()=>{setCleared(Number(store.get(clrKey))||0);setFind(null);setEmo(false)},[clrKey]);
-  const vis=list.filter(m=>m.ts>cleared&&(!find||(m.text||"").toLowerCase().includes(find.toLowerCase())));
+  const [media,setMedia]=useState(false);
+  useEffect(()=>{setFind(null);setEmo(false);setMedia(false)},[partner]);
+  const vis=list.filter(m=>!find||(m.text||"").toLowerCase().includes(find.toLowerCase()));
   const soon=w=>notify(w+" calls are coming soon");
+  const rows=[...vis.map(m=>({ts:m.ts,m})),...(find?[]:(calls||[]).map(c=>({ts:c.at,c})))].sort((a,b)=>a.ts-b.ts);
   const [rec,setRec]=useState(null),recRef=useRef({});
   const startRec=async()=>{
     if(!navigator.mediaDevices||!window.MediaRecorder){notify("Voice notes aren't supported on this browser");return}
@@ -655,15 +723,18 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
       h("button",{className:"iconbtn",onClick:onBack,"aria-label":"Back to chats"},h(Icon,{n:"back"})),
       h(Avatar,{id:partner,name,size:40,src:avatar,onClick:()=>onProfile(partner,name)}),
       h("div",{className:"grow"},h("div",{className:"name trunc"},name),h("div",{className:"sub trunc"+(presence&&presence.online?" onl":"")},presence&&presence.online?"online":presence&&presence.lastSeen?seenText(presence.lastSeen):(about||pretty(partner)))),
-      h("button",{className:"iconbtn",onClick:()=>placeCall(partner,name,notify,"voice"),"aria-label":"Voice call"},h(Icon,{n:"phone",s:18})),
-      h("button",{className:"iconbtn",onClick:()=>placeCall(partner,name,notify,"video"),"aria-label":"Video call"},h(Icon,{n:"video",s:18})),
+      h("button",{className:"iconbtn",onClick:()=>blocked?notify("Unblock this contact to call"):placeCall(partner,name,notify,"voice"),"aria-label":"Voice call"},h(Icon,{n:"phone",s:18})),
+      h("button",{className:"iconbtn",onClick:()=>blocked?notify("Unblock this contact to call"):placeCall(partner,name,notify,"video"),"aria-label":"Video call"},h(Icon,{n:"video",s:18})),
       h("button",{className:"iconbtn",onClick:onRefresh,"aria-label":"Check for new messages"},h(Icon,{n:"refresh",s:18})),
       h("button",{className:"iconbtn",onClick:()=>setOpts(true),"aria-label":"Chat options"},h(Icon,{n:"dots",s:18}))),
     find!==null&&h("div",{style:{display:"flex",gap:8,padding:"8px 12px",borderBottom:"1px solid var(--line)"}},h("input",{className:"field",autoFocus:true,placeholder:"Search in this chat","aria-label":"Search in this chat",value:find,onChange:e=>setFind(e.target.value)}),h("button",{className:"btn sm",onClick:()=>setFind(null)},"Done")),
     h("div",{className:"msgs",ref:box,"data-bub":bc?"1":undefined,style:{...wallBg(prefs),...(bc?{"--btn":bc}:{})}},
-      vis.length===0&&h("p",{className:"empty"},find?"No matches.":"No messages yet. Say hello."),
-      vis.map(m=>{
-        const showDay=!prev||!sameDay(m.ts,prev);prev=m.ts;
+      rows.length===0&&h("p",{className:"empty"},find?"No matches.":"No messages yet. Say hello."),
+      rows.map(r=>{
+        const showDay=!prev||!sameDay(r.ts,prev);prev=r.ts;
+        if(r.c)return h(Fragment,{key:"c"+r.c.id},showDay&&h("div",{className:"day"},dayName(r.ts)),
+          h("div",{className:"day",style:{display:"flex",alignItems:"center",gap:6,margin:"6px auto",width:"fit-content",color:callBad(r.c)?"#ef4444":undefined}},h(Icon,{n:r.c.kind==="video"?"video":"phone",s:13}),callStatus(r.c)+" \u00b7 "+clock(r.ts)));
+        const m=r.m;
         const mine=m.from===me.number;
         return h(Fragment,{key:m.id},
           showDay&&h("div",{className:"day"},dayName(m.ts)),
@@ -675,12 +746,14 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
       h("div",{className:"attmenu",role:"menu"},ATT.map(([k,label,ic,acc,c1,c2])=>h("button",{key:k,className:"attopt",role:"menuitem",onClick:()=>choose(acc)},h("i",{style:{background:"linear-gradient(135deg,"+c1+","+c2+")"}},h(Icon,{n:ic,s:22})),label)))),
     up&&h("div",{className:"banner"},"Uploading file…"),
     emo&&h("div",{className:"emopanel"},EMOJI.map(e=>h("button",{key:e,"aria-label":e,onClick:()=>setText(t=>(t+e).slice(0,1000))},e))),
+    media&&h(MediaSheet,{list,onClose:()=>setMedia(false)}),
     opts&&h(Sheet,{title:"Chat options",onClose:()=>setOpts(false)},
       h("button",{className:"row",onClick:()=>{setOpts(false);onProfile(partner,name)}},h("div",{className:"grow name"},"View profile")),
       h("button",{className:"row",onClick:()=>{setOpts(false);setFind("")}},h("div",{className:"grow name"},"Search in chat")),
       h("button",{className:"row",onClick:()=>{setOpts(false);try{navigator.clipboard.writeText(partner);notify("Number copied")}catch(e){notify("Couldn't copy")}}},h("div",{className:"grow name"},"Copy number")),
-      h("button",{className:"row",onClick:()=>{setOpts(false);const t=Date.now();store.set(clrKey,String(t));setCleared(t);notify("Chat cleared on this device")}},h("div",{className:"grow name",style:{color:"var(--bad)"}},"Clear chat (this device)"))),
-    rec?h("div",{className:"composer"},
+      h("button",{className:"row",onClick:()=>{setOpts(false);setMedia(true)}},h("div",{className:"grow name"},"Media & files")),
+      h("button",{className:"row",onClick:()=>{setOpts(false);onBlock(!blocked)}},h("div",{className:"grow name",style:{color:blocked?undefined:"var(--bad)"}},blocked?"Unblock "+name:"Block "+name))),
+    blocked?h("div",{className:"composer",style:{justifyContent:"center"}},h("button",{className:"act",onClick:()=>onBlock(false)},"You blocked this contact. Tap to unblock")):rec?h("div",{className:"composer"},
       h("button",{className:"send attach","aria-label":"Cancel recording",onClick:()=>endRec(false)},h(Icon,{n:"close",s:20})),
       h("div",{className:"grow name",style:{display:"flex",alignItems:"center",gap:8}},h("span",{style:{width:10,height:10,borderRadius:99,background:"#ef4444",animation:"pop .8s ease infinite alternate"}}),"Recording "+rtime),
       h("button",{className:"send","aria-label":"Send voice note",onClick:()=>endRec(true)},h(Icon,{n:"send"}))):
@@ -760,7 +833,8 @@ function InterestSheet({tags,mine,onClose,onSave}){
 function Feed({me,onMessage,notify,onProfile,forward}){
   const [posts,setPosts]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[photo,setPhoto]=useState(null),[items,setItems]=useState([]),[topic,setTopic]=useState("all"),
     [more,setMore]=useState(false),[busyMore,setBusyMore]=useState(false),[tags,setTags]=useState([]),[mine,setMine]=useState([]),[searching,setSearching]=useState(false),[qtext,setQtext]=useState(""),[query,setQuery]=useState(""),[prefOpen,setPrefOpen]=useState(false);
-  const seed=useRef("a"),nextOff=useRef(0),sentinel=useRef(null),moreBusy=useRef(false);
+  const seed=useRef("a"),nextOff=useRef(0),sentinel=useRef(null),moreBusy=useRef(false),taRef=useRef(null);
+  useEffect(()=>{const el=taRef.current;if(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,140)+"px"}},[text]);
   const load=useCallback(async(quiet)=>{
     try{const r=await api("/api/posts?limit=30");setPosts(r.posts||[]);setLoaded(true);if(!quiet)notify("Feed updated")}
     catch(e){notify(e.message)}
@@ -810,8 +884,10 @@ function Feed({me,onMessage,notify,onProfile,forward}){
     query&&h("p",{className:"sub",style:{margin:"0 0 8px"}},"Results for \u201c"+query+"\u201d"),
     h("div",{className:"stories"},[["all","For you"],["news","News"],["sports","Sports"],["memes","Memes"],...mine.map(id=>["t:"+id,(tags.find(t=>t.id===id)||{}).label||id])].map(([k,l])=>h("button",{key:k,className:"act","aria-pressed":topic===k,onClick:()=>setTopic(k)},l))),
     !query&&h("div",{className:"card"},
-      h("textarea",{className:"field",rows:3,maxLength:280,placeholder:"Share something short","aria-label":"New post",value:text,onChange:e=>setText(e.target.value)}),
-      h(PhotoPick,{photo,setPhoto}),h("div",{className:"composerow"},h("span",{className:"sub"},text.length+"/280"),h("button",{className:"btn sm",onClick:post,disabled:(!text.trim()&&!photo)||busy},busy?"Posting\u2026":"Post"))),
+      h("textarea",{ref:taRef,className:"field",rows:1,maxLength:280,placeholder:"Share something short","aria-label":"New post",style:{minHeight:44,maxHeight:140,padding:"10px 14px"},value:text,onChange:e=>setText(e.target.value)}),
+      h(PhotoPick,{photo,setPhoto,right:[
+        text.length>0&&h("span",{key:"n",className:"sub"},text.length+"/280"),
+        h("button",{key:"p",className:"btn sm",style:{padding:"6px 16px",fontSize:13,minHeight:0,height:32,borderRadius:99},onClick:post,disabled:(!text.trim()&&!photo)||busy},busy?"Posting\u2026":"Post")]})),
     mixed.length===0&&h("p",{className:"empty"},loaded?"Nothing here yet. Post the first update.":"Loading…"),
     mixed.map(p=>p.item?h(ItemCard,{key:"i"+p.item.id,it:p.item,forward,onReact:react}):h("article",{className:"post",key:p.id},
       h("div",{className:"posthead"},h(Avatar,{id:p.by,name:p.name,size:38,src:p.avatar,onClick:()=>onProfile(p.by,p.name,p.avatar)}),
@@ -886,7 +962,7 @@ function Status({me,notify,onProfile,forward,only}){
 }
 
 /* ---------- Me ---------- */
-function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,convos,nameOf}){
+function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,convos,nameOf,blocked,onBlock}){
   const [view,setView]=useState("home"),[name,setName]=useState(me.name),[about,setAbout]=useState(me.about||"");
   const dirty=name.trim()!==me.name||about.trim()!==(me.about||"");
   const [rr,setRr]=useState(null);
@@ -938,7 +1014,9 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,
       sp.vis!=="only_me"&&h(Fragment,null,h("div",{className:"lbl",style:{marginTop:12}},"Hide from"),
         convos.length===0&&h("p",{className:"sub"},"Chat with someone first, then you can hide your status from them."),
         convos.map(c=>{const on=(sp.hide||[]).includes(c.partner);return h("button",{key:c.partner,className:"row",role:"checkbox","aria-checked":on,onClick:()=>saveSp({...sp,hide:on?(sp.hide||[]).filter(x=>x!==c.partner):[...(sp.hide||[]),c.partner]})},h(Avatar,{id:c.partner,name:nameOf(c.partner),size:34}),h("div",{className:"grow name trunc"},nameOf(c.partner)),on&&h(Icon,{n:"check",s:20}))})),
-      h("p",{className:"sub",style:{marginTop:8}},"My contacts means people you have chatted with. Saved on this device.")));
+      h("p",{className:"sub",style:{marginTop:8}},"My contacts means people you have chatted with. Saved on this device.")),
+    h("h2",{className:"h2",style:{marginTop:18}},"Blocked contacts"),
+    h("div",{className:"card"},blocked.length===0?h("p",{className:"sub"},"You haven't blocked anyone."):blocked.map(b=>h("div",{key:b.number,className:"row"},h(Avatar,{id:b.number,name:b.name||pretty(b.number),size:34}),h("div",{className:"grow name trunc"},b.name||pretty(b.number)),h("button",{className:"act",onClick:()=>onBlock(b.number,false)},"Unblock")))));
   if(view==="data")return h(Fragment,null,Head("Data"),
     h("div",{className:"card"},h("div",{className:"setrow"},
       h("div",null,h("div",{className:"name"},"Data saver"),h("p",{className:"sub"},"Checks for new messages every 20 seconds instead of 6.")),
@@ -956,7 +1034,7 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,
 function App(){
   const [booting,setBooting]=useState(true),[me,setMe]=useState(null);
   const [prefs,setPrefs]=useState(()=>({theme:document.documentElement.dataset.theme||"light",saver:true,wall:"mix",bubble:"blue",...store.json("kite:prefs",{})}));
-  const [banner,setBanner]=useState(()=>store.json("kite:banner",null));
+  const [banner,setBanner]=useState(()=>store.json("kite:banner",null)),[callLog,setCallLog]=useState([]),[saved,setSaved]=useState([]),[blocked,setBlocked]=useState([]);
   const [tab,setTab]=useState("chats"),[partner,setPartner]=useState(null);
   const [msgs,setMsgs]=useState([]),[outbox,setOutbox]=useState([]),[reads,setReads]=useState({}),[names,setNames]=useState({});
   const [online,setOnline]=useState(navigator.onLine!==false),[toast,setToast]=useState(""),[polls,setPolls]=useState(0);
@@ -979,13 +1057,15 @@ function App(){
     const n=profile.number;
     store.set("kite:profile",JSON.stringify(profile));
     api("/api/users/settings").then(r=>{const b=r.bannerUrl?{url:r.bannerUrl,color:r.bannerColor||null}:null;setBanner(b);store.set("kite:banner",JSON.stringify(b))}).catch(()=>{});
+    setSaved(store.json("kite:contacts:"+n,[]));
+    api("/api/users/blocked").then(r=>setBlocked(r.blocked||[])).catch(()=>{});
     cursor.current=store.get("kite:cursor:"+n)||"";rcRef.current=store.get("kite:rcc:"+n)||"0";setRcpts(store.json("kite:rc:"+n,{}));
     asked.current=new Set([n]);
     setMsgs(store.json("kite:msgs:"+n,[]));setOutbox(store.json("kite:out:"+n,[]));
     setReads(store.json("kite:reads:"+n,{}));setNames({[n]:{name:profile.name,about:profile.about}});
     setTab("chats");setPartner(null);setMe(profile);
   },[]);
-  const signOut=useCallback(()=>{store.del(TOKEN_KEY);store.del("kite:profile");setMe(null);setMsgs([]);setOutbox([]);setPartner(null);setRcpts({});setPres(null);setBanner(null);store.set("kite:banner","null")},[]);
+  const signOut=useCallback(()=>{store.del(TOKEN_KEY);store.del("kite:profile");setMe(null);setMsgs([]);setOutbox([]);setPartner(null);setRcpts({});setPres(null);setBanner(null);store.set("kite:banner","null");setCallLog([]);setSaved([]);setBlocked([])},[]);
   const onAuthed=({token,profile})=>{store.set(TOKEN_KEY,token);startSession(profile)};
 
   useEffect(()=>{
@@ -1014,6 +1094,9 @@ function App(){
     addEventListener("online",on);addEventListener("offline",off);
     return()=>{removeEventListener("online",on);removeEventListener("offline",off)};
   },[]);
+
+  /* call history: load on sign-in, refresh now and then and right after a call ends */
+  useEffect(()=>{if(!number)return;const load=()=>api("/api/rtc/history").then(r=>setCallLog(r.calls||[])).catch(()=>{});load();const t=setInterval(load,45000);const f=()=>setTimeout(load,1500);window.addEventListener("kite:calllog",f);return()=>{clearInterval(t);window.removeEventListener("kite:calllog",f)}},[number]);
 
   /* presence: heartbeat while the app is open, and look up the open chat partner */
   useEffect(()=>{if(!number)return;const beat=()=>{if(!document.hidden&&navigator.onLine!==false)api("/api/users/presence",{method:"POST"}).catch(()=>{})};beat();const t=setInterval(beat,25000);document.addEventListener("visibilitychange",beat);return()=>{clearInterval(t);document.removeEventListener("visibilitychange",beat)}},[number]);
@@ -1073,6 +1156,10 @@ function App(){
       if(!asked.current.has(p)){asked.current.add(p);lookup(p).catch(()=>asked.current.delete(p))}
     }
   },[msgs,number,lookup]);
+  useEffect(()=>{
+    if(!number)return;
+    for(const p of saved){if(!asked.current.has(p)){asked.current.add(p);lookup(p).catch(()=>asked.current.delete(p))}}
+  },[saved,number,lookup]);
 
   const startChat=async n=>{
     if(n===number)return"That's your own number.";
@@ -1082,6 +1169,11 @@ function App(){
       if(!u)return"That number isn't on Kite yet. Ask them to register, then try again.";
       setPartner(n);return"";
     }catch(e){return e.message}
+  };
+  const addContact=async n=>{const e=await startChat(n);if(!e)setSaved(a=>{if(a.includes(n))return a;const b=[...a,n];store.set("kite:contacts:"+number,JSON.stringify(b));return b});return e};
+  const setBlock=async(n,on)=>{
+    if(on&&!confirm("Block "+nameOf(n)+"? They won't be able to message or call you."))return;
+    try{await api("/api/users/"+(on?"block":"unblock"),{method:"POST",body:{number:n}});setBlocked(b=>on?[...b.filter(x=>x.number!==n),{number:n,name:nameOf(n)}]:b.filter(x=>x.number!==n));notify(on?"Contact blocked":"Contact unblocked")}catch(e){notify(e.message)}
   };
   const messageFromFeed=(n,name)=>{setNames(x=>x[n]?x:{...x,[n]:{name}});setPartner(n)};
   const saveProfile=async(name,about)=>{
@@ -1133,21 +1225,23 @@ function App(){
   },[partner,thread,reads]);
 
   const toggleTheme=()=>setPrefs(p=>({...p,theme:({light:"dim",dim:"dark",dark:"light"})[p.theme]||"light"}));
-  const TABS=[["chats","Chats","chat"],["feed","Feed","feed"],["me","Me","user"]];
+  const TABS=[["chats","Chats","chat"],["feed","Feed","feed"],["calls","Calls","phone"],["me","Me","user"]];
+  const contacts=useMemo(()=>[...new Set([...convos.map(c=>c.partner),...saved])].filter(n=>n!==number),[convos,saved,number]);
 
   let body;
   if(booting)body=h("div",{className:"boot"},h(Logo,{size:56}));
   else if(!me)body=h(Auth,{onDone:onAuthed,theme:prefs.theme,onTheme:toggleTheme});
-  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner),notify,prefs,rcpts,presence:pres});
+  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner),notify,prefs,rcpts,presence:pres,calls:callLog.filter(c=>c.peer===partner),blocked:blocked.some(b=>b.number===partner),onBlock:on=>setBlock(partner,on)});
   else body=h(Fragment,null,
     h("header",{className:"top"},
       h("div",{className:"brand"},h(Logo,{size:30}),"Kite"),h("div",{className:"spacer"}),
       !online&&h("span",{className:"pill"},h(Icon,{n:"off",s:15}),"Offline"),
       h("button",{className:"iconbtn",onClick:toggleTheme,"aria-label":prefs.theme==="dark"?"Switch to light theme":"Switch to dark theme"},h(Icon,{n:prefs.theme==="dark"?"sun":"moon"}))),
     h("main",{className:"main"},
-      tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:startChat,notify,onProfile:openProfile,avatarOf}),
+      tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:addContact,notify,onProfile:openProfile,avatarOf,contacts,onAdd:addContact}),
+      tab==="calls"&&h(CallsTab,{calls:callLog,contacts,nameOf,avatarOf,onProfile:openProfile,notify,onAdd:addContact,onChat:n=>{setTab("chats");setPartner(n)}}),
       tab==="feed"&&h(FeedTab,{me,convos,nameOf,avatarOf,notify,onMessage:messageFromFeed,onProfile:openProfile,forward:setFwd}),
-      tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut,onAvatar:saveAvatar,notify,banner,onBanner:saveBanner,convos,nameOf})),
+      tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut,onAvatar:saveAvatar,notify,banner,onBanner:saveBanner,convos,nameOf,blocked,onBlock:setBlock})),
     !online&&h("div",{className:"banner"},"You're offline. Showing saved chats."),
     h("nav",{className:"tabs","aria-label":"Main"},
       TABS.map(([id,label,icon])=>h("button",{key:id,className:"tab","aria-current":tab===id?"page":undefined,onClick:()=>setTab(id)},

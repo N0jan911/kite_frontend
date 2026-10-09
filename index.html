@@ -198,6 +198,35 @@ textarea.field{resize:none}
 .np-head .sub{margin-left:auto;font-size:12px}
 .shell{background:var(--bgimg,var(--bg))}
 .logo-light,.logo-dark{filter:var(--logofilter,none)}
+/* ---- speed + bubbles ---- */
+.post{content-visibility:auto;contain-intrinsic-size:auto 340px}
+.chatrow{content-visibility:auto;contain-intrinsic-size:auto 84px}
+.bub{border-radius:20px;box-shadow:0 1px 4px rgba(0,0,0,.14)}
+.bub.me{background:linear-gradient(135deg,var(--btn),color-mix(in srgb,var(--btn) 72%,#7c3aed));border-bottom-right-radius:6px;box-shadow:0 3px 10px color-mix(in srgb,var(--btn) 32%,transparent)}
+.bub.them{border-bottom-left-radius:6px}
+.bub.fresh{animation:bubin .24s cubic-bezier(.2,.9,.3,1.25) both}
+@keyframes bubin{from{opacity:0;transform:translateY(8px) scale(.94)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.bub.fresh{animation:none}}
+.lightbox{position:fixed;inset:0;z-index:90;background:#000;color:#fff;display:flex;flex-direction:column}
+.lbbar{display:flex;align-items:center;gap:10px;padding:max(10px,env(safe-area-inset-top)) 12px 10px;background:linear-gradient(#000c,#0000);position:relative;z-index:3}
+.lbtitle{flex:1;min-width:0}.lbtitle .sub{color:#cbd5e1}
+.lbbtn{width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;display:grid;place-items:center;flex:none}
+.lbstage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:auto;cursor:zoom-in}
+.lbstage img{max-width:100%;max-height:100%;object-fit:contain;user-select:none}
+.lbstage.zoom{cursor:zoom-out;align-items:flex-start;justify-content:flex-start}
+.lbstage.zoom img{max-width:none;max-height:none;width:200%}
+.lbscrim{position:absolute;inset:0;z-index:4}
+.lbmenu{position:absolute;top:max(58px,calc(env(safe-area-inset-top) + 50px));right:12px;z-index:5;min-width:220px;padding:6px;border-radius:16px;background:#1b1b1f;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+.lbitem{display:flex;align-items:center;gap:12px;width:100%;padding:12px 12px;border:0;border-radius:10px;background:none;color:#fff;font-size:15px;text-align:left}
+.lbitem:hover{background:rgba(255,255,255,.1)}.lbitem.danger{color:#ff6b6b}
+.profpage{position:fixed;inset:0;z-index:70;overflow-y:auto;background:var(--bg);color:var(--ink)}
+.profbanner{position:relative;height:150px;background:linear-gradient(135deg,var(--accent),var(--btn)) center/cover no-repeat}
+.profbanner.news{background:linear-gradient(135deg,#1d4ed8,#0ea5e9)}.profbanner.sports{background:linear-gradient(135deg,#16a34a,#84cc16)}.profbanner.memes{background:linear-gradient(135deg,#f97316,#ec4899)}
+.profbody{padding:0 16px max(28px,env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 12px}
+.stat{padding:12px 14px;border-radius:16px;background:var(--sky);border:1px solid var(--line)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:60px}
+.bar{flex:1;border-radius:6px 6px 2px 2px;background:linear-gradient(var(--accent),var(--btn));min-height:4px}
 </style>
 </head>
 <body>
@@ -285,7 +314,7 @@ async function shrinkImage(file,max,q){
 const cl=(u,t)=>typeof u==="string"&&u.startsWith("https://res.cloudinary.com/")?u.replace("/upload/","/upload/"+t+"/"):u;
 function Img({src,w,t,...r}){
   const [bad,setBad]=useState(false);
-  return h("img",{...r,src:bad?src:cl(src,t||("f_auto,q_auto"+(w?",w_"+w:""))),onError:()=>setBad(true)});
+  return h("img",{loading:"lazy",decoding:"async",...r,src:bad?src:cl(src,t||("f_auto,q_auto"+(window.__saver?":eco":"")+(w?",w_"+w:""))),onError:()=>setBad(true)});
 }
 const fmtSize=b=>b<1024?b+" B":b<1048576?(b/1024).toFixed(0)+" KB":(b/1048576).toFixed(1)+" MB";
 async function uploadAttachment(file){
@@ -308,7 +337,7 @@ async function saveFile(f){
   catch(e){window.open(f.url,"_blank","noopener")}
 }
 function FileView({f}){
-  if(f.kind==="image")return h("a",{href:f.url,target:"_blank",rel:"noopener noreferrer"},h(Img,{className:"pic",style:{marginTop:0,marginBottom:6},src:f.url,w:900,alt:f.name}));
+  if(f.kind==="image")return h("a",{href:f.url,target:"_blank",rel:"noopener noreferrer"},h(Img,{className:"pic",style:{marginTop:0,marginBottom:6},src:f.url,w:640,alt:f.name}));
   if(f.kind==="video")return h("video",{className:"pic",style:{marginTop:0,marginBottom:6},src:f.url,controls:true,preload:"metadata"});
   if(f.kind==="audio")return h("audio",{src:f.url,controls:true,preload:"metadata",style:{width:"100%",maxWidth:240,marginBottom:6}});
   return h("button",{className:"filecard",onClick:()=>saveFile(f)},h(Icon,{n:"file",s:22}),h("div",{className:"grow"},h("div",{className:"name trunc"},f.name),h("div",{className:"sub",style:{color:"inherit",opacity:.8}},fmtSize(f.size))));
@@ -345,6 +374,7 @@ function wallBg(p,dark){
 
 /* ---------- UI atoms ---------- */
 const PATHS={
+  flag:"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7",download:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3",link:"M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7",ban:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM4.9 4.9l14.2 14.2",
   down:"M6 9l6 6 6-6",screen:"M20 3H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM8 21h8M12 17v4",
   phone:"M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z",
   back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",mic:"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3",folder:"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",repeat:"M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3",star:"M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z",clip:"M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5",file:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",camera:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",image:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
@@ -381,6 +411,52 @@ function Sheet({title,onClose,children}){
     h("div",{className:"sheet",role:"dialog","aria-label":title},
       h("div",{className:"titlerow",style:{marginBottom:8}},h("div",{className:"name"},title),h("button",{className:"iconbtn",onClick:onClose,"aria-label":"Close"},h(Icon,{n:"close"}))),
       children));
+}
+function Stat({n,label}){return h("div",{style:{textAlign:"center",flex:1}},h("div",{className:"h2",style:{margin:0}},n),h("div",{className:"sub"},label))}
+function ProfileView({card,me,onClose,onMessage,notify}){
+  const mine=card.number===me.number;
+  const [d,setD]=useState(null),[posts,setPosts]=useState(null),[fl,setFl]=useState({is:false,n:0});
+  useEffect(()=>{let on=true;
+    api("/api/users/profile/"+encodeURIComponent(card.number)).then(r=>{if(on){setD(r);setFl({is:r.isFollowing,n:r.followers})}}).catch(()=>{});
+    api("/api/posts/by/"+encodeURIComponent(card.number)+"?limit=20").then(r=>{if(on)setPosts(r.posts||[])}).catch(()=>{if(on)setPosts([])});
+    return()=>{on=false};
+  },[card.number]);
+  const toggle=async()=>{const on=!fl.is;setFl(f=>({is:on,n:Math.max(0,f.n+(on?1:-1))}));try{const r=await api("/api/users/follow",{method:"POST",body:{type:"user",target:card.number,on}});setFl({is:r.following,n:r.followers})}catch(e){setFl(f=>({is:!on,n:Math.max(0,f.n+(on?-1:1))}));notify(e.message)}};
+  const pro=!!(d&&d.pro&&d.pro.on),name=mine?me.name:(d&&d.name)||card.name,about=mine?(me.about||""):(d&&d.about)||"",avatar=mine?me.avatarUrl:(d&&d.avatar)||card.avatar;
+  return h("div",{className:"profpage",role:"dialog","aria-modal":"true","aria-label":"Profile"},
+    h("div",{className:"profbanner",style:pro&&d.banner?{backgroundImage:"url("+cl(d.banner,"f_auto,q_auto,w_900")+")"}:undefined},
+      h("button",{className:"lbbtn",style:{position:"absolute",top:"max(10px,env(safe-area-inset-top))",left:12},"aria-label":"Back",onClick:onClose},h(Icon,{n:"back",s:22}))),
+    h("div",{className:"profbody"},
+      h("div",{style:{marginTop:-46}},h(Avatar,{id:card.number,name,size:92,src:avatar})),
+      h("div",{style:{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},h("div",{className:"h2",style:{margin:"8px 0 0"}},name),pro&&h("span",{className:"tag"},d.pro.category||"Professional")),
+      h("div",{className:"sub",style:{whiteSpace:"pre-wrap",margin:"4px 0 10px"}},about||"No about yet"),
+      pro&&h("div",{style:{display:"flex",padding:"10px 0",borderTop:"1px solid var(--line)",borderBottom:"1px solid var(--line)"}},h(Stat,{n:fl.n,label:"Followers"}),h(Stat,{n:d.following,label:"Following"}),h(Stat,{n:d.posts,label:"Posts"})),
+      !mine&&h("div",{style:{display:"flex",gap:10,alignItems:"center",margin:"12px 0"}},
+        pro&&h("button",{className:"btn",style:{flex:1,margin:0,...(fl.is?{background:"var(--sky)",color:"var(--ink)"}:{})},onClick:toggle},fl.is?"Following":"Follow"),
+        h("button",{className:pro?"act":"btn",style:pro?{padding:"12px 16px"}:{flex:1,margin:0},onClick:()=>onMessage(card.number,name)},"Message"),
+        h("button",{className:"iconbtn",onClick:()=>placeCall(card.number,name,notify,"voice"),"aria-label":"Voice call"},h(Icon,{n:"phone",s:18})),
+        h("button",{className:"iconbtn",onClick:()=>placeCall(card.number,name,notify,"video"),"aria-label":"Video call"},h(Icon,{n:"video",s:18}))),
+      h("h2",{className:"h2",style:{marginTop:14}},"Recent posts"),
+      posts===null&&h("p",{className:"sub"},"Loading\u2026"),
+      posts&&posts.length===0&&h("p",{className:"empty"},"No posts yet."),
+      posts&&posts.map(p=>h("article",{className:"post",key:p.id},h("div",{className:"sub"},ago(p.ts)),h("div",{className:"text"},p.text),p.media&&h("a",{href:p.media,target:"_blank",rel:"noopener noreferrer"},h(Img,{className:"pic",src:p.media,w:640,alt:"Photo"})),h("div",{className:"sub",style:{marginTop:6}},p.likes+" likes")))));
+}
+function SourceView({src,notify,onClose}){
+  const [d,setD]=useState(null),[fl,setFl]=useState({is:false,n:0}),[err,setErr]=useState(false);
+  useEffect(()=>{let on=true;api("/api/discover/source/"+encodeURIComponent(src.slug)).then(r=>{if(on){setD(r);setFl({is:r.isFollowing,n:r.followers})}}).catch(()=>{if(on)setErr(true)});return()=>{on=false}},[src.slug]);
+  const toggle=async()=>{const on=!fl.is;setFl(f=>({is:on,n:Math.max(0,f.n+(on?1:-1))}));try{const r=await api("/api/users/follow",{method:"POST",body:{type:"source",target:src.slug,on}});setFl({is:r.following,n:r.followers})}catch(e){setFl(f=>({is:!on,n:Math.max(0,f.n+(on?-1:1))}));notify(e.message)}};
+  const topic=(d&&d.topic)||src.topic||"news",name=(d&&d.name)||src.name;
+  return h("div",{className:"profpage",role:"dialog","aria-modal":"true","aria-label":"Publisher"},
+    h("div",{className:"profbanner "+topic},h("button",{className:"lbbtn",style:{position:"absolute",top:"max(10px,env(safe-area-inset-top))",left:12},"aria-label":"Back",onClick:onClose},h(Icon,{n:"back",s:22}))),
+    h("div",{className:"profbody"},
+      h("div",{style:{marginTop:-46}},h("div",{className:"avatar src-"+topic,style:{width:92,height:92,fontSize:38}},(name||"?").replace(/^r\//,"").charAt(0).toUpperCase())),
+      h("div",{style:{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},h("div",{className:"h2",style:{margin:"8px 0 0"}},name),h("span",{className:"tag"},"Publisher")),
+      h("div",{className:"sub",style:{margin:"4px 0 10px"}},d?d.about:err?"We couldn't load this publisher right now.":"Loading\u2026"),
+      d&&h("div",{style:{display:"flex",padding:"10px 0",borderTop:"1px solid var(--line)",borderBottom:"1px solid var(--line)"}},h(Stat,{n:fl.n,label:"Followers on Kite"}),h(Stat,{n:d.items.length,label:"Recent articles"})),
+      d&&h("button",{className:"btn",style:fl.is?{background:"var(--sky)",color:"var(--ink)"}:undefined,onClick:toggle},fl.is?"Following":"Follow"),
+      d&&h("p",{className:"sub",style:{margin:"8px 0 0"}},"Follower counts are people on Kite. Following a publisher shows more of its stories in your feed."),
+      h("h2",{className:"h2",style:{marginTop:16}},"Latest"),
+      d&&d.items.map(i=>h("a",{key:i.id,className:"post",href:i.link,target:"_blank",rel:"noopener noreferrer",style:{display:"block",color:"inherit",textDecoration:"none"}},h("div",{className:"sub"},ago(i.ts)),h("div",{className:"text",style:{fontWeight:700}},i.title),i.image&&h(Img,{className:"pic",src:i.image,w:640,alt:""})))));
 }
 function ProfileCard({card,me,onClose,onMessage,notify}){
   const mine=card.number===me.number;
@@ -514,7 +590,7 @@ function CallManager({me,notify,prefs}){
           else if(k.state==="ended")cleanup("Call ended");
         }else if(k&&inc&&!c&&k.state!=="ringing"){setIncoming(null);window.dispatchEvent(new Event("kite:calllog"))}
       }catch(e){}
-      t=setTimeout(tick,(callRef.current||incRef.current)?1500:3000);
+      t=setTimeout(tick,(callRef.current||incRef.current)?1500:(document.hidden?15000:4000));
     };
     tick();return()=>{stop=true;clearTimeout(t)};
   },[cleanup]);
@@ -785,9 +861,9 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
   const [opts,setOpts]=useState(false),[emo,setEmo]=useState(false),[find,setFind]=useState(null);
   const [media,setMedia]=useState(false);
   useEffect(()=>{setFind(null);setEmo(false);setMedia(false)},[partner]);
-  const vis=list.filter(m=>!find||(m.text||"").toLowerCase().includes(find.toLowerCase()));
+  const vis=useMemo(()=>list.filter(m=>!find||(m.text||"").toLowerCase().includes(find.toLowerCase())),[list,find]);
   const soon=w=>notify(w+" calls are coming soon");
-  const rows=[...vis.map(m=>({ts:m.ts,m})),...(find?[]:(calls||[]).map(c=>({ts:c.at,c})))].sort((a,b)=>a.ts-b.ts);
+  const rows=useMemo(()=>[...vis.map(m=>({ts:m.ts,m})),...(find?[]:(calls||[]).map(c=>({ts:c.at,c})))].sort((a,b)=>a.ts-b.ts),[vis,calls,find]);
   const [rec,setRec]=useState(null),recRef=useRef({});
   const startRec=async()=>{
     if(!navigator.mediaDevices||!window.MediaRecorder){notify("Voice notes aren't supported on this browser");return}
@@ -814,7 +890,17 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
   const pickFile=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;setUp(true);try{const file=await uploadAttachment(f);onSend(partner,text.trim().slice(0,1000),file);setText("")}catch(x){notify(x.message)}setUp(false)};
   const choose=a=>{setMenu(false);const el=fileIn.current;if(a)el.setAttribute("accept",a);else el.removeAttribute("accept");el.click()};
   const bc=(BUBBLES.find(b=>b[0]===prefs.bubble)||[])[2];
-  let prev=0;
+  const bubbles=useMemo(()=>{let prev=0;return rows.map(r=>{
+        const showDay=!prev||!sameDay(r.ts,prev);prev=r.ts;
+        if(r.c)return h(Fragment,{key:"c"+r.c.id},showDay&&h("div",{className:"day"},dayName(r.ts)),
+          h("div",{className:"day",style:{display:"flex",alignItems:"center",gap:6,margin:"6px auto",width:"fit-content",color:callBad(r.c)?"#ef4444":undefined}},h(Icon,{n:r.c.kind==="video"?"video":"phone",s:13}),callStatus(r.c)+" \u00b7 "+clock(r.ts)));
+        const m=r.m;
+        const mine=m.from===me.number;
+        return h(Fragment,{key:m.id},
+          showDay&&h("div",{className:"day"},dayName(m.ts)),
+          h("div",{className:"bub "+(mine?"me":"them")+(Date.now()-m.ts<6000?" fresh":"")},m.file&&h(FileView,{f:m.file}),m.text,
+            h("div",{className:"meta"},clock(m.ts),mine&&h(Tick,{rc:rcpts[m.id],pending:m.pending}))));
+  })},[rows,rcpts,me.number]);
   return h(Fragment,null,
     h("div",{className:"chathead"},
       h("button",{className:"iconbtn",onClick:onBack,"aria-label":"Back to chats"},h(Icon,{n:"back"})),
@@ -827,17 +913,7 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
     find!==null&&h("div",{style:{display:"flex",gap:8,padding:"8px 12px",borderBottom:"1px solid var(--line)"}},h("input",{className:"field",autoFocus:true,placeholder:"Search in this chat","aria-label":"Search in this chat",value:find,onChange:e=>setFind(e.target.value)}),h("button",{className:"btn sm",onClick:()=>setFind(null)},"Done")),
     h("div",{className:"msgs",ref:box,"data-bub":bc?"1":undefined,style:{...wallBg(prefs,skin!=="light"),...(bc?{"--btn":bc}:{})}},
       rows.length===0&&h("p",{className:"empty"},find?"No matches.":"No messages yet. Say hello."),
-      rows.map(r=>{
-        const showDay=!prev||!sameDay(r.ts,prev);prev=r.ts;
-        if(r.c)return h(Fragment,{key:"c"+r.c.id},showDay&&h("div",{className:"day"},dayName(r.ts)),
-          h("div",{className:"day",style:{display:"flex",alignItems:"center",gap:6,margin:"6px auto",width:"fit-content",color:callBad(r.c)?"#ef4444":undefined}},h(Icon,{n:r.c.kind==="video"?"video":"phone",s:13}),callStatus(r.c)+" \u00b7 "+clock(r.ts)));
-        const m=r.m;
-        const mine=m.from===me.number;
-        return h(Fragment,{key:m.id},
-          showDay&&h("div",{className:"day"},dayName(m.ts)),
-          h("div",{className:"bub "+(mine?"me":"them")},m.file&&h(FileView,{f:m.file}),m.text,
-            h("div",{className:"meta"},clock(m.ts),mine&&h(Tick,{rc:rcpts[m.id],pending:m.pending}))));
-      })),
+      bubbles),
     !online&&h("div",{className:"banner"},"You're offline. Messages will send when you reconnect."),
     menu&&h(Fragment,null,h("div",{className:"scrim",style:{zIndex:6,background:"transparent"},onClick:()=>setMenu(false)}),
       h("div",{className:"attmenu",role:"menu"},ATT.map(([k,label,ic,acc,c1,c2])=>h("button",{key:k,className:"attopt",role:"menuitem",onClick:()=>choose(acc)},h("i",{style:{background:"linear-gradient(135deg,"+c1+","+c2+")"}},h(Icon,{n:ic,s:22})),label)))),
@@ -886,7 +962,7 @@ function FeedTab(p){
     h(Status,{me:p.me,notify:p.notify,onProfile:p.onProfile,forward:p.forward,only:story}));
   return h(Fragment,null,
     h(Stories,{me:p.me,convos:p.convos,nameOf:p.nameOf,avatarOf:p.avatarOf,onOpen:setStory}),
-    h(Feed,{me:p.me,onMessage:p.onMessage,notify:p.notify,onProfile:p.onProfile,forward:p.forward}));
+    h(Feed,{me:p.me,onMessage:p.onMessage,notify:p.notify,onProfile:p.onProfile,forward:p.forward,onBlock:p.onBlock,onSource:p.onSource}));
 }
 
 /* ---------- Server feed cards (news, sports, memes) ---------- */
@@ -901,15 +977,15 @@ function weave(posts,items,topic){
   }
   return out;
 }
-function ItemCard({it,forward,onReact}){
+function ItemCard({it,forward,onReact,onOpen,onSource}){
   const Act=(k,icon,count,label)=>h("button",{className:"act","aria-pressed":!!it.mine[k],"aria-label":label,onClick:()=>onReact(it,k)},h(Icon,{n:icon,s:16,fill:it.mine[k]&&k!=="repost"}),count||0);
-  return h("article",{className:"post"},
+  return h("article",{className:"post","data-sid":"i"+it.id},
     h("div",{className:"posthead"},
-      h("div",{className:"avatar src-"+it.topic,style:{width:38,height:38,fontSize:15}},it.source.replace(/^r\//,"").charAt(0).toUpperCase()),
+      h("div",{className:"avatar src-"+it.topic,role:"button",tabIndex:0,"aria-label":"View "+it.source,onClick:()=>onSource(it.slug,it.source,it.topic),onKeyDown:e=>{if(e.key==="Enter")onSource(it.slug,it.source,it.topic)},style:{width:38,height:38,fontSize:15,cursor:"pointer"}},it.source.replace(/^r\//,"").charAt(0).toUpperCase()),
       h("div",{className:"grow"},h("div",{className:"name trunc"},it.source,h("span",{className:"tag"},TOPIC[it.topic])),h("div",{className:"sub"},ago(it.ts)))),
     h("div",{className:"text",style:it.topic==="memes"?undefined:{fontWeight:700}},it.title),
     it.summary&&h("div",{className:"sub",style:{marginTop:4}},it.summary),
-    it.image&&h(Img,{className:"pic",src:it.image,w:900,alt:""}),
+    it.image&&h(Img,{className:"pic",src:it.image,w:640,alt:"",role:"button",tabIndex:0,"aria-label":"View full photo",style:{cursor:"zoom-in"},onClick:()=>onOpen(it),onKeyDown:e=>{if(e.key==="Enter")onOpen(it)}}),
     h("div",{className:"actions",style:{flexWrap:"wrap"}},
       Act("like","heart",it.likes,"Like"),Act("repost","repeat",it.reposts,"Repost"),Act("fav","star",it.favs,"Favorite"),
       h("button",{className:"act",onClick:()=>forward(it.title+"\n"+it.link)},h(Icon,{n:"send",s:16}),"Share"),
@@ -917,6 +993,20 @@ function ItemCard({it,forward,onReact}){
 }
 
 /* ---------- Feed ---------- */
+function Lightbox({src,title,sub,actions,onClose}){
+  const [menu,setMenu]=useState(false),[zoom,setZoom]=useState(false);
+  useEffect(()=>{const f=e=>{if(e.key==="Escape"){if(menu)setMenu(false);else onClose()}};document.addEventListener("keydown",f);return()=>document.removeEventListener("keydown",f)},[menu,onClose]);
+  return h("div",{className:"lightbox",role:"dialog","aria-modal":"true","aria-label":"Photo viewer"},
+    h("div",{className:"lbbar"},
+      h("button",{className:"lbbtn","aria-label":"Close",onClick:onClose},h(Icon,{n:"close",s:22})),
+      h("div",{className:"lbtitle"},h("div",{className:"name trunc"},title),sub&&h("div",{className:"sub trunc"},sub)),
+      h("button",{className:"lbbtn","aria-label":"More options","aria-expanded":menu,onClick:()=>setMenu(m=>!m)},h(Icon,{n:"dots",s:22}))),
+    h("div",{className:"lbstage"+(zoom?" zoom":""),onClick:()=>setZoom(z=>!z)},
+      h("img",{src:cl(src,"f_auto,q_auto"+(window.__saver?":good":"")+",w_1280"),alt:"",draggable:false})),
+    menu&&h(Fragment,null,
+      h("div",{className:"lbscrim",onClick:()=>setMenu(false)}),
+      h("div",{className:"lbmenu",role:"menu"},actions.map(a=>h("button",{key:a.label,role:"menuitem",className:"lbitem"+(a.danger?" danger":""),onClick:()=>{setMenu(false);a.run()}},h(Icon,{n:a.icon,s:18}),a.label)))));
+}
 function InterestSheet({tags,mine,onClose,onSave}){
   const [sel,setSel]=useState(()=>new Set(mine)),[busy,setBusy]=useState(false);
   const groups=[...new Set(tags.map(t=>t.group))];
@@ -927,9 +1017,47 @@ function InterestSheet({tags,mine,onClose,onSave}){
       h("div",{style:{display:"flex",flexWrap:"wrap",gap:8}},tags.filter(t=>t.group===g).map(t=>h("button",{key:t.id,className:"act","aria-pressed":sel.has(t.id),onClick:()=>tog(t.id)},t.label))))),
     h("button",{className:"btn",style:{width:"100%",marginTop:8},disabled:busy,onClick:async()=>{setBusy(true);await onSave([...sel]);setBusy(false)}},busy?"Saving\u2026":"Save ("+sel.size+")"));
 }
-function Feed({me,onMessage,notify,onProfile,forward}){
-  const [posts,setPosts]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[photo,setPhoto]=useState(null),[items,setItems]=useState([]),[topic,setTopic]=useState("all"),
+function Composer({notify,onPosted}){
+  const [text,setText]=useState(""),[busy,setBusy]=useState(false),[photo,setPhoto]=useState(null),taRef=useRef(null);
+  useEffect(()=>{const el=taRef.current;if(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,140)+"px"}},[text]);
+  const post=async()=>{
+    const t=text.trim();if((!t&&!photo)||busy)return;
+    setBusy(true);
+    try{const media=photo?await uploadImage(photo):undefined;const r=await api("/api/posts",{method:"POST",body:{text:t,media}});onPosted(r.post);setText("");setPhoto(null)}
+    catch(e){notify(e.message)}
+    setBusy(false);
+  };
+  return h("div",{className:"card"},
+    h("textarea",{ref:taRef,className:"field",rows:1,maxLength:280,placeholder:"Share something short","aria-label":"New post",style:{minHeight:44,maxHeight:140,padding:"10px 14px"},value:text,onChange:e=>setText(e.target.value)}),
+    h(PhotoPick,{photo,setPhoto,right:[
+      text.length>0&&h("span",{key:"n",className:"sub"},text.length+"/280"),
+      h("button",{key:"p",className:"btn sm",style:{padding:"6px 16px",fontSize:13,minHeight:0,height:32,borderRadius:99},onClick:post,disabled:(!text.trim()&&!photo)||busy},busy?"Posting\u2026":"Post")]}));
+}
+function Feed({me,onMessage,notify,onProfile,forward,onBlock,onSource}){
+  const [posts,setPosts]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[photo,setPhoto]=useState(null),[items,setItems]=useState(()=>store.json("kite:feeditems",[])),[topic,setTopic]=useState("all"),
     [more,setMore]=useState(false),[busyMore,setBusyMore]=useState(false),[tags,setTags]=useState([]),[mine,setMine]=useState([]),[searching,setSearching]=useState(false),[qtext,setQtext]=useState(""),[query,setQuery]=useState(""),[prefOpen,setPrefOpen]=useState(false);
+  const [viewer,setViewer]=useState(null),[reporting,setReporting]=useState(null),[hidden,setHidden]=useState(()=>store.json("kite:hiddenitems",[]));
+  const openPost=p=>setViewer({kind:"post",src:p.media,p}),openItem=it=>setViewer({kind:"item",src:it.image,it});
+  const hideItem=id=>{setHidden(o=>{const n=[...o,id].slice(-300);store.set("kite:hiddenitems",JSON.stringify(n));return n});notify("We'll show less like this")};
+  const sendReport=async(type,target,reason)=>{try{await api("/api/users/report",{method:"POST",body:{type,target,reason}});notify("Thanks. We'll review it.")}catch(e){notify(e.message)}setReporting(null)};
+  const saveImage=src=>{const a=document.createElement("a");a.href=cl(src,"fl_attachment");a.download="";a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove()};
+  const copyText=t=>{try{navigator.clipboard.writeText(t);notify("Link copied")}catch(e){notify("Couldn't copy")}};
+  const lb=viewer&&(viewer.kind==="post"?(()=>{const p=viewer.p,other=p.by!==me.number;return{title:p.name,sub:ago(p.ts),actions:[
+    other&&{icon:"chat",label:"Message "+p.name,run:()=>{setViewer(null);onMessage(p.by,p.name)}},
+    {icon:"send",label:"Share to a chat",run:()=>{setViewer(null);forward((p.text?p.name+": "+p.text+"\n":"")+p.media)}},
+    {icon:"download",label:"Save photo",run:()=>saveImage(p.media)},
+    {icon:"link",label:"Copy photo link",run:()=>copyText(p.media)},
+    other&&{icon:"flag",label:"Report post",danger:true,run:()=>setReporting({type:"post",target:p.id})},
+    other&&onBlock&&{icon:"ban",label:"Block "+p.name,danger:true,run:()=>{setViewer(null);onBlock(p.by,true)}}].filter(Boolean)}})():(()=>{const it=viewer.it;return{title:it.source,sub:ago(it.ts),actions:[
+    {icon:"send",label:"Share to a chat",run:()=>{setViewer(null);forward(it.title+"\n"+it.link)}},
+    {icon:"link",label:"Open source",run:()=>window.open(it.link,"_blank","noopener")},
+    {icon:"download",label:"Save photo",run:()=>saveImage(it.image)},
+    {icon:"link",label:"Copy link",run:()=>copyText(it.link)},
+    {icon:"close",label:"Show less like this",run:()=>{setViewer(null);hideItem(it.id)}},
+    {icon:"flag",label:"Report",danger:true,run:()=>setReporting({type:"item",target:it.id})}]}})());
+  const seenRef=useRef(new Set(store.json("kite:seen",[]))),[snap,setSnap]=useState(()=>new Set(seenRef.current)),[showOld,setShowOld]=useState(false);
+  const resnap=()=>{setSnap(new Set(seenRef.current));setShowOld(false)};
+  const delPost=async p=>{if(!confirm("Delete this post?"))return;try{await api("/api/posts/"+encodeURIComponent(p.id),{method:"DELETE"});setPosts(l=>l.filter(x=>x.id!==p.id));notify("Post deleted")}catch(e){notify(e.message)}};
   const seed=useRef("a"),nextOff=useRef(0),sentinel=useRef(null),moreBusy=useRef(false),taRef=useRef(null);
   useEffect(()=>{const el=taRef.current;if(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,140)+"px"}},[text]);
   const load=useCallback(async(quiet)=>{
@@ -940,17 +1068,25 @@ function Feed({me,onMessage,notify,onProfile,forward}){
   const loadItems=useCallback(async(t,reset=true,qq="")=>{
     if(reset){seed.current=Math.random().toString(36).slice(2,10);nextOff.current=0}
     const off=nextOff.current;
-    const qs="limit=20&offset="+off+"&seed="+seed.current+(qq?"&q="+encodeURIComponent(qq):"")+(t&&t!=="all"?(t.startsWith("t:")?"&tag="+t.slice(2):"&topic="+t):"");
-    try{const r=await api("/api/discover?"+qs);const got=r.items||[];nextOff.current=r.next||off+got.length;setMore(!!r.hasMore);setItems(old=>reset?got:[...old,...got.filter(g=>!old.some(o=>o.id===g.id))])}catch(e){}
+    const qs="limit="+(reset?12:20)+"&offset="+off+"&seed="+seed.current+(qq?"&q="+encodeURIComponent(qq):"")+(t&&t!=="all"?(t.startsWith("t:")?"&tag="+t.slice(2):"&topic="+t):"");
+    try{const r=await api("/api/discover?"+qs);const got=r.items||[];nextOff.current=r.next||off+got.length;setMore(!!r.hasMore);setItems(old=>reset?got:[...old,...got.filter(g=>!old.some(o=>o.id===g.id))]);if(reset&&t==="all"&&!qq)store.set("kite:feeditems",JSON.stringify(got.slice(0,15)))}catch(e){}
   },[]);
-  useEffect(()=>{loadItems(topic,true,query)},[topic,query,loadItems]);
+  useEffect(()=>{resnap();loadItems(topic,true,query)},[topic,query,loadItems]);
   useEffect(()=>{api("/api/discover/tags").then(r=>{setTags(r.tags||[]);setMine(r.mine||[])}).catch(()=>{})},[]);
   const loadMore=useCallback(async()=>{if(moreBusy.current)return;moreBusy.current=true;setBusyMore(true);await loadItems(topic,false,query);moreBusy.current=false;setBusyMore(false)},[topic,query,loadItems]);
   useEffect(()=>{const el=sentinel.current;if(!el||!more)return;const io=new IntersectionObserver(es=>{if(es[0].isIntersecting)loadMore()},{rootMargin:"600px"});io.observe(el);return()=>io.disconnect()},[more,loadMore,items.length]);
   const saveInterests=async ids=>{try{const r=await api("/api/discover/interests",{method:"POST",body:{tags:ids}});const m=r.mine||[];setMine(m);setPrefOpen(false);if(topic.startsWith("t:")&&!m.includes(topic.slice(2)))setTopic("all");else loadItems(topic,true,query);notify("Interests saved")}catch(e){notify(e.message)}};
   const toggleSearch=()=>{if(searching){setSearching(false);setQtext("");setQuery("")}else setSearching(true)};
-  const shown=useMemo(()=>query?posts.filter(p=>(p.text||"").toLowerCase().includes(query.toLowerCase())):posts,[posts,query]);
-  const mixed=useMemo(()=>weave(shown,items,topic),[shown,items,topic]);
+  const isFresh=p=>p.ts>Date.now()-864e5&&!snap.has("p"+p.id);   /* newer than 24 hours and not seen yet */
+  const shown=useMemo(()=>query?posts.filter(p=>(p.text||"").toLowerCase().includes(query.toLowerCase())):posts.filter(isFresh),[posts,query,snap]);
+  const mixed=useMemo(()=>weave(shown,items.filter(i=>!hidden.includes(i.id)&&(query||!snap.has("i"+i.id))),topic),[shown,items,topic,hidden,snap,query]);
+  const earlier=useMemo(()=>query?[]:[...(topic==="all"?posts.filter(p=>!isFresh(p)):[]),...items.filter(i=>snap.has("i"+i.id)&&!hidden.includes(i.id)).map(i=>({item:i}))],[posts,items,snap,hidden,query,topic]);
+  useEffect(()=>{
+    const timers=new Map();
+    const io=new IntersectionObserver(es=>{for(const e of es){const id=e.target.dataset.sid;if(e.isIntersecting){if(!timers.has(id))timers.set(id,setTimeout(()=>{seenRef.current.add(id);store.set("kite:seen",JSON.stringify([...seenRef.current].slice(-1500)))},1200))}else{clearTimeout(timers.get(id));timers.delete(id)}}},{threshold:.35});
+    document.querySelectorAll("[data-sid]").forEach(el=>io.observe(el));
+    return()=>{io.disconnect();timers.forEach(clearTimeout)};
+  },[items,posts,snap,showOld]);
   const react=async(it,kind)=>{
     const on=!it.mine[kind];if(kind==="repost"&&!on)return;
     const key={like:"likes",repost:"reposts",fav:"favs"}[kind];
@@ -972,30 +1108,34 @@ function Feed({me,onMessage,notify,onProfile,forward}){
     try{const r=await api("/api/posts/"+encodeURIComponent(p.id)+"/like",{method:"POST"});setPosts(l=>l.map(x=>x.id===p.id?{...x,liked:r.liked,likes:r.likes}:x))}
     catch(e){setPosts(l=>l.map(x=>x.id===p.id?p:x));notify(e.message)}
   };
+  const renderEntry=p=>p.item?h(ItemCard,{key:"i"+p.item.id,it:p.item,forward,onReact:react,onOpen:openItem,onSource}):h("article",{className:"post",key:p.id,"data-sid":"p"+p.id},
+      h("div",{className:"posthead"},h(Avatar,{id:p.by,name:p.name,size:38,src:p.avatar,onClick:()=>onProfile(p.by,p.name,p.avatar)}),
+        h("div",{className:"grow"},h("div",{className:"name trunc"},p.name),h("div",{className:"sub"},ago(p.ts)))),
+      h("div",{className:"text"},p.text),p.media&&h(Img,{className:"pic",src:p.media,w:640,alt:"Photo",role:"button",tabIndex:0,"aria-label":"View full photo",style:{cursor:"zoom-in"},onClick:()=>openPost(p),onKeyDown:e=>{if(e.key==="Enter")openPost(p)}}),
+      h("div",{className:"actions"},
+        h("button",{className:"act","aria-pressed":!!p.liked,"aria-label":p.liked?"Remove like":"Like",onClick:()=>like(p)},h(Icon,{n:"heart",s:16,fill:p.liked}),p.likes||0),
+        p.by!==me.number&&h("button",{className:"act",onClick:()=>onMessage(p.by,p.name)},h(Icon,{n:"chat",s:16}),"Message"),
+        p.by===me.number&&h("button",{className:"act","aria-label":"Delete post",onClick:()=>delPost(p)},h(Icon,{n:"close",s:16}),"Delete")));
   return h(Fragment,null,
     h("div",{className:"titlerow"},h("h1",{className:"h1"},"Feed"),h("div",{style:{display:"flex",gap:2}},
       h("button",{className:"iconbtn",onClick:toggleSearch,"aria-label":"Search feed"},h(Icon,{n:searching?"close":"search"})),
       h("button",{className:"iconbtn",onClick:()=>setPrefOpen(true),"aria-label":"Your interests"},h(Icon,{n:"dots"})),
-      h("button",{className:"iconbtn",onClick:()=>{load(false);loadItems(topic,true,query)},"aria-label":"Refresh feed"},h(Icon,{n:"refresh"})))),
+      h("button",{className:"iconbtn",onClick:()=>{resnap();load(false);loadItems(topic,true,query)},"aria-label":"Refresh feed"},h(Icon,{n:"refresh"})))),
     searching&&h("div",{style:{display:"flex",gap:8,margin:"0 0 10px"}},h("input",{className:"field",autoFocus:true,maxLength:60,placeholder:"Search news, memes, tags","aria-label":"Search feed",value:qtext,onChange:e=>setQtext(e.target.value),onKeyDown:e=>{if(e.key==="Enter")setQuery(qtext.trim())}}),h("button",{className:"btn sm",onClick:()=>setQuery(qtext.trim())},"Search")),
     query&&h("p",{className:"sub",style:{margin:"0 0 8px"}},"Results for \u201c"+query+"\u201d"),
     h("div",{className:"stories"},[["all","For you"],["news","News"],["sports","Sports"],["memes","Memes"],...mine.map(id=>["t:"+id,(tags.find(t=>t.id===id)||{}).label||id])].map(([k,l])=>h("button",{key:k,className:"act","aria-pressed":topic===k,onClick:()=>setTopic(k)},l))),
-    !query&&h("div",{className:"card"},
-      h("textarea",{ref:taRef,className:"field",rows:1,maxLength:280,placeholder:"Share something short","aria-label":"New post",style:{minHeight:44,maxHeight:140,padding:"10px 14px"},value:text,onChange:e=>setText(e.target.value)}),
-      h(PhotoPick,{photo,setPhoto,right:[
-        text.length>0&&h("span",{key:"n",className:"sub"},text.length+"/280"),
-        h("button",{key:"p",className:"btn sm",style:{padding:"6px 16px",fontSize:13,minHeight:0,height:32,borderRadius:99},onClick:post,disabled:(!text.trim()&&!photo)||busy},busy?"Posting\u2026":"Post")]})),
+    !query&&h(Composer,{notify,onPosted:p=>setPosts(l=>[p,...l])}),
     mixed.length===0&&h("p",{className:"empty"},loaded?"Nothing here yet. Post the first update.":"Loading…"),
-    mixed.map(p=>p.item?h(ItemCard,{key:"i"+p.item.id,it:p.item,forward,onReact:react}):h("article",{className:"post",key:p.id},
-      h("div",{className:"posthead"},h(Avatar,{id:p.by,name:p.name,size:38,src:p.avatar,onClick:()=>onProfile(p.by,p.name,p.avatar)}),
-        h("div",{className:"grow"},h("div",{className:"name trunc"},p.name),h("div",{className:"sub"},ago(p.ts)))),
-      h("div",{className:"text"},p.text),p.media&&h(Img,{className:"pic",src:p.media,w:900,alt:"Photo"}),
-      h("div",{className:"actions"},
-        h("button",{className:"act","aria-pressed":!!p.liked,"aria-label":p.liked?"Remove like":"Like",onClick:()=>like(p)},h(Icon,{n:"heart",s:16,fill:p.liked}),p.likes||0),
-        p.by!==me.number&&h("button",{className:"act",onClick:()=>onMessage(p.by,p.name)},h(Icon,{n:"chat",s:16}),"Message")))),
+    mixed.map(renderEntry),
+    showOld&&earlier.length>0&&h("p",{className:"sub",style:{textAlign:"center",padding:"10px 0"}},"Earlier"),
+    showOld&&earlier.map(renderEntry),
     h("div",{ref:sentinel,style:{height:1}}),
     busyMore&&h("p",{className:"sub",style:{textAlign:"center",padding:"10px 0"}},"Loading more\u2026"),
-    !more&&!busyMore&&items.length>0&&h("p",{className:"sub",style:{textAlign:"center",padding:"12px 0"}},"You're all caught up. Tap refresh for a new mix."),
+    !more&&!busyMore&&(items.length>0||earlier.length>0)&&h("div",{style:{textAlign:"center",padding:"12px 0"}},h("p",{className:"sub"},"You're all caught up. Tap refresh for a new mix."),!showOld&&earlier.length>0&&h("button",{className:"act",style:{marginTop:8},onClick:()=>setShowOld(true)},"Show earlier posts")),
+    lb&&h(Lightbox,{src:viewer.src,title:lb.title,sub:lb.sub,actions:lb.actions,onClose:()=>setViewer(null)}),
+    reporting&&h(Sheet,{title:"Report",onClose:()=>setReporting(null)},
+      h("p",{className:"sub",style:{marginBottom:6}},"What's wrong with this?"),
+      [["spam","Spam"],["inappropriate","Inappropriate or adult"],["harassment","Harassment or hate"],["false_info","False information"],["other","Something else"]].map(([k,l])=>h("button",{key:k,className:"row",onClick:()=>sendReport(reporting.type,reporting.target,k)},h("div",{className:"grow name"},l)))),
     prefOpen&&h(InterestSheet,{tags,mine,onClose:()=>setPrefOpen(false),onSave:saveInterests}));
 }
 
@@ -1049,7 +1189,7 @@ function Status({me,notify,onProfile,forward,only}){
       h("div",{className:"posthead"},h(Avatar,{id:x.by,name:x.name,size:38,src:x.avatar,onClick:()=>onProfile(x.by,x.mine?me.name:x.name,x.avatar)}),
         h("div",{className:"grow"},h("div",{className:"name trunc"},x.mine?"You":x.name),
           h("div",{className:"sub"},ago(x.ts)+(x.mine?" · "+VIS[x.visibility]:""))),h("button",{className:"iconbtn","aria-label":"Status options",onClick:()=>setMenu(x)},h("span",{style:{fontSize:22,lineHeight:1,fontWeight:800}},"\u22ef"))),
-      h("div",{className:"text"},x.text),x.media&&h(Img,{className:"pic",src:x.media,w:900,alt:"Photo"}),
+      h("div",{className:"text"},x.text),x.media&&h(Img,{className:"pic",src:x.media,w:640,alt:"Photo"}),
       x.mine&&h("div",{className:"actions"},
         h("button",{className:"act","aria-expanded":open===x.id,onClick:()=>toggleViewers(x)},h(Icon,{n:"eye",s:16}),x.views+(x.views===1?" view":" views")),
         h("button",{className:"act",onClick:()=>remove(x),"aria-label":"Delete status"},h(Icon,{n:"trash",s:16}),"Delete")),
@@ -1064,6 +1204,9 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,
   const dirty=name.trim()!==me.name||about.trim()!==(me.about||"");
   const [rr,setRr]=useState(null);
   const [sp,setSp]=useState(()=>store.json("kite:statuspriv:"+me.number,{vis:"contacts",hide:[]}));
+  const [pro,setPro]=useState(null),[dash,setDash]=useState(null);
+  useEffect(()=>{if(view!=="pro")return;let on=true;api("/api/users/settings").then(r=>{if(!on)return;setPro({on:!!r.proEnabled,category:r.proCategory||"Creator"});if(r.proEnabled)api("/api/users/pro/dashboard").then(d=>{if(on)setDash(d)}).catch(()=>{})}).catch(()=>{});return()=>{on=false}},[view]);
+  const savePro=async(on,category)=>{const prev=pro;setPro({on,category});try{await api("/api/users/pro",{method:"POST",body:{on,category}});if(on)api("/api/users/pro/dashboard").then(setDash).catch(()=>{});else setDash(null)}catch(e){setPro(prev);notify(e.message)}};
   const saveSp=nx=>{setSp(nx);store.set("kite:statuspriv:"+me.number,JSON.stringify(nx))};
   useEffect(()=>{if(view!=="privacy")return;let on=true;api("/api/users/settings").then(r=>{if(on)setRr(!!r.readReceipts)}).catch(()=>{});return()=>{on=false}},[view]);
   const toggleRr=async()=>{const nv=!rr;setRr(nv);try{await api("/api/users/settings",{method:"POST",body:{readReceipts:nv}})}catch(e){setRr(!nv);notify("Couldn't save. Try again.")}};
@@ -1071,7 +1214,7 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,
   const Head=t=>h("div",{className:"titlerow",style:{justifyContent:"flex-start",gap:10,marginBottom:10}},
     h("button",{className:"iconbtn",onClick:()=>setView(view==="settings"?"home":"settings"),"aria-label":"Back"},h(Icon,{n:"back"})),
     h("h1",{className:"h1",style:{margin:0}},t));
-  if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("chats","Chats & calls","Wallpaper, bubbles and call display"),Row("notifs","Notifications","Messages, calls and likes"),Row("privacy","Privacy","Read receipts, last seen and status"),Row("data","Data","Data saver"));
+  if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("chats","Chats & calls","Wallpaper, bubbles and call display"),Row("notifs","Notifications","Messages, calls and likes"),Row("pro","Professional mode","Followers, banner and analytics"),Row("privacy","Privacy","Read receipts, last seen and status"),Row("data","Data","Data saver"));
   if(view==="account")return h(Fragment,null,Head("Account"),
     h("div",{className:"bannerimg",style:banner&&banner.url?{backgroundImage:"url("+banner.url+")"}:undefined},!(banner&&banner.url)&&h("span",{className:"sub"},"No banner yet")),
     h("div",{style:{display:"flex",gap:8,margin:"8px 0 14px"}},
@@ -1114,6 +1257,22 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,
       h("label",{className:"wp","aria-pressed":prefs.wall==="custom",style:{cursor:"pointer"}},h("span",{className:"sub"},"My photo"),h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const u=await uploadImage(f);setPrefs(q=>({...q,wall:"custom",wallUrl:u}))}catch(x){notify(x.message)}}}))),
     h("h2",{className:"h2"},"Chat bubbles"),
     h("div",{style:{display:"flex",gap:12}},BUBBLES.map(([id,name,c])=>h("button",{key:id,className:"swatch","aria-label":name,title:name,"aria-pressed":prefs.bubble===id,onClick:()=>setPrefs(q=>({...q,bubble:id})),style:{background:c||"var(--btn)"}}))));
+  if(view==="pro"){
+    const cats=["Creator","Business","Media or news","Public figure","Other"];
+    const bars=(arr,label)=>{const mx=Math.max(1,...arr.map(x=>x.n));return h("div",{style:{margin:"10px 0"}},h("div",{className:"sub",style:{marginBottom:6}},label),h("div",{className:"bars"},arr.map(x=>h("div",{key:String(x.day),className:"bar",title:x.n+" on "+String(x.day).slice(5,10),style:{height:Math.max(4,Math.round(x.n/mx*56))+"px"}}))))};
+    return h(Fragment,null,Head("Professional mode"),
+      h("div",{className:"card"},
+        h("div",{className:"setrow"},h("div",null,h("div",{className:"name"},"Professional mode"),h("p",{className:"sub"},"Off: use Kite normally. On: people can follow you, your banner and follower counts show on your profile, and you get a dashboard.")),
+          h("button",{className:"switch",role:"switch","aria-checked":!!(pro&&pro.on),"aria-label":"Professional mode",disabled:pro===null,onClick:()=>savePro(!pro.on,pro.category)})),
+        pro&&pro.on&&h(Fragment,null,h("label",{className:"lbl",htmlFor:"procat"},"Category"),h("select",{id:"procat",className:"field",value:pro.category,onChange:e=>savePro(true,e.target.value)},cats.map(c=>h("option",{key:c,value:c},c))))),
+      pro&&pro.on&&(dash?h(Fragment,null,
+        h("h2",{className:"h2",style:{marginTop:18}},"Dashboard"),
+        h("div",{className:"statgrid"},[["Followers",dash.followers],["New this week",dash.newFollowers],["Following",dash.following],["Profile views (7 days)",dash.views],["Posts",dash.posts],["Likes on posts",dash.likes]].map(([l,n])=>h("div",{key:l,className:"stat"},h("div",{className:"h2",style:{margin:0}},n),h("div",{className:"sub"},l)))),
+        h("div",{className:"card"},bars(dash.followerDays,"New followers, last 7 days"),bars(dash.viewDays,"Profile views, last 7 days")),
+        dash.topPosts.length>0&&h(Fragment,null,h("h2",{className:"h2"},"Top posts"),dash.topPosts.map(t=>h("div",{key:t.id,className:"card"},h("div",{className:"text"},t.text||"Photo"),h("div",{className:"sub"},t.likes+" likes")))),
+        dash.recentFollowers.length>0&&h(Fragment,null,h("h2",{className:"h2"},"Recent followers"),dash.recentFollowers.map(f=>h("div",{key:f.number,className:"row"},h(Avatar,{id:f.number,name:f.name,size:34}),h("div",{className:"grow name trunc"},f.name))))):h("p",{className:"sub",style:{marginTop:12}},"Loading dashboard…")),
+      h("p",{className:"sub",style:{marginTop:12}},"Add a banner in Settings > Account. It shows on your public profile while professional mode is on."));
+  }
   if(view==="notifs"){
     const np={...notifDefaults,...(prefs.notif||{})};
     const perm=typeof Notification==="undefined"?"unsupported":Notification.permission;
@@ -1180,7 +1339,7 @@ function App(){
   const cursor=useRef(""),sending=useRef(false),toastTimer=useRef(0),asked=useRef(new Set());
   const [rcpts,setRcpts]=useState({}),[pres,setPres]=useState(null),rcRef=useRef("0");
   const number=me&&me.number;
-  const [card,setCard]=useState(null),[fwd,setFwd]=useState(null);
+  const [card,setCard]=useState(null),[fwd,setFwd]=useState(null),[srcCard,setSrcCard]=useState(null);
   const openProfile=(n,name,avatar)=>setCard({number:n,name,avatar:avatar||avatarOf(n)});
 
   const notify=useCallback(t=>{setToast(t);clearTimeout(toastTimer.current);toastTimer.current=setTimeout(()=>setToast(""),2600)},[]);
@@ -1253,7 +1412,7 @@ function App(){
   },[number]);
 
   /* call history: load on sign-in, refresh now and then and right after a call ends */
-  useEffect(()=>{if(!number)return;const load=()=>api("/api/rtc/history").then(r=>setCallLog(r.calls||[])).catch(()=>{});load();const t=setInterval(load,45000);const f=()=>setTimeout(load,1500);window.addEventListener("kite:calllog",f);return()=>{clearInterval(t);window.removeEventListener("kite:calllog",f)}},[number]);
+  useEffect(()=>{if(!number)return;const load=()=>document.hidden?null:api("/api/rtc/history").then(r=>setCallLog(r.calls||[])).catch(()=>{});load();const t=setInterval(load,45000);const f=()=>setTimeout(load,1500);window.addEventListener("kite:calllog",f);return()=>{clearInterval(t);window.removeEventListener("kite:calllog",f)}},[number]);
 
   /* presence: heartbeat while the app is open, and look up the open chat partner */
   useEffect(()=>{if(!number)return;const beat=()=>{if(!document.hidden&&navigator.onLine!==false)api("/api/users/presence",{method:"POST"}).catch(()=>{})};beat();const t=setInterval(beat,25000);document.addEventListener("visibilitychange",beat);return()=>{clearInterval(t);document.removeEventListener("visibilitychange",beat)}},[number]);
@@ -1391,6 +1550,7 @@ function App(){
   const TABS=[["chats","Chats","chat"],["feed","Feed","feed"],["calls","Calls","phone"],["me","Me","user"]];
   const contacts=useMemo(()=>[...new Set([...convos.map(c=>c.partner),...saved])].filter(n=>n!==number),[convos,saved,number]);
 
+  window.__saver=prefs.saver!==false;
   const bt=me&&prefs.matchBanner&&banner&&banner.color?themeVars(banner.color,prefs.theme,prefs.bannerMode||"auto"):null;
   let body;
   if(booting)body=h("div",{className:"boot"},h(Logo,{size:56}));
@@ -1404,7 +1564,7 @@ function App(){
     h("main",{className:"main"},
       tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:addContact,notify,onProfile:openProfile,avatarOf,contacts,onAdd:addContact}),
       tab==="calls"&&h(CallsTab,{calls:callLog,contacts,nameOf,avatarOf,onProfile:openProfile,notify,onAdd:addContact,onChat:n=>{setTab("chats");setPartner(n)}}),
-      tab==="feed"&&h(FeedTab,{me,convos,nameOf,avatarOf,notify,onMessage:messageFromFeed,onProfile:openProfile,forward:setFwd}),
+      tab==="feed"&&h(FeedTab,{me,convos,nameOf,avatarOf,notify,onMessage:messageFromFeed,onProfile:openProfile,forward:setFwd,onBlock:setBlock,onSource:setSrcCard}),
       tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut,onAvatar:saveAvatar,notify,banner,onBanner:saveBanner,convos,nameOf,blocked,onBlock:setBlock})),
     !online&&h("div",{className:"banner"},"You're offline. Showing saved chats."),
     h("nav",{className:"tabs","aria-label":"Main"},
@@ -1413,7 +1573,8 @@ function App(){
 
   return h("div",{className:"shell","data-skin":me?(bt?bt.skin:prefs.theme):undefined,style:bt?bt.vars:undefined},body,
     h(CallManager,{key:"callmgr",me,notify,prefs}),
-    card&&h(ProfileCard,{card,me,notify,onClose:()=>setCard(null),onMessage:(n,nm)=>{setCard(null);messageFromFeed(n,nm)}}),
+    card&&h(ProfileView,{card,me,notify,onClose:()=>setCard(null),onMessage:(n,nm)=>{setCard(null);messageFromFeed(n,nm)}}),
+    srcCard&&h(SourceView,{src:srcCard,notify,onClose:()=>setSrcCard(null)}),
     fwd&&h(ForwardSheet,{convos,nameOf,onClose:()=>setFwd(null),onSend:to=>{sendMessage(to,fwd);setFwd(null);notify("Forwarded")}}),
     toast&&h("div",{className:"toast",role:"status"},toast));
 }

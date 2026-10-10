@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Kite</title>
 <meta name="theme-color" content="#1668e3">
+<meta name="kite-build" content="2026-10-09-1">
 <meta name="description" content="Connect · Share · Belong">
 <link rel="icon" type="image/png" href="icon-light.png">
 <script>
@@ -227,6 +228,17 @@ textarea.field{resize:none}
 .stat{padding:12px 14px;border-radius:16px;background:var(--sky);border:1px solid var(--line)}
 .bars{display:flex;align-items:flex-end;gap:8px;height:60px}
 .bar{flex:1;border-radius:6px 6px 2px 2px;background:linear-gradient(var(--accent),var(--btn));min-height:4px}
+.vbadge{display:inline-grid;place-items:center;width:15px;height:15px;margin-left:5px;border-radius:50%;background:#1d9bf0;color:#fff;vertical-align:-2px;flex:none}
+.statbtn{flex:1;border:0;background:none;color:inherit;padding:0}
+.faq{padding:10px 0;border-bottom:1px solid var(--line)}.faq:last-child{border-bottom:0}
+.faq summary{font-weight:700;cursor:pointer}.faq p{margin:6px 0 0}
+html[data-size=lg] .main,html[data-size=lg] .msgs{zoom:1.12}
+html[data-size=xl] .main,html[data-size=xl] .msgs{zoom:1.25}
+html[data-bold=on] .shell{font-weight:600}
+html[data-contrast=high] .shell{--line:var(--ink);--mute:var(--ink)}
+html[data-contrast=high] .sub{opacity:1}
+html[data-motion=reduce] *,html[data-motion=reduce] *::before{animation:none!important;transition:none!important}
+.layer{position:fixed;inset:0;z-index:75;pointer-events:none}.layer>*{pointer-events:auto}
 </style>
 </head>
 <body>
@@ -413,9 +425,21 @@ function Sheet({title,onClose,children}){
       children));
 }
 function Stat({n,label}){return h("div",{style:{textAlign:"center",flex:1}},h("div",{className:"h2",style:{margin:0}},n),h("div",{className:"sub"},label))}
+function FollowList({number,kind,onClose,notify,onOpen}){
+  const [list,setList]=useState(null);
+  useEffect(()=>{let on=true;api("/api/users/follows/"+encodeURIComponent(number)+"?kind="+kind).then(r=>{if(on)setList(r.people||[])}).catch(e=>{if(on){setList([]);notify(e.message)}});return()=>{on=false}},[number,kind]);
+  const toggle=async u=>{const on=!u.iFollow;setList(l=>l.map(x=>x.number===u.number?{...x,iFollow:on}:x));try{await api("/api/users/follow",{method:"POST",body:{type:"user",target:u.number,on}})}catch(e){setList(l=>l.map(x=>x.number===u.number?{...x,iFollow:!on}:x));notify(e.message)}};
+  return h(Sheet,{title:kind==="following"?"Following":"Followers",onClose},
+    list===null&&h("p",{className:"sub"},"Loading\u2026"),
+    list&&list.length===0&&h("p",{className:"empty"},kind==="following"?"Not following anyone yet.":"No followers yet."),
+    list&&list.map(u=>h("div",{key:u.number,className:"row"},
+      h(Avatar,{id:u.number,name:u.name,size:40,src:u.avatar,onClick:()=>onOpen(u)}),
+      h("div",{className:"grow name trunc"},u.name,u.verified&&h(Check)),
+      !u.me&&h("button",{className:"act","aria-pressed":u.iFollow,onClick:()=>toggle(u)},u.iFollow?"Following":"Follow"))));
+}
 function ProfileView({card,me,onClose,onMessage,notify}){
   const mine=card.number===me.number;
-  const [d,setD]=useState(null),[posts,setPosts]=useState(null),[fl,setFl]=useState({is:false,n:0});
+  const [d,setD]=useState(null),[posts,setPosts]=useState(null),[fl,setFl]=useState({is:false,n:0}),[flist,setFlist]=useState(null),[sub,setSub]=useState(null);
   useEffect(()=>{let on=true;
     api("/api/users/profile/"+encodeURIComponent(card.number)).then(r=>{if(on){setD(r);setFl({is:r.isFollowing,n:r.followers})}}).catch(()=>{});
     api("/api/posts/by/"+encodeURIComponent(card.number)+"?limit=20").then(r=>{if(on)setPosts(r.posts||[])}).catch(()=>{if(on)setPosts([])});
@@ -423,14 +447,15 @@ function ProfileView({card,me,onClose,onMessage,notify}){
   },[card.number]);
   const toggle=async()=>{const on=!fl.is;setFl(f=>({is:on,n:Math.max(0,f.n+(on?1:-1))}));try{const r=await api("/api/users/follow",{method:"POST",body:{type:"user",target:card.number,on}});setFl({is:r.following,n:r.followers})}catch(e){setFl(f=>({is:!on,n:Math.max(0,f.n+(on?-1:1))}));notify(e.message)}};
   const pro=!!(d&&d.pro&&d.pro.on),name=mine?me.name:(d&&d.name)||card.name,about=mine?(me.about||""):(d&&d.about)||"",avatar=mine?me.avatarUrl:(d&&d.avatar)||card.avatar;
-  return h("div",{className:"profpage",role:"dialog","aria-modal":"true","aria-label":"Profile"},
+  return h(Fragment,null,h("div",{className:"profpage",role:"dialog","aria-modal":"true","aria-label":"Profile"},
     h("div",{className:"profbanner",style:pro&&d.banner?{backgroundImage:"url("+cl(d.banner,"f_auto,q_auto,w_900")+")"}:undefined},
       h("button",{className:"lbbtn",style:{position:"absolute",top:"max(10px,env(safe-area-inset-top))",left:12},"aria-label":"Back",onClick:onClose},h(Icon,{n:"back",s:22}))),
     h("div",{className:"profbody"},
       h("div",{style:{marginTop:-46}},h(Avatar,{id:card.number,name,size:92,src:avatar})),
-      h("div",{style:{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},h("div",{className:"h2",style:{margin:"8px 0 0"}},name),pro&&h("span",{className:"tag"},d.pro.category||"Professional")),
+      h("div",{style:{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},h("div",{className:"h2",style:{margin:"8px 0 0"}},name,d&&d.verified&&h(Check)),pro&&h("span",{className:"tag"},d.pro.category||"Professional")),
       h("div",{className:"sub",style:{whiteSpace:"pre-wrap",margin:"4px 0 10px"}},about||"No about yet"),
-      pro&&h("div",{style:{display:"flex",padding:"10px 0",borderTop:"1px solid var(--line)",borderBottom:"1px solid var(--line)"}},h(Stat,{n:fl.n,label:"Followers"}),h(Stat,{n:d.following,label:"Following"}),h(Stat,{n:d.posts,label:"Posts"})),
+      pro&&h("div",{style:{display:"flex",padding:"10px 0",borderTop:"1px solid var(--line)",borderBottom:"1px solid var(--line)"}},h("button",{className:"statbtn",onClick:()=>setFlist("followers")},h(Stat,{n:fl.n,label:"Followers"})),h("button",{className:"statbtn",onClick:()=>setFlist("following")},h(Stat,{n:d.following,label:"Following"})),h(Stat,{n:d.posts,label:"Posts"})),
+
       !mine&&h("div",{style:{display:"flex",gap:10,alignItems:"center",margin:"12px 0"}},
         pro&&h("button",{className:"btn",style:{flex:1,margin:0,...(fl.is?{background:"var(--sky)",color:"var(--ink)"}:{})},onClick:toggle},fl.is?"Following":"Follow"),
         h("button",{className:pro?"act":"btn",style:pro?{padding:"12px 16px"}:{flex:1,margin:0},onClick:()=>onMessage(card.number,name)},"Message"),
@@ -439,7 +464,9 @@ function ProfileView({card,me,onClose,onMessage,notify}){
       h("h2",{className:"h2",style:{marginTop:14}},"Recent posts"),
       posts===null&&h("p",{className:"sub"},"Loading\u2026"),
       posts&&posts.length===0&&h("p",{className:"empty"},"No posts yet."),
-      posts&&posts.map(p=>h("article",{className:"post",key:p.id},h("div",{className:"sub"},ago(p.ts)),h("div",{className:"text"},p.text),p.media&&h("a",{href:p.media,target:"_blank",rel:"noopener noreferrer"},h(Img,{className:"pic",src:p.media,w:640,alt:"Photo"})),h("div",{className:"sub",style:{marginTop:6}},p.likes+" likes")))));
+      posts&&posts.map(p=>h("article",{className:"post",key:p.id},h("div",{className:"sub"},ago(p.ts)),h("div",{className:"text"},p.text),p.media&&h("a",{href:p.media,target:"_blank",rel:"noopener noreferrer"},h(Img,{className:"pic",src:p.media,w:640,alt:"Photo"})),h("div",{className:"sub",style:{marginTop:6}},p.likes+" likes"))))),
+    flist&&h("div",{className:"layer"},h(FollowList,{number:card.number,kind:flist,notify,onClose:()=>setFlist(null),onOpen:u=>{setFlist(null);setSub(u)}})),
+    sub&&h(ProfileView,{card:{number:sub.number,name:sub.name,avatar:sub.avatar},me,notify,onMessage,onClose:()=>setSub(null)}));
 }
 function SourceView({src,notify,onClose}){
   const [d,setD]=useState(null),[fl,setFl]=useState({is:false,n:0}),[err,setErr]=useState(false);
@@ -580,7 +607,8 @@ function CallManager({me,notify,prefs}){
       try{
         const d=await api("/api/rtc/poll"+(id?"?id="+id+"&ci="+(r.ci||0):""));
         if(stop)return;
-        if(!id&&d.incoming){setIncoming(d.incoming);if(navigator.vibrate)navigator.vibrate([300,200,300]);if(document.hidden)notifyOS("calls","Incoming "+(d.incoming.kind==="video"?"video":"voice")+" call",d.incoming.name,"call")}
+        if(!id&&d.incoming&&window.__parental&&window.__parental.unknownCalls&&!(window.__contacts&&window.__contacts.has(d.incoming.from))){api("/api/rtc/decline",{method:"POST",body:{id:d.incoming.id}}).catch(()=>{})}
+        else if(!id&&d.incoming){setIncoming(d.incoming);if(navigator.vibrate)navigator.vibrate([300,200,300]);if(document.hidden)notifyOS("calls","Incoming "+(d.incoming.kind==="video"?"video":"voice")+" call",d.incoming.name,"call")}
         const k=d.call;
         if(k&&c&&R.current===r&&r.pc){
           if(k.answer&&!r.pc.remoteDescription){await setRemote(r,k.answer);setCall(x=>x&&x.phase==="calling"?{...x,phase:"connecting"}:x)}
@@ -745,7 +773,7 @@ function CallsTab({calls,contacts,nameOf,avatarOf,onProfile,notify,onAdd,onChat}
         h("button",{className:"iconbtn","aria-label":"Video call "+name,onClick:()=>placeCall(c.peer,name,notify,"video")},h(Icon,{n:"video",s:18})))})));
 }
 
-function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf,contacts,onAdd}){
+function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf,contacts,onAdd,verifiedOf}){
   const [fab,setFab]=useState(false),[adding,setAdding]=useState(false),[view,setView]=useState(null),[q,setQ]=useState("");
   const pick=k=>{setFab(false);if(k==="contact")setAdding(true);else if(k==="call")setView("call");else notify("Groups are coming soon.")};
   if(view)return h(ContactsScreen,{mode:view,contacts,nameOf,avatarOf,onClose:()=>setView(null),onChat:n=>{setView(null);onOpen(n)},onProfile,onAdd,notify});
@@ -762,7 +790,7 @@ function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf,con
       filtered.map((c,i)=>h("button",{key:c.partner,className:"row chatrow"+(c.unread>0?" unread":""),style:{animationDelay:Math.min(i,8)*45+"ms"},onClick:()=>onOpen(c.partner)},
         h(Avatar,{id:c.partner,name:nameOf(c.partner),src:avatarOf(c.partner),onClick:()=>onProfile(c.partner,nameOf(c.partner))}),
         h("div",{className:"grow"},
-          h("div",{className:"line name"},h("span",{className:"trunc"},nameOf(c.partner)),h("span",{className:"time"},shortWhen(c.last.ts))),
+          h("div",{className:"line name"},h("span",{className:"trunc"},nameOf(c.partner),verifiedOf&&verifiedOf(c.partner)&&h(Check)),h("span",{className:"time"},shortWhen(c.last.ts))),
           h("div",{className:"line"},
             h("span",{className:"sub trunc"},(c.last.from===me.number?"You: ":"")+(c.last.text||(c.last.file?"📎 "+c.last.file.name:""))),
             c.unread>0&&h("span",{className:"count"},c.unread)))))),
@@ -833,6 +861,17 @@ const callStatus=c=>{const out=c.dir==="out";switch(c.outcome){
   case"failed":return"Call failed (connection)";
   default:return callWord(c)}};
 const callBad=c=>(c.dir==="in"&&(c.outcome==="missed"||c.outcome==="cancelled"))||c.outcome==="failed";
+const APP_BUILD="2026-10-09-1",SUPPORT_EMAIL="kitegroup.connect@gmail.com";
+const Check=()=>h("span",{className:"vbadge",title:"Verified","aria-label":"Verified"},h(Icon,{n:"check",s:10}));
+const I18N={pcm:{Chats:"Chat dem",Feed:"Wetin dey happen",Calls:"Call dem",Me:"Me",Settings:"Settings"},yo:{Chats:"\u00ccf\u1ecd\u0300r\u1ecd\u0300w\u00e9r\u1ecd\u0300",Feed:"\u00ccr\u00f2y\u00ecn",Calls:"\u00ccp\u00e8",Me:"\u00c8mi"},ig:{Chats:"Mkpar\u1ecbta \u1ee5ka",Feed:"Ak\u1ee5k\u1ecd",Calls:"Oku",Me:"M\u1ee5"},ha:{Chats:"Tattaunawa",Feed:"Labarai",Calls:"Kira",Me:"Ni"}};
+const LANGS=[["en","English"],["pcm","Nigerian Pidgin"],["yo","Yor\u00f9b\u00e1"],["ig","Igbo"],["ha","Hausa"]];
+const tr=k=>((I18N[window.__lang]||{})[k])||k;
+const ICONS=[["classic","Classic blue","none"],["sunset","Sunset red","hue-rotate(-215deg) saturate(1.25)"],["lime","Lime green","hue-rotate(-75deg) saturate(1.2)"],["violet","Violet","hue-rotate(55deg) saturate(1.2)"],["mono","Mono","grayscale(1)"]];
+function applyIcon(id){
+  const f=(ICONS.find(x=>x[0]===id)||ICONS[0])[2];
+  document.documentElement.style.setProperty("--logofilter",f);
+  try{const im=new Image();im.onload=()=>{const c=document.createElement("canvas");c.width=c.height=64;const x=c.getContext("2d");x.filter=f;x.drawImage(im,0,0,64,64);let l=document.querySelector("link[rel~=icon]");if(!l){l=document.createElement("link");l.rel="icon";document.head.appendChild(l)}l.href=c.toDataURL("image/png")};im.src="logo-light.png"}catch(e){}
+}
 const placeCall=(number,name,notify,kind)=>{if(window.kiteCall)window.kiteCall(number,name,kind||"voice");else notify("Calls aren't ready yet")};
 const EMOJI=Array.from("😀😃😄😁😆😅😂🤣😊😇🙂😉😍🥰😘😋😎🤩🥳😏😒😞😔😢😭😤😠🤯😳🥺😱😴🤔🙄😬🤗🫡🙏👍👎👏🙌💪🤝✌️🤞👌👋🔥💯✨🎉❤️🧡💛💚💙💜🖤💔😈👀🎶⚽🏀🎮🍕🍔🍟🍺☕🚗✈️🌍🌙☀️🌧️🎁📸💰📱💻");
 function MediaSheet({list,onClose}){
@@ -851,7 +890,7 @@ function MediaSheet({list,onClose}){
 }
 const Tick=({rc,pending})=>{if(pending)return h(Icon,{n:"clock",s:12});if(!rc||!rc.d)return h("span",{className:"tk",title:"Sent"},h(Icon,{n:"check",s:13}));return h("span",{className:"tk"+(rc.r?" read":""),title:rc.r?"Read":"Delivered"},h(Icon,{n:"checks",s:15}))};
 const seenText=ts=>{const n=Date.now();if(sameDay(ts,n))return"last seen today at "+clock(ts);if(sameDay(ts,n-864e5))return"last seen yesterday at "+clock(ts);return"last seen "+dayName(ts)};
-function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar,notify,prefs,rcpts,presence,calls,blocked,onBlock,skin}){
+function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onProfile,avatar,notify,prefs,rcpts,presence,calls,blocked,onBlock,skin,verified}){
   const [text,setText]=useState(""),[up,setUp]=useState(false),box=useRef(null),input=useRef(null);
   const coarse=window.matchMedia&&matchMedia("(pointer: coarse)").matches;
   useEffect(()=>{if(box.current)box.current.scrollTop=box.current.scrollHeight},[list.length,(calls||[]).length]);
@@ -905,7 +944,7 @@ function ChatView({me,partner,name,about,list,online,onBack,onSend,onRefresh,onP
     h("div",{className:"chathead"},
       h("button",{className:"iconbtn",onClick:onBack,"aria-label":"Back to chats"},h(Icon,{n:"back"})),
       h(Avatar,{id:partner,name,size:40,src:avatar,onClick:()=>onProfile(partner,name)}),
-      h("div",{className:"grow"},h("div",{className:"name trunc"},name),h("div",{className:"sub trunc"+(presence&&presence.online?" onl":"")},presence&&presence.online?"online":presence&&presence.lastSeen?seenText(presence.lastSeen):(about||pretty(partner)))),
+      h("div",{className:"grow"},h("div",{className:"name trunc"},name,verified&&h(Check)),h("div",{className:"sub trunc"+(presence&&presence.online?" onl":"")},presence&&presence.online?"online":presence&&presence.lastSeen?seenText(presence.lastSeen):(about||pretty(partner)))),
       h("button",{className:"iconbtn",onClick:()=>blocked?notify("Unblock this contact to call"):placeCall(partner,name,notify,"voice"),"aria-label":"Voice call"},h(Icon,{n:"phone",s:18})),
       h("button",{className:"iconbtn",onClick:()=>blocked?notify("Unblock this contact to call"):placeCall(partner,name,notify,"video"),"aria-label":"Video call"},h(Icon,{n:"video",s:18})),
       h("button",{className:"iconbtn",onClick:onRefresh,"aria-label":"Check for new messages"},h(Icon,{n:"refresh",s:18})),
@@ -1047,14 +1086,14 @@ function Feed({me,onMessage,notify,onProfile,forward,onBlock,onSource}){
     {icon:"send",label:"Share to a chat",run:()=>{setViewer(null);forward((p.text?p.name+": "+p.text+"\n":"")+p.media)}},
     {icon:"download",label:"Save photo",run:()=>saveImage(p.media)},
     {icon:"link",label:"Copy photo link",run:()=>copyText(p.media)},
-    other&&{icon:"flag",label:"Report post",danger:true,run:()=>setReporting({type:"post",target:p.id})},
+    other&&{icon:"flag",label:"Report post",danger:true,run:()=>{setViewer(null);setReporting({type:"post",target:p.id})}},
     other&&onBlock&&{icon:"ban",label:"Block "+p.name,danger:true,run:()=>{setViewer(null);onBlock(p.by,true)}}].filter(Boolean)}})():(()=>{const it=viewer.it;return{title:it.source,sub:ago(it.ts),actions:[
     {icon:"send",label:"Share to a chat",run:()=>{setViewer(null);forward(it.title+"\n"+it.link)}},
     {icon:"link",label:"Open source",run:()=>window.open(it.link,"_blank","noopener")},
     {icon:"download",label:"Save photo",run:()=>saveImage(it.image)},
     {icon:"link",label:"Copy link",run:()=>copyText(it.link)},
     {icon:"close",label:"Show less like this",run:()=>{setViewer(null);hideItem(it.id)}},
-    {icon:"flag",label:"Report",danger:true,run:()=>setReporting({type:"item",target:it.id})}]}})());
+    {icon:"flag",label:"Report",danger:true,run:()=>{setViewer(null);setReporting({type:"item",target:it.id})}}]}})());
   const seenRef=useRef(new Set(store.json("kite:seen",[]))),[snap,setSnap]=useState(()=>new Set(seenRef.current)),[showOld,setShowOld]=useState(false);
   const resnap=()=>{setSnap(new Set(seenRef.current));setShowOld(false)};
   const delPost=async p=>{if(!confirm("Delete this post?"))return;try{await api("/api/posts/"+encodeURIComponent(p.id),{method:"DELETE"});setPosts(l=>l.filter(x=>x.id!==p.id));notify("Post deleted")}catch(e){notify(e.message)}};
@@ -1066,6 +1105,7 @@ function Feed({me,onMessage,notify,onProfile,forward,onBlock,onSource}){
   },[notify]);
   useEffect(()=>{load(true)},[load]);
   const loadItems=useCallback(async(t,reset=true,qq="")=>{
+    if(window.__parental&&window.__parental.hideDiscover){setItems([]);setMore(false);return}
     if(reset){seed.current=Math.random().toString(36).slice(2,10);nextOff.current=0}
     const off=nextOff.current;
     const qs="limit="+(reset?12:20)+"&offset="+off+"&seed="+seed.current+(qq?"&q="+encodeURIComponent(qq):"")+(t&&t!=="all"?(t.startsWith("t:")?"&tag="+t.slice(2):"&topic="+t):"");
@@ -1110,7 +1150,7 @@ function Feed({me,onMessage,notify,onProfile,forward,onBlock,onSource}){
   };
   const renderEntry=p=>p.item?h(ItemCard,{key:"i"+p.item.id,it:p.item,forward,onReact:react,onOpen:openItem,onSource}):h("article",{className:"post",key:p.id,"data-sid":"p"+p.id},
       h("div",{className:"posthead"},h(Avatar,{id:p.by,name:p.name,size:38,src:p.avatar,onClick:()=>onProfile(p.by,p.name,p.avatar)}),
-        h("div",{className:"grow"},h("div",{className:"name trunc"},p.name),h("div",{className:"sub"},ago(p.ts)))),
+        h("div",{className:"grow"},h("div",{className:"name trunc"},p.name,p.verified&&h(Check)),h("div",{className:"sub"},ago(p.ts)))),
       h("div",{className:"text"},p.text),p.media&&h(Img,{className:"pic",src:p.media,w:640,alt:"Photo",role:"button",tabIndex:0,"aria-label":"View full photo",style:{cursor:"zoom-in"},onClick:()=>openPost(p),onKeyDown:e=>{if(e.key==="Enter")openPost(p)}}),
       h("div",{className:"actions"},
         h("button",{className:"act","aria-pressed":!!p.liked,"aria-label":p.liked?"Remove like":"Like",onClick:()=>like(p)},h(Icon,{n:"heart",s:16,fill:p.liked}),p.likes||0),
@@ -1199,7 +1239,135 @@ function Status({me,notify,onProfile,forward,only}){
 }
 
 /* ---------- Me ---------- */
-function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,convos,nameOf,blocked,onBlock}){
+function AdminPanel({notify}){
+  const [st,setSt]=useState(null),[reps,setReps]=useState(null),[q,setQ]=useState(""),[users,setUsers]=useState([]);
+  const load=()=>{api("/api/admin/stats").then(setSt).catch(e=>notify(e.message));api("/api/admin/reports").then(r=>setReps(r.reports)).catch(()=>setReps([]))};
+  useEffect(load,[]);
+  const act=async(r,action)=>{try{await api("/api/admin/reports/"+r.id,{method:"POST",body:{action}});setReps(l=>l.filter(x=>x.id!==r.id));notify(action==="dismiss"?"Report dismissed":"Post deleted")}catch(e){notify(e.message)}};
+  const search=async()=>{try{const r=await api("/api/admin/users?q="+encodeURIComponent(q.trim()));setUsers(r.users)}catch(e){notify(e.message)}};
+  const verify=async(u,on)=>{try{await api("/api/admin/verify",{method:"POST",body:{number:u.number,on}});setUsers(l=>l.map(x=>x.number===u.number?{...x,manual:on,verified:on||x.verified}:x));notify(on?"Verified":"Verification removed")}catch(e){notify(e.message)}};
+  return h(Fragment,null,
+    st&&h("div",{className:"statgrid"},[["Users",st.users],["Active today",st.active_today],["Posts",st.posts],["Professional",st.pros],["Open reports",st.open_reports]].map(([l,n])=>h("div",{key:l,className:"stat"},h("div",{className:"h2",style:{margin:0}},n),h("div",{className:"sub"},l)))),
+    h("h2",{className:"h2",style:{marginTop:16}},"Reports"),
+    reps===null&&h("p",{className:"sub"},"Loading\\u2026"),
+    reps&&reps.length===0&&h("p",{className:"empty"},"No open reports."),
+    reps&&reps.map(r=>h("div",{key:r.id,className:"card"},
+      h("div",{className:"sub"},r.type+" \\u00b7 "+r.reason.replace("_"," ")+" \\u00b7 "+ago(r.at)),
+      r.type==="post"?h(Fragment,null,h("div",{className:"name"},r.author||"Deleted post"),h("div",{className:"text"},r.text||"(photo)"),r.media&&h("a",{href:r.media,target:"_blank",rel:"noopener noreferrer",className:"sub"},"Open photo")):h("div",{className:"sub"},"Item "+r.target),
+      h("div",{style:{display:"flex",gap:8,marginTop:10}},r.type==="post"&&h("button",{className:"act",style:{color:"var(--bad)"},onClick:()=>act(r,"delete_post")},"Delete post"),h("button",{className:"act",onClick:()=>act(r,"dismiss")},"Dismiss")))),
+    h("h2",{className:"h2",style:{marginTop:16}},"Verified badges"),
+    h("div",{style:{display:"flex",gap:8}},h("input",{className:"field","aria-label":"Search users",placeholder:"Name or number",value:q,onChange:e=>setQ(e.target.value),onKeyDown:e=>{if(e.key==="Enter")search()}}),h("button",{className:"btn sm",onClick:search},"Search")),
+    users.map(u=>h("div",{key:u.number,className:"row"},h(Avatar,{id:u.number,name:u.name,size:36}),h("div",{className:"grow",style:{minWidth:0}},h("div",{className:"name trunc"},u.name,u.verified&&h(Check)),h("div",{className:"sub"},pretty(u.number)+(u.pro?" \\u00b7 professional":""))),h("button",{className:"act",onClick:()=>verify(u,!u.manual)},u.manual?"Remove":"Verify"))));
+}
+function StoragePanel({prefs,setPrefs,notify}){
+  const [est,setEst]=useState(null),[tick,setTick]=useState(0);
+  useEffect(()=>{if(navigator.storage&&navigator.storage.estimate)navigator.storage.estimate().then(setEst).catch(()=>{})},[tick]);
+  let n=0;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=(k.length+(localStorage.getItem(k)||"").length)*2}}catch(e){}
+  const kb=b=>b>1048576?(b/1048576).toFixed(1)+" MB":Math.round(b/1024)+" KB";
+  const clear=()=>{["kite:feeditems","kite:seen","kite:hiddenitems"].forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});setTick(t=>t+1);notify("Cached feed and seen history cleared")};
+  return h(Fragment,null,
+    h("div",{className:"card"},
+      h("div",{className:"setrow"},h("div",null,h("div",{className:"name"},"Kite data on this device"),h("p",{className:"sub"},"Messages, drafts and saved settings: "+kb(n)))),
+      est&&est.usage!=null&&h("p",{className:"sub"},"Total used by this site: "+kb(est.usage)+(est.quota?" of "+kb(est.quota):"")),
+      h("button",{className:"btn soft",onClick:clear},"Clear cached feed and seen history"),
+      h("p",{className:"sub",style:{marginTop:8}},"This doesn't delete your chats, posts or account.")),
+    h("div",{className:"card",style:{marginTop:14}},h("div",{className:"setrow"},h("div",null,h("div",{className:"name"},"Data saver"),h("p",{className:"sub"},"Smaller pictures and slower background checks to use less data.")),h("button",{className:"switch",role:"switch","aria-checked":prefs.saver!==false,"aria-label":"Data saver",onClick:()=>setPrefs(p=>({...p,saver:p.saver===false}))}))));
+}
+const hashPin=async v=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode("kite:"+v)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+function ParentalPanel({prefs,setPrefs,notify}){
+  const pc=prefs.parental||{},[ok,setOk]=useState(false),[pin,setPin]=useState("");
+  const set=patch=>setPrefs(q=>({...q,parental:{...(q.parental||{}),...patch}}));
+  const Sw=(k,title,sub)=>h("div",{key:k,className:"setrow"},h("div",null,h("div",{className:"name"},title),h("p",{className:"sub"},sub)),h("button",{className:"switch",role:"switch","aria-checked":!!pc[k],"aria-label":title,onClick:()=>set({[k]:!pc[k]})}));
+  const pinBox=(label,go,btn)=>h("div",{className:"card"},h("label",{className:"lbl",htmlFor:"pcpin"},label),h("input",{id:"pcpin",className:"field",type:"password",inputMode:"numeric",maxLength:4,autoComplete:"off",value:pin,onChange:e=>setPin(e.target.value.replace(/\\D/g,""))}),h("button",{className:"btn",disabled:pin.length!==4,onClick:go},btn));
+  if(!pc.pin)return h(Fragment,null,h("p",{className:"sub",style:{marginBottom:10}},"Set a 4-digit PIN so only a parent can change these settings."),pinBox("Create a 4-digit PIN",async()=>{set({pin:await hashPin(pin)});setPin("");setOk(true);notify("PIN saved")},"Save PIN"));
+  if(!ok)return pinBox("Enter your PIN",async()=>{if(await hashPin(pin)===pc.pin){setOk(true);setPin("")}else{notify("Wrong PIN");setPin("")}},"Unlock");
+  return h(Fragment,null,
+    h("div",{className:"card"},
+      Sw("hideDiscover","Hide Feed discover","Turns off news, sports and memes from the internet. Posts from people stay."),
+      Sw("unknownCalls","Block calls from unknown numbers","Calls from people who aren't in your contacts are declined."),
+      h("button",{className:"act",style:{marginTop:10},onClick:()=>{setOk(false);setPrefs(q=>({...q,parental:{}}));notify("Parental control turned off")}},"Turn off and remove PIN")),
+    h("p",{className:"sub",style:{marginTop:10}},"The PIN and these settings are saved on this device only. Clearing the browser's data resets them."));
+}
+function A11yPanel({prefs,setPrefs}){
+  const a=prefs.a11y||{},set=patch=>setPrefs(q=>({...q,a11y:{...(q.a11y||{}),...patch}}));
+  const Sw=(k,title,sub)=>h("div",{key:k,className:"setrow"},h("div",null,h("div",{className:"name"},title),h("p",{className:"sub"},sub)),h("button",{className:"switch",role:"switch","aria-checked":!!a[k],"aria-label":title,onClick:()=>set({[k]:!a[k]})}));
+  return h(Fragment,null,
+    h("div",{className:"card"},h("div",{className:"name",style:{marginBottom:8}},"Text and content size"),
+      h("div",{className:"seg"},[["md","Normal"],["lg","Large"],["xl","Extra large"]].map(([k,l])=>h("button",{key:k,"aria-pressed":(a.size||"md")===k,onClick:()=>set({size:k})},l)))),
+    h("div",{className:"card",style:{marginTop:14}},
+      Sw("bold","Bold text","Makes all text heavier and easier to read."),
+      Sw("contrast","High contrast","Stronger borders and clearer secondary text."),
+      Sw("motion","Reduce motion","Turns off animations and transitions.")));
+}
+function LangPanel({prefs,setPrefs}){
+  return h(Fragment,null,h("div",{className:"card"},LANGS.map(([k,l])=>h("button",{key:k,className:"row",role:"radio","aria-checked":(prefs.lang||"en")===k,onClick:()=>setPrefs(q=>({...q,lang:k}))},h("div",{className:"grow name"},l),(prefs.lang||"en")===k&&h(Icon,{n:"check",s:20})))),
+    h("p",{className:"sub",style:{marginTop:10}},"Beta: only the main tabs are translated so far, and the translations still need a native speaker's review. Everything else stays in English."));
+}
+const FAQ=[["How do I add someone?","Open Chats, tap the contacts button (top right) and then +. Enter their number. They must already be on Kite."],["What is professional mode?","A free option in Settings for creators and businesses. People can follow you, your banner shows on your profile and you get a dashboard. Everyone else just uses Kite normally."],["Why doesn't my message show two ticks?","One tick means sent. Two grey ticks mean delivered. Blue ticks mean read. If either of you turns off read receipts, blue ticks and last seen are hidden."],["How do I block or report someone?","Open a chat, tap the three dots and choose Block. To report a post, open its picture and use the three dots menu."],["Why am I not getting notifications?","Turn them on in Settings > Notifications and allow them in your browser. They work while Kite is open in a tab."],["How do I use less data?","Settings > Storage > Data saver. It loads smaller pictures and checks less often."],["How do I change my banner or colours?","Settings > Account for the banner, and Settings > Appearance for themes and the banner colour."],["Someone is bothering me.","Block them from the chat's three dots menu and report them. You can also email us at "+SUPPORT_EMAIL+"."]];
+function HelpPanel(){return h("div",{className:"card"},FAQ.map(([q,a])=>h("details",{key:q,className:"faq"},h("summary",null,q),h("p",{className:"sub"},a))))}
+function ContactPanel(){
+  const body=encodeURIComponent("\\n\\n---\\nKite "+APP_BUILD+"\\n"+navigator.userAgent);
+  return h("div",{className:"card"},h("p",{className:"sub"},"Questions, problems or ideas? We read every message."),h("a",{className:"btn",style:{textDecoration:"none"},href:"mailto:"+SUPPORT_EMAIL+"?subject="+encodeURIComponent("Kite support")+"&body="+body},"Email "+SUPPORT_EMAIL),h("p",{className:"sub",style:{marginTop:8}},"Tip: say what you were doing and what went wrong."));
+}
+function PrivacyPanel(){
+  const S=(t,...ps)=>h(Fragment,{key:t},h("h2",{className:"h2",style:{marginTop:14}},t),ps.map((x,i)=>h("p",{key:i,className:"sub",style:{color:"var(--ink)",opacity:.85}},x)));
+  return h("div",{className:"card"},
+    h("p",{className:"sub"},"Last updated: October 2026"),
+    S("What we collect","Your phone number (to sign you in), the name, photo, about and banner you choose, your messages and the files you send, your posts and likes, who you follow, and basic usage information such as when you were last online."),
+    S("How we use it","To run Kite: deliver your messages and calls, show your posts and profile, keep your account secure and improve the app. We don't sell your personal information."),
+    S("Who helps us run Kite","We use service providers to send verification codes by SMS, store pictures and files, host the app and store our database. They only handle data to provide those services."),
+    S("Your choices","You can turn read receipts and last seen off, block and report people, delete your posts, and use professional mode only if you want it. You can ask us to see, correct or delete your data by emailing "+SUPPORT_EMAIL+"."),
+    S("Keeping data","We keep your data while your account is active. Deleted posts are removed from our servers. Messages are stored so they can reach you on all your devices."),
+    S("Security","We use encrypted connections and limit who can access our systems. No system is perfectly secure, so please keep your phone safe."),
+    S("Children","Kite is for people aged 13 and over. Parents can use Settings > Parental control to limit some features."),
+    S("Contact","Questions about this policy: "+SUPPORT_EMAIL+"."),
+    h("p",{className:"sub",style:{marginTop:12}},"This policy is a plain-language summary and should be reviewed by a lawyer before launch."));
+}
+function UpdatesPanel({notify}){
+  const [st,setSt]=useState("");
+  const check=async()=>{setSt("Checking\\u2026");try{const r=await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"});const t=await r.text();const m=t.match(/name="kite-build" content="([^"]+)"/);if(m&&m[1]!==APP_BUILD)setSt("new:"+m[1]);else setSt("ok")}catch(e){setSt("err")}};
+  const reload=async()=>{try{const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(x=>x.update()))}catch(e){}location.reload()};
+  return h("div",{className:"card"},
+    h("div",{className:"setrow"},h("div",null,h("div",{className:"name"},"Kite"),h("p",{className:"sub"},"Version "+APP_BUILD))),
+    st.startsWith("new:")?h(Fragment,null,h("p",{className:"sub",style:{color:"var(--ink)"}},"A new version is available."),h("button",{className:"btn",onClick:reload},"Update now")):h("button",{className:"btn soft",onClick:check},st==="Checking\\u2026"?"Checking\\u2026":"Check for updates"),
+    st==="ok"&&h("p",{className:"sub",style:{marginTop:8}},"You're on the latest version."),
+    st==="err"&&h("p",{className:"sub",style:{marginTop:8}},"Couldn't check. Try again when you're online."));
+}
+function InvitePanel({me,notify}){
+  const url=location.origin+location.pathname.replace(/index\\.html$/,""),msg="Join me on Kite, a chat app with calls, status and a feed. "+url;
+  const share=async()=>{try{if(navigator.share){await navigator.share({title:"Kite",text:msg,url})}else{await navigator.clipboard.writeText(msg);notify("Invite copied")}}catch(e){}};
+  return h("div",{className:"card"},h("p",{className:"sub"},"Kite is better with friends. Send an invite:"),
+    h("div",{className:"notifprev"},h("div",{className:"sub",style:{color:"var(--ink)"}},msg)),
+    h("button",{className:"btn",onClick:share},"Share invite"),
+    h("a",{className:"btn soft",style:{textDecoration:"none"},href:"https://wa.me/?text="+encodeURIComponent(msg),target:"_blank",rel:"noopener noreferrer"},"Send on WhatsApp"),
+    h("button",{className:"act",style:{marginTop:10},onClick:async()=>{try{await navigator.clipboard.writeText(msg);notify("Invite copied")}catch(e){notify("Couldn't copy")}}},"Copy link"));
+}
+function IconPanel({prefs,setPrefs}){
+  return h(Fragment,null,h("div",{className:"card"},ICONS.map(([k,l,f])=>h("button",{key:k,className:"row",role:"radio","aria-checked":(prefs.icon||"classic")===k,onClick:()=>setPrefs(q=>({...q,icon:k}))},h("img",{src:"logo-light.png",alt:"",width:36,height:36,style:{filter:f}}),h("div",{className:"grow name"},l),(prefs.icon||"classic")===k&&h(Icon,{n:"check",s:20})))),
+    h("p",{className:"sub",style:{marginTop:10}},"Changes the Kite logo inside the app and the icon on this browser tab. A web app can't change the icon on your phone's home screen."));
+}
+function DeletePanel({me,notify,onDone}){
+  const [word,setWord]=useState(""),[num,setNum]=useState(""),[busy,setBusy]=useState(false);
+  const ok=word.trim().toUpperCase()==="DELETE"&&num.replace(/\D/g,"")===String(me.number).replace(/\D/g,"");
+  const go=async()=>{
+    if(!ok||busy)return;
+    if(!confirm("This permanently deletes your Kite account and can't be undone. Continue?"))return;
+    setBusy(true);
+    try{await api("/api/users/delete",{method:"POST",body:{number:num.replace(/\D/g,"")}});onDone()}
+    catch(e){notify(e.message);setBusy(false)}
+  };
+  return h("div",{className:"card"},
+    h("div",{className:"name",style:{color:"var(--bad)"}},"Delete your account"),
+    h("p",{className:"sub",style:{color:"var(--ink)"}},"This permanently deletes:"),
+    h("p",{className:"sub"},"\u2022 Your profile, photo and banner\n\u2022 Your posts, likes and statuses\n\u2022 The messages you sent (people you chatted with won't see them any more)\n\u2022 Your followers, contacts and call history"),
+    h("p",{className:"sub",style:{color:"var(--ink)",whiteSpace:"pre-line"}},"It can't be undone. Download or screenshot anything you want to keep first. Pictures you uploaded may stay on our file host for a short time before they are removed."),
+    h("label",{className:"lbl",htmlFor:"delword"},"Type DELETE to confirm"),
+    h("input",{id:"delword",className:"field",autoComplete:"off",value:word,onChange:e=>setWord(e.target.value)}),
+    h("label",{className:"lbl",htmlFor:"delnum"},"Type your phone number"),
+    h("input",{id:"delnum",className:"field",inputMode:"tel",autoComplete:"off",placeholder:me.number,value:num,onChange:e=>setNum(e.target.value)}),
+    h("button",{className:"btn",style:{background:"var(--bad)",color:"#fff"},disabled:!ok||busy,onClick:go},busy?"Deleting\u2026":"Delete my account forever"));
+}
+function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,convos,nameOf,blocked,onBlock,isAdmin}){
   const [view,setView]=useState("home"),[name,setName]=useState(me.name),[about,setAbout]=useState(me.about||"");
   const dirty=name.trim()!==me.name||about.trim()!==(me.about||"");
   const [rr,setRr]=useState(null);
@@ -1214,7 +1382,14 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,
   const Head=t=>h("div",{className:"titlerow",style:{justifyContent:"flex-start",gap:10,marginBottom:10}},
     h("button",{className:"iconbtn",onClick:()=>setView(view==="settings"?"home":"settings"),"aria-label":"Back"},h(Icon,{n:"back"})),
     h("h1",{className:"h1",style:{margin:0}},t));
-  if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("chats","Chats & calls","Wallpaper, bubbles and call display"),Row("notifs","Notifications","Messages, calls and likes"),Row("pro","Professional mode","Followers, banner and analytics"),Row("privacy","Privacy","Read receipts, last seen and status"),Row("data","Data","Data saver"));
+  if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("chats","Chats & calls","Wallpaper, bubbles and call display"),Row("notifs","Notifications","Messages, calls and likes"),Row("pro","Professional mode","Followers, banner and analytics"),Row("privacy","Privacy","Read receipts, last seen and status"),Row("data","Data","Data saver"),
+    isAdmin&&Row("admin","Admin panel","Reports, verification and stats"),
+    h("h2",{className:"h2",style:{margin:"16px 0 6px"}},"More"),
+    Row("storage","Storage","Cache and data on this device"),Row("parental","Parental control","PIN, hide discover, block unknown calls"),Row("a11y","Accessibility","Text size, contrast and motion"),Row("lang","App language","English, Pidgin, Yor\u00f9b\u00e1, Igbo, Hausa"),Row("icon","App icon","Choose the Kite logo style"),
+    Row("invite","Invite a friend","Share Kite"),Row("help","Help centre","Answers to common questions"),Row("contact","Contact us",SUPPORT_EMAIL),Row("privacypolicy","Privacy policy","How we handle your data"),Row("updates","App updates","Version "+APP_BUILD),
+    Row("delete","Delete account","Permanently remove your account and data"));
+  const PANELS={admin:["Admin panel",()=>h(AdminPanel,{notify})],storage:["Storage",()=>h(StoragePanel,{prefs,setPrefs,notify})],parental:["Parental control",()=>h(ParentalPanel,{prefs,setPrefs,notify})],a11y:["Accessibility",()=>h(A11yPanel,{prefs,setPrefs})],lang:["App language",()=>h(LangPanel,{prefs,setPrefs})],icon:["App icon",()=>h(IconPanel,{prefs,setPrefs})],invite:["Invite a friend",()=>h(InvitePanel,{me,notify})],help:["Help centre",()=>h(HelpPanel)],contact:["Contact us",()=>h(ContactPanel)],privacypolicy:["Privacy policy",()=>h(PrivacyPanel)],updates:["App updates",()=>h(UpdatesPanel,{notify})],delete:["Delete account",()=>h(DeletePanel,{me,notify,onDone:()=>{try{Object.keys(localStorage).filter(k=>k.startsWith("kite:")).forEach(k=>localStorage.removeItem(k))}catch(e){}onSignOut()}})]};
+  if(PANELS[view])return h(Fragment,null,Head(PANELS[view][0]),PANELS[view][1]());
   if(view==="account")return h(Fragment,null,Head("Account"),
     h("div",{className:"bannerimg",style:banner&&banner.url?{backgroundImage:"url("+banner.url+")"}:undefined},!(banner&&banner.url)&&h("span",{className:"sub"},"No banner yet")),
     h("div",{style:{display:"flex",gap:8,margin:"8px 0 14px"}},
@@ -1331,7 +1506,7 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,
 function App(){
   const [booting,setBooting]=useState(true),[me,setMe]=useState(null);
   const [prefs,setPrefs]=useState(()=>({theme:document.documentElement.dataset.theme||"light",saver:true,wall:"mix",bubble:"blue",...store.json("kite:prefs",{})}));
-  const [banner,setBanner]=useState(()=>store.json("kite:banner",null)),[callLog,setCallLog]=useState([]),[saved,setSaved]=useState([]),[blocked,setBlocked]=useState([]);
+  const [banner,setBanner]=useState(()=>store.json("kite:banner",null)),[callLog,setCallLog]=useState([]),[saved,setSaved]=useState([]),[blocked,setBlocked]=useState([]),[isAdmin,setIsAdmin]=useState(false);
   const [tab,setTab]=useState("chats"),[partner,setPartner]=useState(null);
   const partnerRef=useRef(null),nameOfRef=useRef(null);partnerRef.current=partner;
   const [msgs,setMsgs]=useState([]),[outbox,setOutbox]=useState([]),[reads,setReads]=useState({}),[names,setNames]=useState({});
@@ -1354,7 +1529,7 @@ function App(){
   const startSession=useCallback(profile=>{
     const n=profile.number;
     store.set("kite:profile",JSON.stringify(profile));
-    api("/api/users/settings").then(r=>{const b=r.bannerUrl?{url:r.bannerUrl,color:r.bannerColor||null}:null;setBanner(b);store.set("kite:banner",JSON.stringify(b))}).catch(()=>{});
+    api("/api/users/settings").then(r=>{setIsAdmin(!!r.admin);const b=r.bannerUrl?{url:r.bannerUrl,color:r.bannerColor||null}:null;setBanner(b);store.set("kite:banner",JSON.stringify(b))}).catch(()=>{});
     setSaved(store.json("kite:contacts:"+n,[]));
     api("/api/users/blocked").then(r=>setBlocked(r.blocked||[])).catch(()=>{});
     cursor.current=store.get("kite:cursor:"+n)||"";rcRef.current=store.get("kite:rcc:"+n)||"0";setRcpts(store.json("kite:rc:"+n,{}));
@@ -1363,7 +1538,7 @@ function App(){
     setReads(store.json("kite:reads:"+n,{}));setNames({[n]:{name:profile.name,about:profile.about}});
     setTab("chats");setPartner(null);setMe(profile);
   },[]);
-  const signOut=useCallback(()=>{store.del(TOKEN_KEY);store.del("kite:profile");setMe(null);setMsgs([]);setOutbox([]);setPartner(null);setRcpts({});setPres(null);setBanner(null);store.set("kite:banner","null");setCallLog([]);setSaved([]);setBlocked([])},[]);
+  const signOut=useCallback(()=>{store.del(TOKEN_KEY);store.del("kite:profile");setMe(null);setMsgs([]);setOutbox([]);setPartner(null);setRcpts({});setPres(null);setBanner(null);store.set("kite:banner","null");setCallLog([]);setSaved([]);setBlocked([]);setIsAdmin(false)},[]);
   const onAuthed=({token,profile})=>{store.set(TOKEN_KEY,token);startSession(profile)};
 
   useEffect(()=>{
@@ -1467,7 +1642,7 @@ function App(){
 
   /* contacts */
   const lookup=useCallback(async n=>{
-    try{const u=await api("/api/users/"+n);setNames(x=>({...x,[n]:{name:u.name,about:u.about,avatar:u.avatar}}));return u}
+    try{const u=await api("/api/users/"+n);setNames(x=>({...x,[n]:{name:u.name,about:u.about,avatar:u.avatar,verified:u.verified}}));return u}
     catch(e){return e.status===404?null:Promise.reject(e)}
   },[]);
   useEffect(()=>{
@@ -1547,25 +1722,28 @@ function App(){
   },[partner,thread,reads]);
 
   const toggleTheme=()=>setPrefs(p=>({...p,theme:({light:"dim",dim:"dark",dark:"light"})[p.theme]||"light"}));
-  const TABS=[["chats","Chats","chat"],["feed","Feed","feed"],["calls","Calls","phone"],["me","Me","user"]];
+  const TABS=[["chats",tr("Chats"),"chat"],["feed",tr("Feed"),"feed"],["calls",tr("Calls"),"phone"],["me",tr("Me"),"user"]];
   const contacts=useMemo(()=>[...new Set([...convos.map(c=>c.partner),...saved])].filter(n=>n!==number),[convos,saved,number]);
+  window.__contacts=new Set(contacts);
 
-  window.__saver=prefs.saver!==false;
+  window.__saver=prefs.saver!==false;window.__lang=prefs.lang||"en";window.__parental=(prefs.parental&&prefs.parental.pin)?prefs.parental:{};
+  useEffect(()=>{const a=prefs.a11y||{},r=document.documentElement,set=(k,v)=>{if(v)r.dataset[k]=v;else delete r.dataset[k]};set("size",a.size&&a.size!=="md"?a.size:"");set("bold",a.bold?"on":"");set("contrast",a.contrast?"high":"");set("motion",a.motion?"reduce":"")},[prefs.a11y]);
+  useEffect(()=>{applyIcon(prefs.icon||"classic")},[prefs.icon]);
   const bt=me&&prefs.matchBanner&&banner&&banner.color?themeVars(banner.color,prefs.theme,prefs.bannerMode||"auto"):null;
   let body;
   if(booting)body=h("div",{className:"boot"},h(Logo,{size:56}));
   else if(!me)body=h(Auth,{onDone:onAuthed,theme:prefs.theme,onTheme:toggleTheme});
-  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner),notify,prefs,rcpts,presence:pres,skin:bt?bt.skin:prefs.theme,calls:callLog.filter(c=>c.peer===partner),blocked:blocked.some(b=>b.number===partner),onBlock:on=>setBlock(partner,on)});
+  else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner),notify,prefs,rcpts,presence:pres,verified:!!(names[partner]&&names[partner].verified),skin:bt?bt.skin:prefs.theme,calls:callLog.filter(c=>c.peer===partner),blocked:blocked.some(b=>b.number===partner),onBlock:on=>setBlock(partner,on)});
   else body=h(Fragment,null,
     h("header",{className:"top"},
       h("div",{className:"brand"},h(Logo,{size:30}),"Kite"),h("div",{className:"spacer"}),
       !online&&h("span",{className:"pill"},h(Icon,{n:"off",s:15}),"Offline"),
       h("button",{className:"iconbtn",onClick:toggleTheme,"aria-label":prefs.theme==="dark"?"Switch to light theme":"Switch to dark theme"},h(Icon,{n:prefs.theme==="dark"?"sun":"moon"}))),
     h("main",{className:"main"},
-      tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:addContact,notify,onProfile:openProfile,avatarOf,contacts,onAdd:addContact}),
+      tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:addContact,notify,onProfile:openProfile,avatarOf,contacts,onAdd:addContact,verifiedOf:n=>!!(names[n]&&names[n].verified)}),
       tab==="calls"&&h(CallsTab,{calls:callLog,contacts,nameOf,avatarOf,onProfile:openProfile,notify,onAdd:addContact,onChat:n=>{setTab("chats");setPartner(n)}}),
       tab==="feed"&&h(FeedTab,{me,convos,nameOf,avatarOf,notify,onMessage:messageFromFeed,onProfile:openProfile,forward:setFwd,onBlock:setBlock,onSource:setSrcCard}),
-      tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut,onAvatar:saveAvatar,notify,banner,onBanner:saveBanner,convos,nameOf,blocked,onBlock:setBlock})),
+      tab==="me"&&h(Me,{me,prefs,setPrefs,onSave:saveProfile,onSignOut:signOut,onAvatar:saveAvatar,notify,banner,onBanner:saveBanner,convos,nameOf,blocked,onBlock:setBlock,isAdmin})),
     !online&&h("div",{className:"banner"},"You're offline. Showing saved chats."),
     h("nav",{className:"tabs","aria-label":"Main"},
       TABS.map(([id,label,icon])=>h("button",{key:id,className:"tab","aria-current":tab===id?"page":undefined,onClick:()=>setTab(id)},

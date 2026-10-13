@@ -1,28 +1,28 @@
-# Kite
- 
-A low-data messaging app that lets you message anyone by phone number.
- 
-**Features**
-- Phone number sign-up with SMS code verification
-- Chats by phone number, with an offline outbox that retries in order
-- Feed (280-character posts, likes) and Status (24-hour updates)
-- Light blue and dark blue themes, data saver mode
-- Text only, small assets (logos are ~14 KB each)
-**Tech**
-- React 18 (UMD build from cdnjs, jsDelivr fallback), no build step
-- One `index.html`, deployed to GitHub Pages by `.github/workflows/static.yml`
-**Backend**
-Auth (`/api/auth/send-code`, `/api/auth/verify-code`, `/api/me`) is live. These endpoints must exist for the rest to work, all with `Authorization: Bearer <token>`:
- 
-| Endpoint | Returns |
-|---|---|
-| `GET /api/messages?after=<cursor>` | `{messages:[{id,from,to,text,ts}], cursor}` |
-| `POST /api/messages` `{id,to,text,ts}` | OK; ignore a repeated `id` |
-| `GET /api/users/:number` | `{name,about}` or 404 |
-| `GET /api/posts?limit=` | `{posts:[{id,by,name,text,ts,likes,liked}]}` |
-| `POST /api/posts` `{text}` | `{post}` |
-| `POST /api/posts/:id/like` | `{liked,likes}` |
-| `GET /api/statuses` | `{statuses:[{id,by,name,text,ts}]}` (last 24h) |
-| `POST /api/statuses` `{text}` | `{status}` |
- 
-The backend must allow CORS from your GitHub Pages origin.
+KITE - UPDATED FILES (everything built so far)
+
+1) DATABASE (Neon > SQL Editor): paste sql/ALL_MIGRATIONS.sql and click Run. Safe to run again.
+
+2) BACKEND (GitHub repo kite_backend):
+   - kite_backend/server.js           -> main folder
+   - kite_backend/lib/roles.js        -> lib/ folder (create the folder if it does not exist)
+   - kite_backend/routes/*.js         -> routes/ folder
+   NOT included (leave yours as it is): routes/auth.js, package.json, lib/auth.js, lib/db.js
+   Render > kite_backend > Environment, add:
+     ADMIN_PHONES    = owner and co-developer numbers, digits only, comma separated
+     VERIFIED_PHONES = numbers of the KITE ADMIN1 and KITE ADMIN2 accounts
+   Wait for the deploy to say Live.
+
+3) FRONTEND (GitHub repo kite_frontend):
+   - kite_frontend/index.html and kite_frontend/sw.js -> main folder, side by side.
+   Reload the site with Ctrl+Shift+R.
+
+Tip: file names must be exact (users.js, not "users (2).js").
+
+PREMIUM (Paystack) - included in this zip
+   - kite_backend/routes/premium.js is mounted at /api/premium in server.js.
+   - Render > Environment, also add:  PAYSTACK_SECRET_KEY  (use your TEST key first)
+   - Paystack dashboard > Settings > API Keys & Webhooks > Webhook URL:
+       https://kite-backend-pqsm.onrender.com/api/premium/webhook
+   - Prices are set at the top of premium.js (in kobo: 50000 = NGN 500). Change them there.
+   - Accounts in ADMIN_PHONES and VERIFIED_PHONES get Premium free.
+   - Without PAYSTACK_SECRET_KEY the app still works; buying Premium just says payments are not set up.

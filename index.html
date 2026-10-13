@@ -221,7 +221,11 @@ textarea.field{resize:none}
 .lbitem{display:flex;align-items:center;gap:12px;width:100%;padding:12px 12px;border:0;border-radius:10px;background:none;color:#fff;font-size:15px;text-align:left}
 .lbitem:hover{background:rgba(255,255,255,.1)}.lbitem.danger{color:#ff6b6b}
 .profpage{position:fixed;inset:0;z-index:70;overflow-y:auto;background:var(--bg);color:var(--ink)}
-.profbanner{position:relative;height:150px;background:linear-gradient(135deg,#1668e3,#4f93f0) center/cover no-repeat}
+.profbanner{position:relative;z-index:0;height:150px;min-height:150px;background:linear-gradient(135deg,#1668e3,#4f93f0) center/cover no-repeat;isolation:isolate;flex:none}
+/* Fix profile banner/avatar stacking and prevent clipping */
+.profbody{position:relative;z-index:1;overflow:visible}
+.profbody > div:first-child{position:relative;z-index:2}
+.profbanner[style*="background-image"]{background-position:center;background-size:cover;background-repeat:no-repeat}
 .profbanner.news{background:linear-gradient(135deg,#1d4ed8,#0ea5e9)}.profbanner.sports{background:linear-gradient(135deg,#16a34a,#84cc16)}.profbanner.memes{background:linear-gradient(135deg,#f97316,#ec4899)}
 .profbody{padding:0 16px max(28px,env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
 .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 12px}

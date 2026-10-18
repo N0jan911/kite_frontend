@@ -4,4 +4,4 @@ const y=document.getElementById('year');if(y)y.textContent=new Date().getFullYea
 const f=document.getElementById('mailForm');
 if(f){f.addEventListener('submit',e=>{e.preventDefault();const d=new FormData(f);
 const body='Name: '+(d.get('name')||'')+'\nEmail: '+(d.get('email')||'')+'\n\n'+(d.get('message')||'');
-location.href='mailto:founder.kiteapp@gmail.com?subject='+encodeURIComponent('Kite Connect: '+(d.get('topic')||'Enquiry'))+'&body='+encodeURIComponent(body);});}
+location.href='mailto:supportteam.kite@gmail.com?subject='+encodeURIComponent('Kite Connect: '+(d.get('topic')||'Enquiry'))+'&body='+encodeURIComponent(body);});}

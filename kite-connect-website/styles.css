@@ -80,3 +80,5 @@ h1 span{color:var(--blue)}
 @media(max-width:800px){.hero{padding:55px 0 60px}.visual{min-height:310px}.halo{width:270px;height:270px}.section{padding:62px 0}.ctaBox{padding:34px}}
 @media(max-width:560px){.hero{padding:42px 0 44px}.visual{min-height:255px}.halo{width:220px;height:220px}.section{padding:54px 0}.linkcards{grid-template-columns:1fr}.cta{padding:32px 0 54px}.ctaBox{padding:27px 22px;border-radius:18px}.brand span{font-size:18px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
+
+.skip-link{position:absolute;left:12px;top:-60px;z-index:20;padding:10px 14px;border-radius:8px;background:#fff;color:var(--navy);border:2px solid var(--blue)}.skip-link:focus{top:12px}

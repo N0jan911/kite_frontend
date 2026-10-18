@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Kite</title>
 <meta name="theme-color" content="#1668e3">
-<meta name="kite-build" content="2026-10-18-lite">
+<meta name="kite-build" content="2026-10-18-color">
 <meta name="description" content="Connect · Share · Belong">
 <link rel="icon" type="image/png" href="icon-light.png">
 <link rel="preconnect" href="https://kite-backend-pqsm.onrender.com" crossorigin>
@@ -396,6 +396,28 @@ body{
 .profbanner{height:118px;min-height:118px}
 .stories{padding:2px 1px 10px}
 .main{padding-bottom:28px}
+
+/* ---- colour pass: soft pink accent + dark-mode fixes ---- */
+.ring{background:linear-gradient(135deg,#7fa4ff,#b693ff 55%,#ff9bd2)}
+.ring.seen{background:#e2e7f5}
+.plus{background:linear-gradient(135deg,#7fa1f5,#e68ad3)}
+.tab[aria-current=page]{background:linear-gradient(135deg,#e8efff,#f6e9ff 60%,#ffe9f4);color:#6a7fe6}
+.seg button[aria-pressed=true],.fab,.send,.bub.me,.btn:not(.soft){background:linear-gradient(135deg,#789af0,#a58df0 60%,#f193cf)}
+.count{background:#ff7ab8;color:#fff}
+.seg:has(button:nth-child(4)){grid-template-columns:repeat(4,1fr)}
+.seg button{padding:9px 4px;font-size:13px}
+.shell[data-skin=dark] .ring.seen{background:#343d5a}
+.shell[data-skin=dark] .ring .avatar,.shell[data-skin=dark] .avatar{box-shadow:0 0 0 3px #111522}
+.shell[data-skin=dark] .tab[aria-current=page]{background:linear-gradient(135deg,#2a3358,#3a2c5c 60%,#4a2c52);color:#eef1ff}
+.shell[data-skin=dark] .tabs .tab{color:#8e9abb}
+.shell[data-skin=dark] .tabs .tab[aria-current=page]{color:#eef1ff}
+.shell[data-skin=dark] .seg{background:#171d2e;border-color:#343d5a}
+.shell[data-skin=dark] .seg button{color:#aab4d0}
+.shell[data-skin=dark] .btn.soft{background:#252d49;color:#cdd8ff}
+.shell[data-skin=dark] .act{background:#202842;color:#aab4d0}
+.shell[data-skin=dark] .act[aria-pressed=true]{background:#2b3560;color:#cfd9ff}
+.shell[data-skin=dark] .row:hover{background:#1b2235}
+.shell[data-skin=dark] .banner{background:#1b2235;color:#aab4d0}
 
 </style>
 </head>
@@ -1036,7 +1058,7 @@ const callStatus=c=>{const out=c.dir==="out";switch(c.outcome){
   case"failed":return"Call failed (connection)";
   default:return callWord(c)}};
 const callBad=c=>(c.dir==="in"&&(c.outcome==="missed"||c.outcome==="cancelled"))||c.outcome==="failed";
-const APP_BUILD="2026-10-18-lite",SUPPORT_EMAIL="kitegroup.connect@gmail.com";
+const APP_BUILD="2026-10-18-color",SUPPORT_EMAIL="kitegroup.connect@gmail.com";
 const Check=()=>h("span",{className:"vbadge",title:"Verified","aria-label":"Verified"},h(Icon,{n:"check",s:8}));
 const I18N={pcm:{Chats:"Chat dem",Feed:"Wetin dey happen",Calls:"Call dem",Me:"Me",Settings:"Settings"},yo:{Chats:"\u00ccf\u1ecd\u0300r\u1ecd\u0300w\u00e9r\u1ecd\u0300",Feed:"\u00ccr\u00f2y\u00ecn",Calls:"\u00ccp\u00e8",Me:"\u00c8mi"},ig:{Chats:"Mkpar\u1ecbta \u1ee5ka",Feed:"Ak\u1ee5k\u1ecd",Calls:"Oku",Me:"M\u1ee5"},ha:{Chats:"Tattaunawa",Feed:"Labarai",Calls:"Kira",Me:"Ni"}};
 const LANGS=[["en","English"],["pcm","Nigerian Pidgin"],["yo","Yor\u00f9b\u00e1"],["ig","Igbo"],["ha","Hausa"]];
@@ -1235,7 +1257,6 @@ function Stories({me,convos,nameOf,avatarOf,onOpen}){
   useEffect(()=>{let on=true;const load=async()=>{try{const r=await api("/api/statuses");if(on)setList(r.statuses||[])}catch(e){}};load();const t=setInterval(load,60000);return()=>{on=false;clearInterval(t)}},[]);
   const by=new Map();
   for(const x of list){if(x.mine)continue;const c=by.get(x.by)||{n:x.by,name:x.name,avatar:x.avatar,unseen:false,story:true};if(!x.seen)c.unseen=true;by.set(x.by,c)}
-  for(const c of convos)if(!by.has(c.partner))by.set(c.partner,{n:c.partner,name:nameOf(c.partner),avatar:avatarOf(c.partner),unseen:false,story:false});
   const people=[...by.values()].sort((a,b)=>(b.unseen-a.unseen)||(b.story-a.story));
   const Bub=(n,name,avatar,cls,badge)=>h("button",{key:n,className:"sb",onClick:()=>onOpen(n)},h("div",{className:"ring "+cls},h(Avatar,{id:n,name,size:46,src:avatar}),badge&&h("span",{className:"plus"},h(Icon,{n:"plus",s:12}))),h("span",null,name));
   const hasMine=list.some(x=>x.mine);
@@ -1635,12 +1656,13 @@ function PremiumPanel({acct,notify}){
 function ProProfile({me,acct,banner,onAvatar,notify,onSettings,onSignOut}){
   const [d,setD]=useState(null),[tab,setTab]=useState("post"),[posts,setPosts]=useState(null),[flist,setFlist]=useState(null),[reqs,setReqs]=useState([]);
   useEffect(()=>{api("/api/users/profile/"+encodeURIComponent(me.number)).then(setD).catch(()=>{})},[me.number]);
-  useEffect(()=>{setPosts(null);api("/api/posts/by/"+encodeURIComponent(me.number)+"?kind="+tab+"&limit=40").then(r=>setPosts(r.posts||[])).catch(()=>setPosts([]))},[tab,me.number]);
+  useEffect(()=>{setPosts(null);api(tab==="likes"?"/api/posts/liked?limit=40":"/api/posts/by/"+encodeURIComponent(me.number)+"?kind="+(tab==="repost"?"repost":"post")+"&limit="+(tab==="media"?60:40)).then(r=>setPosts(r.posts||[])).catch(()=>setPosts([]))},[tab,me.number]);
   useEffect(()=>{if(acct.privateAccount)api("/api/users/requests").then(r=>setReqs(r.people||[])).catch(()=>{});else setReqs([])},[acct.privateAccount]);
   const answer=async(u,accept)=>{try{await api("/api/users/requests",{method:"POST",body:{number:u.number,accept}});setReqs(l=>l.filter(x=>x.number!==u.number));if(accept)setD(x=>x&&{...x,followers:x.followers+1})}catch(e){notify(e.message)}};
   const setVis=async q=>{const v=q.visibility==="private"?"public":"private";try{await api("/api/posts/"+encodeURIComponent(q.id)+"/visibility",{method:"POST",body:{visibility:v}});setPosts(l=>l.map(x=>x.id===q.id?{...x,visibility:v,pinned:v==="private"?false:x.pinned}:x))}catch(e){notify(e.message)}};
   const pin=async q=>{const on=!q.pinned;try{await api("/api/users/pin",{method:"POST",body:{postId:on?q.id:null}});setPosts(l=>l.map(x=>({...x,pinned:on&&x.id===q.id})));notify(on?"Pinned to your profile":"Unpinned")}catch(e){notify(e.message)}};
   const del=async q=>{if(!confirm("Delete this post?"))return;try{await api("/api/posts/"+encodeURIComponent(q.id),{method:"DELETE"});setPosts(l=>l.filter(x=>x.id!==q.id))}catch(e){notify(e.message)}};
+  const shown=posts&&(tab==="media"?posts.filter(q=>q.media):posts);
   return h(Fragment,null,
     h("div",{className:"profbanner",style:{borderRadius:18,...(banner&&banner.url?{backgroundImage:"url("+cl(banner.url,"f_auto,q_auto,w_900")+")"}:{background:"linear-gradient(135deg,hsl("+hue(me.number)+" 70% 42%),hsl("+((hue(me.number)+50)%360)+" 70% 55%))"})}},
       h("button",{className:"act",style:{position:"absolute",top:10,right:10,background:"rgba(0,0,0,.5)",color:"#fff"},onClick:()=>onSettings("settings")},"Settings")),
@@ -1658,17 +1680,17 @@ function ProProfile({me,acct,banner,onAvatar,notify,onSettings,onSignOut}){
         h("button",{className:"btn sm",style:{flex:1,margin:0,padding:"9px 12px"},onClick:()=>onSettings("pro")},"Dashboard"),
         h("button",{className:"btn soft sm",style:{flex:1,margin:0,padding:"9px 12px"},onClick:()=>onSettings("account")},"Edit profile")),
       reqs.length>0&&h("div",{className:"card"},h("div",{className:"name"},"Follow requests ("+reqs.length+")"),reqs.map(u=>h("div",{key:u.number,className:"row"},h(Avatar,{id:u.number,name:u.name,size:36,src:u.avatar}),h("div",{className:"grow name trunc"},u.name,u.verified&&h(Check)),h("button",{className:"act",onClick:()=>answer(u,true)},"Accept"),h("button",{className:"act",onClick:()=>answer(u,false)},"Decline")))),
-      h("div",{className:"seg",style:{marginTop:8}},[["post","Posts"],["repost","Reposts"]].map(([k,l])=>h("button",{key:k,"aria-pressed":tab===k,onClick:()=>setTab(k)},l))),
+      h("div",{className:"seg",style:{marginTop:8}},[["post","Posts"],["repost","Reposts"],["media","Media"],["likes","Likes"]].map(([k,l])=>h("button",{key:k,"aria-pressed":tab===k,onClick:()=>setTab(k)},l))),
       posts===null&&h("p",{className:"sub"},"Loading\u2026"),
-      posts&&posts.length===0&&h("p",{className:"empty"},tab==="repost"?"No reposts yet. Repost a news story from the Feed.":"No posts yet. Share something from the Feed."),
-      posts&&posts.map(q=>h("article",{className:"post",key:q.id},
-        h("div",{className:"sub"},(q.pinned?"\ud83d\udccc Pinned \u00b7 ":"")+ago(q.ts)+" \u00b7 "+(q.visibility==="private"?"Private":"Public")),
+      shown&&shown.length===0&&h("p",{className:"empty"},tab==="repost"?"No reposts yet. Repost a news story from the Feed.":tab==="media"?"No photos or videos yet.":tab==="likes"?"Posts you like will show here.":"No posts yet. Share something from the Feed."),
+      shown&&shown.map(q=>h("article",{className:"post",key:q.id},
+        h("div",{className:"sub"},(tab==="likes"?q.name+" \u00b7 ":"")+(q.pinned?"\ud83d\udccc Pinned \u00b7 ":"")+ago(q.ts)+(tab==="likes"?"":" \u00b7 "+(q.visibility==="private"?"Private":"Public"))),
         h("div",{className:"text"},q.text),
         q.media&&(isVideo(q.media)?h("video",{className:"pic",src:cl(q.media,"q_auto,w_720"),poster:vposter(q.media),controls:true,playsInline:true,preload:"none"}):h(Img,{className:"pic",src:q.media,w:640,alt:"Photo"})),
         h("div",{className:"actions"},h("span",{className:"sub"},q.likes+" likes"),
-          h("button",{className:"act",onClick:()=>setVis(q)},h(Icon,{n:"lock",s:14}),q.visibility==="private"?"Make public":"Make private"),
-          q.kind==="post"&&q.visibility==="public"&&h("button",{className:"act",onClick:()=>pin(q)},q.pinned?"Unpin":"Pin"),
-          h("button",{className:"act",onClick:()=>del(q)},"Delete")))),
+          tab!=="likes"&&h("button",{className:"act",onClick:()=>setVis(q)},h(Icon,{n:"lock",s:14}),q.visibility==="private"?"Make public":"Make private"),
+          tab!=="likes"&&q.kind==="post"&&q.visibility==="public"&&h("button",{className:"act",onClick:()=>pin(q)},q.pinned?"Unpin":"Pin"),
+          tab!=="likes"&&h("button",{className:"act",onClick:()=>del(q)},"Delete")))),
       h("button",{className:"btn soft",style:{marginTop:18},onClick:onSignOut},h(Icon,{n:"logout",s:18}),"Sign out")),
     flist&&h("div",{className:"layer"},h(FollowList,{number:me.number,kind:flist,notify,onClose:()=>setFlist(null),onOpen:()=>{}})));
 }

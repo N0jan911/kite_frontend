@@ -82,3 +82,7 @@ h1 span{color:var(--blue)}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
 
 .skip-link{position:absolute;left:12px;top:-60px;z-index:20;padding:10px 14px;border-radius:8px;background:#fff;color:var(--navy);border:2px solid var(--blue)}.skip-link:focus{top:12px}
+
+/* Partnership section */
+.partner-section{padding-top:20px}.partner-panel{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;padding:clamp(25px,5vw,52px);border:1px solid var(--line);border-radius:24px;background:#f7f9fc}.partner-copy h2,.partner-contact h2{font-size:clamp(28px,3.7vw,42px);line-height:1.12;letter-spacing:-.045em;margin:12px 0}.partner-copy p,.partner-contact p{color:var(--mute);font-size:15px;line-height:1.75;margin:0 0 22px}.partner-list{display:grid;gap:0}.partner-list>div{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid #dfe6ef}.partner-list>div:last-child{border-bottom:0}.partner-number{font-size:12px;font-weight:800;color:var(--blue);padding-top:3px}.partner-list strong,.partner-list small{display:block}.partner-list strong{font-size:15px}.partner-list small{color:var(--mute);font-size:13px;line-height:1.6;margin-top:4px}.partner-contact{max-width:780px;margin:auto;padding:32px;border:1px solid var(--line);border-radius:22px;background:#f7f9fc}.partner-contact .btn{margin-top:2px}
+@media(max-width:760px){.partner-panel{grid-template-columns:1fr;gap:24px}.partner-contact{padding:24px}}

@@ -39,3 +39,46 @@
 @media(max-width:560px){.linkcards{grid-template-columns:1fr}.pagehero{padding:42px 0 38px}}
 .brand{display:flex;align-items:center;gap:10px}
 .brand span{font-weight:850;font-size:20px;letter-spacing:-.035em;color:var(--navy)}
+
+
+/* 2026 website refinement: calmer, sharper, more accessible */
+:root{--blue:#1765d1;--navy:#101d35;--sky:#f5f8fc;--line:#e0e7f0;--mute:#5c6b82}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.6}
+a:focus-visible,button:focus-visible{outline:3px solid #8ab8ff;outline-offset:3px}
+.btn{background:var(--blue);border:1px solid var(--blue);border-radius:12px;box-shadow:none;transition:transform .18s ease,background .18s ease}
+.btn:hover{background:#0f53b4;box-shadow:0 8px 18px #102e5917}
+.btn.ghost{background:#fff;color:var(--navy);border-color:#d7e0ec}
+.btn.ghost:hover{background:#f2f6fb}
+.hero{background:#f7f9fc;border-bottom:1px solid #edf1f6;padding:76px 0 78px}
+.heroGrid{gap:54px}
+.eyebrow{border-color:#d8e4f4;background:#fff;color:#24558e;letter-spacing:.035em;text-transform:none;font-size:12px}
+.dot{flex:none}
+h1{font-size:clamp(44px,5.6vw,70px);letter-spacing:-.06em;line-height:1.02}
+h1 span{color:var(--blue)}
+.lead{font-size:17px;line-height:1.75;color:#52627a}
+.note{font-size:13px;color:#69788e}
+.visual{min-height:380px}
+.halo{width:330px;height:330px;background:#eaf1fb;box-shadow:none}
+.visualLogo{width:min(76%,310px);filter:drop-shadow(0 18px 20px #142c5014)}
+.bubble{border-radius:14px;box-shadow:0 10px 28px #152c4b0c;border-color:#e3e9f1;font-size:13px}
+.section{padding:78px 0}
+.center{margin-bottom:34px}
+.section h2{letter-spacing:-.045em}
+.linkcards{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.linkcard{border-radius:17px;padding:22px;box-shadow:none;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.linkcard:hover{transform:translateY(-3px);border-color:#b8cce8;box-shadow:0 12px 24px #17375d0a}
+.ico{border-radius:13px;background:#edf4ff}
+.linkcard h3{font-size:17px}
+.linkcard p{line-height:1.65}
+.cta{padding:48px 0 72px}
+.ctaBox{background:#11294a;border-radius:22px;padding:42px}
+.ctaBox .btn{background:#fff;border-color:#fff;color:#174e9e}
+.ctaBox .btn:hover{background:#eef4ff}
+.foot{background:#0c1930}
+.footlinks a{transition:color .15s ease}
+@media(max-width:900px){.linkcards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:800px){.hero{padding:55px 0 60px}.visual{min-height:310px}.halo{width:270px;height:270px}.section{padding:62px 0}.ctaBox{padding:34px}}
+@media(max-width:560px){.hero{padding:42px 0 44px}.visual{min-height:255px}.halo{width:220px;height:220px}.section{padding:54px 0}.linkcards{grid-template-columns:1fr}.cta{padding:32px 0 54px}.ctaBox{padding:27px 22px;border-radius:18px}.brand span{font-size:18px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
+
+.skip-link{position:absolute;left:12px;top:-60px;z-index:20;padding:10px 14px;border-radius:8px;background:#fff;color:var(--navy);border:2px solid var(--blue)}.skip-link:focus{top:12px}

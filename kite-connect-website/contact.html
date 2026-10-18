@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1668e3">
+<title>Contact — Kite Connect</title>
+<meta name="description" content="Email Kite Connect for questions, partnerships and support. ">
+<meta property="og:title" content="Contact — Kite Connect">
+<meta property="og:description" content="Email Kite Connect for questions, partnerships and support. ">
+<meta property="og:image" content="https://n0jan911.github.io/kite_frontend/logo-light.png">
+<link rel="icon" href="../icon-light.png" type="image/png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="wrap nav">
+<a class="brand" href="index.html" aria-label="Kite Connect home"><img src="../logo-light.png" alt="Kite logo"><span>Kite Connect</span></a>
+<button id="menuBtn" aria-expanded="false" aria-controls="siteLinks">Menu ☰</button>
+<nav class="links" id="siteLinks" aria-label="Main navigation"><a href="index.html">Home</a><a href="about.html">About</a><a href="what-we-do.html">What we do</a><a href="mission.html">Our mission</a><a href="contact.html" aria-current="page">Contact</a><a class="btn" href="https://kite-frontend-fz0r.onrender.com/" target="_blank" rel="noopener">Open Kite ↗</a></nav>
+</header>
+<main>
+<section class="pagehero"><div class="wrap"><span class="kicker">Email us</span><h1>Let’s build better connections.</h1><p class="lead">Questions about Kite, partnership ideas or feedback? Send us a message.</p></div></section>
+<section class="section"><div class="wrap split">
+<div>
+<h3 style="margin:0 0 8px;font-size:22px;letter-spacing:-.03em">Send us a message</h3>
+<p class="formnote" style="margin-bottom:14px">This opens your email app with your message ready to send.</p>
+<form class="form" id="mailForm">
+<label>Your name<input name="name" required autocomplete="name"></label>
+<label>Your email<input name="email" type="email" required autocomplete="email"></label>
+<label>Topic<select name="topic"><option>General enquiry</option><option>Partnership</option><option>Support</option><option>Feedback</option></select></label>
+<label>Message<textarea name="message" required></textarea></label>
+<button class="btn" type="submit">Send email</button>
+</form>
+
+</div>
+<div>
+<div class="contactCard"><h3>Email us directly</h3><p>For questions, partnerships and support.</p><a class="contactLink" href="mailto:founder.kiteapp@gmail.com?subject=Kite%20Connect%20Enquiry">founder.kiteapp@gmail.com</a></div>
+<div class="contactCard" style="margin-top:17px"><h3>Try the Kite app</h3><p>Explore the current web app. Some functionality may still be under development.</p><a class="contactLink" href="https://kite-frontend-fz0r.onrender.com/" target="_blank" rel="noopener">Open Kite ↗</a></div>
+</div>
+</div></section>
+</main>
+<footer class="foot"><div class="wrap footrow"><div><a href="index.html"><img src="../logo-dark.png" alt="Kite Connect"></a><p>© <span id="year"></span> Kite Connect. Built in Nigeria.</p></div><div class="footlinks"><a href="index.html">Home</a><a href="about.html">About</a><a href="what-we-do.html">What we do</a><a href="mission.html">Our mission</a><a href="contact.html">Contact</a><a href="https://kite-frontend-fz0r.onrender.com/" target="_blank" rel="noopener">Kite app ↗</a></div></div></footer>
+<script src="site.js"></script>
+</body>
+</html>

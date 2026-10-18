@@ -5,9 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Kite</title>
 <meta name="theme-color" content="#1668e3">
-<meta name="kite-build" content="2026-10-13-ui-refresh">
+<meta name="kite-build" content="2026-10-18-lite">
 <meta name="description" content="Connect · Share · Belong">
 <link rel="icon" type="image/png" href="icon-light.png">
+<link rel="preconnect" href="https://kite-backend-pqsm.onrender.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<script>/* wake the server while the app loads (Render sleeps when idle) */try{fetch("https://kite-backend-pqsm.onrender.com/health",{mode:"no-cors",cache:"no-store"}).catch(function(){})}catch(e){}</script>
 <script>
 /* Apply saved theme before first paint so dark mode never flashes white. */
 document.documentElement.dataset.theme="light";
@@ -378,10 +381,26 @@ body{
 .shell[data-skin=dark] .iconbtn{background:#1c2336;border-color:#343d5a}
 .shell[data-skin=dim] .card,.shell[data-skin=dim] .post{box-shadow:0 8px 25px rgba(0,0,0,.14)}
 
+/* ---- lite pass: loader, skeletons, calmer layout ---- */
+#root>.boot{height:100%}
+.boot{background:transparent}
+.bootmark{font-size:44px;font-weight:800;letter-spacing:.34em;padding-left:.34em;color:var(--accent);opacity:.2;animation:kboot 1.8s ease-in-out infinite;user-select:none}
+@keyframes kboot{0%,100%{opacity:.18}50%{opacity:.6}}
+.netspin{display:none!important}
+.skel{padding:16px 4px;border-bottom:1px solid var(--line)}
+.skel i{display:block;border-radius:10px;background:linear-gradient(90deg,var(--tint) 25%,var(--sky) 50%,var(--tint) 75%);background-size:200% 100%;animation:kshim 1.4s linear infinite}
+.skel-a{width:42%;height:14px;margin-bottom:12px}.skel-b{width:92%;height:12px;margin-bottom:8px}.skel-c{width:68%;height:12px}
+@keyframes kshim{to{background-position:-200% 0}}
+.card.compact{padding:6px 8px;border-radius:18px}
+.sb{width:58px}
+.profbanner{height:118px;min-height:118px}
+.stories{padding:2px 1px 10px}
+.main{padding-bottom:28px}
+
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root"><div class="boot"><div class="bootmark">KITE</div></div></div>
 <noscript>Kite needs JavaScript to run.</noscript>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
@@ -1017,7 +1036,7 @@ const callStatus=c=>{const out=c.dir==="out";switch(c.outcome){
   case"failed":return"Call failed (connection)";
   default:return callWord(c)}};
 const callBad=c=>(c.dir==="in"&&(c.outcome==="missed"||c.outcome==="cancelled"))||c.outcome==="failed";
-const APP_BUILD="2026-10-13-ui-refresh",SUPPORT_EMAIL="kitegroup.connect@gmail.com";
+const APP_BUILD="2026-10-18-lite",SUPPORT_EMAIL="kitegroup.connect@gmail.com";
 const Check=()=>h("span",{className:"vbadge",title:"Verified","aria-label":"Verified"},h(Icon,{n:"check",s:8}));
 const I18N={pcm:{Chats:"Chat dem",Feed:"Wetin dey happen",Calls:"Call dem",Me:"Me",Settings:"Settings"},yo:{Chats:"\u00ccf\u1ecd\u0300r\u1ecd\u0300w\u00e9r\u1ecd\u0300",Feed:"\u00ccr\u00f2y\u00ecn",Calls:"\u00ccp\u00e8",Me:"\u00c8mi"},ig:{Chats:"Mkpar\u1ecbta \u1ee5ka",Feed:"Ak\u1ee5k\u1ecd",Calls:"Oku",Me:"M\u1ee5"},ha:{Chats:"Tattaunawa",Feed:"Labarai",Calls:"Kira",Me:"Ni"}};
 const LANGS=[["en","English"],["pcm","Nigerian Pidgin"],["yo","Yor\u00f9b\u00e1"],["ig","Igbo"],["ha","Hausa"]];
@@ -1218,7 +1237,7 @@ function Stories({me,convos,nameOf,avatarOf,onOpen}){
   for(const x of list){if(x.mine)continue;const c=by.get(x.by)||{n:x.by,name:x.name,avatar:x.avatar,unseen:false,story:true};if(!x.seen)c.unseen=true;by.set(x.by,c)}
   for(const c of convos)if(!by.has(c.partner))by.set(c.partner,{n:c.partner,name:nameOf(c.partner),avatar:avatarOf(c.partner),unseen:false,story:false});
   const people=[...by.values()].sort((a,b)=>(b.unseen-a.unseen)||(b.story-a.story));
-  const Bub=(n,name,avatar,cls,badge)=>h("button",{key:n,className:"sb",onClick:()=>onOpen(n)},h("div",{className:"ring "+cls},h(Avatar,{id:n,name,size:54,src:avatar}),badge&&h("span",{className:"plus"},h(Icon,{n:"plus",s:12}))),h("span",null,name));
+  const Bub=(n,name,avatar,cls,badge)=>h("button",{key:n,className:"sb",onClick:()=>onOpen(n)},h("div",{className:"ring "+cls},h(Avatar,{id:n,name,size:46,src:avatar}),badge&&h("span",{className:"plus"},h(Icon,{n:"plus",s:12}))),h("span",null,name));
   const hasMine=list.some(x=>x.mine);
   return h("div",{className:"stories"},Bub(me.number,"Your story",me.avatarUrl,hasMine?"new":"seen",!hasMine),people.map(c=>Bub(c.n,c.name,c.avatar,c.story?(c.unseen?"new":"seen"):"",false)));
 }
@@ -1288,8 +1307,10 @@ function InterestSheet({tags,mine,onClose,onSave}){
       h("div",{style:{display:"flex",flexWrap:"wrap",gap:8}},tags.filter(t=>t.group===g).map(t=>h("button",{key:t.id,className:"act","aria-pressed":sel.has(t.id),onClick:()=>tog(t.id)},t.label))))),
     h("button",{className:"btn",style:{width:"100%",marginTop:8},disabled:busy,onClick:async()=>{setBusy(true);await onSave([...sel]);setBusy(false)}},busy?"Saving\u2026":"Save ("+sel.size+")"));
 }
+const Skel=()=>h(Fragment,null,[0,1,2].map(i=>h("div",{key:i,className:"skel"},h("i",{className:"skel-a"}),h("i",{className:"skel-b"}),h("i",{className:"skel-c"}))));
 function Composer({notify,onPosted}){
-  const [text,setText]=useState(""),[busy,setBusy]=useState(false),[photo,setPhoto]=useState(null),[vis,setVis]=useState("public"),taRef=useRef(null);
+  const [text,setText]=useState(""),[busy,setBusy]=useState(false),[photo,setPhoto]=useState(null),[vis,setVis]=useState("public"),taRef=useRef(null),[open,setOpen]=useState(false);
+  const showTools=open||text.length>0||!!photo;
   useEffect(()=>{const el=taRef.current;if(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,140)+"px"}},[text]);
   const post=async()=>{
     const t=text.trim();if((!t&&!photo)||busy)return;
@@ -1299,20 +1320,20 @@ function Composer({notify,onPosted}){
       const media=photo?(photo.type&&photo.type.startsWith("video/")?(await uploadAttachment(photo)).url:await uploadImage(photo)):undefined;
       const r=await api("/api/posts",{method:"POST",body:{text:t,media,visibility:vis}});
       if(vis==="public")onPosted(r.post);else notify("Saved privately. Only you can see it on your profile.");
-      setText("");setPhoto(null);
+      setText("");setPhoto(null);setOpen(false);
     }catch(e){notify(e.message)}
     setBusy(false);
   };
-  return h("div",{className:"card"},
-    h("textarea",{ref:taRef,className:"field",rows:1,maxLength:280,placeholder:"Share something short. Use #hashtags","aria-label":"New post",style:{minHeight:44,maxHeight:140,padding:"10px 14px"},value:text,onChange:e=>setText(e.target.value)}),
-    h(PhotoPick,{photo,setPhoto,video:true,right:[
+  return h("div",{className:"card"+(showTools?"":" compact")},
+    h("textarea",{ref:taRef,className:"field",rows:1,maxLength:280,onFocus:()=>setOpen(true),placeholder:"Share something\u2026","aria-label":"New post",style:{minHeight:44,maxHeight:140,padding:"10px 14px"},value:text,onChange:e=>setText(e.target.value)}),
+    showTools&&h(PhotoPick,{photo,setPhoto,video:true,right:[
       text.length>0&&h("span",{key:"n",className:"sub"},text.length+"/280"),
       h("button",{key:"v",className:"act","aria-pressed":vis==="private",title:"Who can see this post",onClick:()=>setVis(v=>v==="private"?"public":"private")},h(Icon,{n:"lock",s:14}),vis==="private"?"Private":"Public"),
       h("button",{key:"p",className:"btn sm",style:{padding:"6px 16px",fontSize:13,minHeight:0,height:32,borderRadius:99},onClick:post,disabled:(!text.trim()&&!photo)||busy},busy?"Posting\u2026":"Post")]}));
 }
 function Feed({me,onMessage,notify,onProfile,forward,onBlock,onSource}){
   const [posts,setPosts]=useState([]),[text,setText]=useState(""),[busy,setBusy]=useState(false),[loaded,setLoaded]=useState(false),[photo,setPhoto]=useState(null),[items,setItems]=useState(()=>store.json("kite:feeditems",[])),[topic,setTopic]=useState("all"),
-    [more,setMore]=useState(false),[busyMore,setBusyMore]=useState(false),[tags,setTags]=useState([]),[mine,setMine]=useState([]),[searching,setSearching]=useState(false),[qtext,setQtext]=useState(""),[query,setQuery]=useState(""),[prefOpen,setPrefOpen]=useState(false);
+    [more,setMore]=useState(false),[busyMore,setBusyMore]=useState(false),[tags,setTags]=useState([]),[mine,setMine]=useState([]),[searching,setSearching]=useState(false),[qtext,setQtext]=useState(""),[query,setQuery]=useState(""),[prefOpen,setPrefOpen]=useState(false),[menu,setMenu]=useState(false);
   const [reels,setReels]=useState(false),[reading,setReading]=useState(null),[viewer,setViewer]=useState(null),[reporting,setReporting]=useState(null),[hidden,setHidden]=useState(()=>store.json("kite:hiddenitems",[]));
   const openPost=p=>setViewer({kind:"post",src:p.media,p}),openItem=it=>setViewer({kind:"item",src:it.image,it});
   const hideItem=id=>{setHidden(o=>{const n=[...o,id].slice(-300);store.set("kite:hiddenitems",JSON.stringify(n));return n});notify("We'll show less like this")};
@@ -1400,19 +1421,21 @@ function Feed({me,onMessage,notify,onProfile,forward,onBlock,onSource}){
       h("div",{className:"stories",style:{flex:1,minWidth:0,margin:0}},[["all","For you"],["news","News"],["sports","Sports"],["memes","Memes"],...mine.map(id=>["t:"+id,(tags.find(t=>t.id===id)||{}).label||id])].map(([k,l])=>h("button",{key:k,className:"act","aria-pressed":topic===k,onClick:()=>setTopic(k)},l))),
       h("div",{className:"feedicons"},
         h("button",{className:"iconbtn",onClick:toggleSearch,"aria-label":"Search feed"},h(Icon,{n:searching?"close":"search"})),
-        h("button",{className:"iconbtn",onClick:()=>setReels(true),"aria-label":"Reels"},h(Icon,{n:"play"})),
-        h("button",{className:"iconbtn",onClick:()=>setPrefOpen(true),"aria-label":"Your interests"},h(Icon,{n:"dots"})),
-        h("button",{className:"iconbtn",onClick:()=>{resnap();load(false);loadItems(topic,true,query)},"aria-label":"Refresh feed"},h(Icon,{n:"refresh"})))),
+        h("button",{className:"iconbtn",onClick:()=>setMenu(true),"aria-label":"More feed options"},h(Icon,{n:"dots"})))),
     searching&&h("div",{style:{display:"flex",gap:8,margin:"0 0 10px"}},h("input",{className:"field",autoFocus:true,maxLength:60,placeholder:"Search news, memes, tags","aria-label":"Search feed",value:qtext,onChange:e=>setQtext(e.target.value),onKeyDown:e=>{if(e.key==="Enter")setQuery(qtext.trim())}}),h("button",{className:"btn sm",onClick:()=>setQuery(qtext.trim())},"Search")),
     query&&h("p",{className:"sub",style:{margin:"0 0 8px"}},"Results for \u201c"+query+"\u201d"),
     !query&&h(Composer,{notify,onPosted:p=>setPosts(l=>[p,...l])}),
-    mixed.length===0&&h("p",{className:"empty"},loaded?"Nothing here yet. Post the first update.":"Loading…"),
+    mixed.length===0&&(loaded?h("p",{className:"empty"},"Nothing here yet. Post the first update."):h(Skel)),
     mixed.map(renderEntry),
     showOld&&earlier.length>0&&h("p",{className:"sub",style:{textAlign:"center",padding:"10px 0"}},"Earlier"),
     showOld&&earlier.map(renderEntry),
     h("div",{ref:sentinel,style:{height:1}}),
     busyMore&&h("p",{className:"sub",style:{textAlign:"center",padding:"10px 0"}},"Loading more\u2026"),
     !more&&!busyMore&&(items.length>0||earlier.length>0)&&h("div",{style:{textAlign:"center",padding:"12px 0"}},h("p",{className:"sub"},"You're all caught up. Tap refresh for a new mix."),!showOld&&earlier.length>0&&h("button",{className:"act",style:{marginTop:8},onClick:()=>setShowOld(true)},"Show earlier posts")),
+    menu&&h(Sheet,{title:"Feed",onClose:()=>setMenu(false)},
+      h("button",{className:"row",onClick:()=>{setMenu(false);setReels(true)}},h(Icon,{n:"play"}),h("div",{className:"grow name"},"Reels")),
+      h("button",{className:"row",onClick:()=>{setMenu(false);setPrefOpen(true)}},h(Icon,{n:"dots"}),h("div",{className:"grow name"},"Your interests")),
+      h("button",{className:"row",onClick:()=>{setMenu(false);resnap();load(false);loadItems(topic,true,query)}},h(Icon,{n:"refresh"}),h("div",{className:"grow name"},"Refresh feed"))),
     reading&&h(ReaderPage,{it:reading,onClose:()=>setReading(null),forward}),
     reels&&h(Reels,{me,notify,onClose:()=>setReels(false),onProfile}),
     lb&&h(Lightbox,{src:viewer.src,title:lb.title,sub:lb.sub,actions:lb.actions,onClose:()=>setViewer(null)}),
@@ -1621,8 +1644,8 @@ function ProProfile({me,acct,banner,onAvatar,notify,onSettings,onSignOut}){
   return h(Fragment,null,
     h("div",{className:"profbanner",style:{borderRadius:18,...(banner&&banner.url?{backgroundImage:"url("+cl(banner.url,"f_auto,q_auto,w_900")+")"}:{background:"linear-gradient(135deg,hsl("+hue(me.number)+" 70% 42%),hsl("+((hue(me.number)+50)%360)+" 70% 55%))"})}},
       h("button",{className:"act",style:{position:"absolute",top:10,right:10,background:"rgba(0,0,0,.5)",color:"#fff"},onClick:()=>onSettings("settings")},"Settings")),
-    h("div",{style:{marginTop:-46,width:"fit-content",borderRadius:"50%",boxShadow:"0 0 0 4px var(--bg)",position:"relative",marginLeft:14}},
-      h("label",{style:{cursor:"pointer"},"aria-label":"Change profile photo"},h(Avatar,{id:me.number,name:me.name,size:92,src:me.avatarUrl}),h("span",{className:"cam"},h(Icon,{n:"camera",s:14})),h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)onAvatar(f)}}))),
+    h("div",{style:{marginTop:-36,width:"fit-content",borderRadius:"50%",boxShadow:"0 0 0 4px var(--bg)",position:"relative",marginLeft:14}},
+      h("label",{style:{cursor:"pointer"},"aria-label":"Change profile photo"},h(Avatar,{id:me.number,name:me.name,size:74,src:me.avatarUrl}),h("span",{className:"cam"},h(Icon,{n:"camera",s:14})),h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)onAvatar(f)}}))),
     h("div",{style:{padding:"0 4px"}},
       h("div",{style:{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},h("div",{className:"h2",style:{margin:"8px 0 0"}},me.name,acct.verified&&h(Check)),h("span",{className:"tag"},acct.pro.category||"Professional"),acct.privateAccount&&h("span",{className:"tag"},"Private")),
       h("div",{className:"sub",style:{whiteSpace:"pre-wrap",margin:"4px 0 6px"}},me.about||"No about yet"),
@@ -1632,8 +1655,8 @@ function ProProfile({me,acct,banner,onAvatar,notify,onSettings,onSignOut}){
         h("button",{className:"statbtn",onClick:()=>setFlist("following")},h(Stat,{n:d?d.following:"-",label:"Following"})),
         h(Stat,{n:d?d.posts:"-",label:"Posts"})),
       h("div",{style:{display:"flex",gap:10,margin:"12px 0"}},
-        h("button",{className:"btn",style:{flex:1,margin:0},onClick:()=>onSettings("pro")},"Dashboard"),
-        h("button",{className:"btn soft",style:{flex:1,margin:0},onClick:()=>onSettings("account")},"Edit profile")),
+        h("button",{className:"btn sm",style:{flex:1,margin:0,padding:"9px 12px"},onClick:()=>onSettings("pro")},"Dashboard"),
+        h("button",{className:"btn soft sm",style:{flex:1,margin:0,padding:"9px 12px"},onClick:()=>onSettings("account")},"Edit profile")),
       reqs.length>0&&h("div",{className:"card"},h("div",{className:"name"},"Follow requests ("+reqs.length+")"),reqs.map(u=>h("div",{key:u.number,className:"row"},h(Avatar,{id:u.number,name:u.name,size:36,src:u.avatar}),h("div",{className:"grow name trunc"},u.name,u.verified&&h(Check)),h("button",{className:"act",onClick:()=>answer(u,true)},"Accept"),h("button",{className:"act",onClick:()=>answer(u,false)},"Decline")))),
       h("div",{className:"seg",style:{marginTop:8}},[["post","Posts"],["repost","Reposts"]].map(([k,l])=>h("button",{key:k,"aria-pressed":tab===k,onClick:()=>setTab(k)},l))),
       posts===null&&h("p",{className:"sub"},"Loading\u2026"),
@@ -1860,6 +1883,12 @@ function App(){
     (async()=>{
       const token=store.get(TOKEN_KEY);
       if(token){
+        const quick=store.json("kite:profile",null);
+        if(quick){   /* open instantly from the saved profile, then check the token in the background */
+          startSession(quick);setBooting(false);
+          api("/api/me").then(r=>{if(r&&r.profile){store.set("kite:profile",JSON.stringify(r.profile));setMe(r.profile)}}).catch(e=>{if(e.status===401)signOut()});
+          return;
+        }
         try{const r=await api("/api/me");startSession(r.profile)}
         catch(e){
           if(e.status===401)store.del(TOKEN_KEY);           /* only a rejected token logs out */
@@ -2059,7 +2088,7 @@ function App(){
   const eff=isPrem?prefs:{...prefs,wall:FREE_WALL.includes(prefs.wall)?prefs.wall:"mix",wallColor:"blue",bubble:"blue",icon:"classic",matchBanner:false};
   const bt=me&&eff.matchBanner&&banner&&banner.color?themeVars(banner.color,prefs.theme,prefs.bannerMode||"auto"):null;
   let body;
-  if(booting)body=h("div",{className:"boot"},h(Logo,{size:56}));
+  if(booting)body=h("div",{className:"boot"},h("div",{className:"bootmark"},"KITE"));
   else if(!me)body=h(Auth,{onDone:onAuthed,theme:prefs.theme,onTheme:toggleTheme});
   else if(partner)body=h(ChatView,{me,partner,name:nameOf(partner),about:names[partner]&&names[partner].about,list:thread,online,onBack:()=>setPartner(null),onSend:sendMessage,onRefresh:manualRefresh,onProfile:openProfile,avatar:avatarOf(partner),notify,prefs:eff,rcpts,presence:pres,verified:!!(names[partner]&&names[partner].verified),skin:bt?bt.skin:prefs.theme,calls:callLog.filter(c=>c.peer===partner),blocked:blocked.some(b=>b.number===partner),onBlock:on=>setBlock(partner,on)});
   else body=h(Fragment,null,
@@ -2078,8 +2107,7 @@ function App(){
         h(Icon,{n:icon,s:22}),label,id==="chats"&&unread>0&&h("span",{className:"count"},unread)))));
 
   return h("div",{className:"shell","data-skin":me?(bt?bt.skin:prefs.theme):undefined,style:bt?bt.vars:undefined},body,
-    h(NetSpinner,{key:"netspin"}),
-    h(CallManager,{key:"callmgr",me,notify,prefs}),
+        h(CallManager,{key:"callmgr",me,notify,prefs}),
     card&&h(ProfileView,{card,me,notify,onClose:()=>setCard(null),onMessage:(n,nm)=>{setCard(null);messageFromFeed(n,nm)}}),
     srcCard&&h(SourceView,{src:srcCard,notify,onClose:()=>setSrcCard(null)}),
     fwd&&h(ForwardSheet,{convos,nameOf,onClose:()=>setFwd(null),onSend:to=>{sendMessage(to,fwd);setFwd(null);notify("Forwarded")}}),

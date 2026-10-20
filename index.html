@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Kite</title>
 <meta name="theme-color" content="#1668e3">
-<meta name="kite-build" content="2026-10-18-color">
+<meta name="kite-build" content="2026-10-20-2fa">
 <meta name="description" content="Connect · Share · Belong">
 <link rel="icon" type="image/png" href="icon-light.png">
 <link rel="preconnect" href="https://kite-backend-pqsm.onrender.com" crossorigin>
@@ -578,7 +578,7 @@ const PATHS={
   flag:"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7",download:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3",link:"M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7",ban:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM4.9 4.9l14.2 14.2",
   down:"M6 9l6 6 6-6",screen:"M20 3H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM8 21h8M12 17v4",
   phone:"M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z",
-  back:"M19 12H5M12 19l-7-7 7-7",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",mic:"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3",folder:"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",repeat:"M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3",star:"M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z",clip:"M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5",file:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",camera:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",image:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
+  back:"M19 12H5M12 19l-7-7 7-7",gear:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z",plus:"M12 5v14M5 12h14",close:"M18 6L6 18M6 6l12 12",mic:"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v3",folder:"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",repeat:"M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3",star:"M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z",clip:"M21.4 11.1l-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5",file:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",camera:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",image:"M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21",chev:"M9 18l6-6-6-6",send:"M22 2 11 13M22 2l-7 20-4-9-9-4z",
   chat:"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
   feed:"M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M5 19h.01",
   status:"M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 8v8M8 12h8",
@@ -854,7 +854,7 @@ function CallManager({me,notify,prefs}){
 /* ---------- Auth ---------- */
 function Auth({onDone,theme,onTheme}){
   const [mode,setMode]=useState("register"),[phone,setPhone]=useState(""),[name,setName]=useState("");
-  const [step,setStep]=useState("form"),[pin,setPin]=useState(""),[pinId,setPinId]=useState(null);
+  const [step,setStep]=useState("form"),[pin,setPin]=useState(""),[pinId,setPinId]=useState(null),[ticket,setTicket]=useState(""),[hint,setHint]=useState("");
   const [busy,setBusy]=useState(false),[err,setErr]=useState("");
   const [expiresAt,setExpiresAt]=useState(0),[resendAt,setResendAt]=useState(0),[now,setNow]=useState(Date.now());
   const num=digits(phone);
@@ -883,8 +883,20 @@ function Auth({onDone,theme,onTheme}){
     setBusy(true);setErr("");
     try{
       const r=await api("/api/auth/verify-code",{method:"POST",auth:false,body:{number:num,name:name.trim(),mode,pin_id:pinId,pin}});
+      if(r.twofa){setTicket(r.ticket);setHint(r.emailHint||"");setPin("");setStep("twofa");setBusy(false);return}
       onDone(r);
     }catch(e){setErr(e.message);setBusy(false)}
+  };
+  const verify2=async()=>{
+    setBusy(true);setErr("");
+    try{const r=await api("/api/auth/verify-2fa",{method:"POST",auth:false,body:{ticket,code:pin}});onDone(r)}
+    catch(e){setErr(e.message);setBusy(false)}
+  };
+  const resend2=async()=>{
+    setBusy(true);setErr("");
+    try{const r=await api("/api/auth/resend-2fa",{method:"POST",auth:false,body:{ticket}});setHint(r.emailHint||hint);setPin("")}
+    catch(e){setErr(e.message)}
+    setBusy(false);
   };
   const switchMode=m=>{setMode(m);setErr("")};
   const back=()=>{setStep("form");setErr("");setPin("")};
@@ -906,6 +918,15 @@ function Auth({onDone,theme,onTheme}){
           h("button",{className:"btn",disabled:!canSend||busy,onClick:sendCode},busy?"Sending code…":"Send code"),
           h(Err,{text:err}),
           h("p",{className:"sub",style:{marginTop:18}},"We'll text a one-time code to confirm the number is yours."))
+      : step==="twofa"
+      ? h(Fragment,null,
+          h("label",{className:"lbl",htmlFor:"pin"},"Two-step verification: enter the code sent to "+hint),
+          h("input",{id:"pin",className:"field code","aria-label":"Email verification code",inputMode:"numeric",autoComplete:"one-time-code",maxLength:6,placeholder:"000000",value:pin,onChange:e=>setPin(digits(e.target.value).slice(0,6)),onKeyDown:e=>e.key==="Enter"&&pin.length===6&&!busy&&verify2()}),
+          h("button",{className:"btn",style:{marginTop:12},disabled:busy||pin.length!==6,onClick:verify2},busy?"Checking\u2026":"Sign in"),
+          h(Err,{text:err}),
+          h("div",{className:"links"},
+            h("button",{className:"act",disabled:busy,onClick:resend2},"Resend code"),
+            h("button",{className:"act",onClick:()=>{setStep("form");setErr("");setPin("");setTicket("")}},"Start over")))
       : h(Fragment,null,
           h("label",{className:"lbl",htmlFor:"pin"},"Enter the code sent to "+pretty(num)),
           h("input",{id:"pin",className:"field code","aria-label":"Verification code",inputMode:"numeric",autoComplete:"one-time-code",maxLength:6,placeholder:"000000",value:pin,disabled:expired,onChange:e=>setPin(digits(e.target.value).slice(0,6)),onKeyDown:e=>e.key==="Enter"&&pin.length===6&&!busy&&!expired&&verify()}),
@@ -1058,7 +1079,7 @@ const callStatus=c=>{const out=c.dir==="out";switch(c.outcome){
   case"failed":return"Call failed (connection)";
   default:return callWord(c)}};
 const callBad=c=>(c.dir==="in"&&(c.outcome==="missed"||c.outcome==="cancelled"))||c.outcome==="failed";
-const APP_BUILD="2026-10-18-color",SUPPORT_EMAIL="kitegroup.connect@gmail.com";
+const APP_BUILD="2026-10-20-2fa",SUPPORT_EMAIL="supportteam.kite@gmail.com";
 const Check=()=>h("span",{className:"vbadge",title:"Verified","aria-label":"Verified"},h(Icon,{n:"check",s:8}));
 const I18N={pcm:{Chats:"Chat dem",Feed:"Wetin dey happen",Calls:"Call dem",Me:"Me",Settings:"Settings"},yo:{Chats:"\u00ccf\u1ecd\u0300r\u1ecd\u0300w\u00e9r\u1ecd\u0300",Feed:"\u00ccr\u00f2y\u00ecn",Calls:"\u00ccp\u00e8",Me:"\u00c8mi"},ig:{Chats:"Mkpar\u1ecbta \u1ee5ka",Feed:"Ak\u1ee5k\u1ecd",Calls:"Oku",Me:"M\u1ee5"},ha:{Chats:"Tattaunawa",Feed:"Labarai",Calls:"Kira",Me:"Ni"}};
 const LANGS=[["en","English"],["pcm","Nigerian Pidgin"],["yo","Yor\u00f9b\u00e1"],["ig","Igbo"],["ha","Hausa"]];
@@ -1633,6 +1654,45 @@ function IconPanel({prefs,setPrefs,gate,isPrem}){
   return h(Fragment,null,h("div",{className:"card"},ICONS.map(([k,l,f])=>h("button",{key:k,className:"row",role:"radio","aria-checked":(prefs.icon||"classic")===k,onClick:()=>gate(k==="classic")&&setPrefs(q=>({...q,icon:k})),"data-lock":(!isPrem&&k!=="classic")?"1":undefined},h("img",{src:"logo-light.png",alt:"",width:36,height:36,style:{filter:f}}),h("div",{className:"grow name"},l),(prefs.icon||"classic")===k&&h(Icon,{n:"check",s:20})))),
     h("p",{className:"sub",style:{marginTop:10}},"Changes the Kite logo inside the app and the icon on this browser tab. A web app can't change the icon on your phone's home screen."));
 }
+function SecurityPanel({notify}){
+  const [info,setInfo]=useState(null),[step,setStep]=useState("idle"),[email,setEmail]=useState(""),[code,setCode]=useState(""),[busy,setBusy]=useState(false),[err,setErr]=useState(""),[hint,setHint]=useState("");
+  const load=()=>api("/api/security").then(setInfo).catch(e=>setErr(e.message));
+  useEffect(()=>{load()},[]);
+  const send=async purpose=>{
+    setBusy(true);setErr("");
+    try{const r=await api("/api/security/send",{method:"POST",body:purpose==="enable"?{purpose,email:email.trim()}:{purpose}});setHint(r.emailHint||"");setCode("");setStep(purpose)}
+    catch(e){setErr(e.message)}
+    setBusy(false);
+  };
+  const confirm=async purpose=>{
+    setBusy(true);setErr("");
+    try{await api("/api/security/confirm",{method:"POST",body:{purpose,code}});setStep("idle");setCode("");setEmail("");await load();notify(purpose==="enable"?"Two-step verification is on":"Two-step verification is off")}
+    catch(e){setErr(e.message)}
+    setBusy(false);
+  };
+  if(!info)return h("p",{className:"sub"},err||"Loading\u2026");
+  if(step==="enable"||step==="disable")return h("div",{className:"card"},
+    h("label",{className:"lbl",htmlFor:"tfcode",style:{marginTop:0}},"Enter the 6-digit code sent to "+hint),
+    h("input",{id:"tfcode",className:"field code",inputMode:"numeric",autoComplete:"one-time-code",maxLength:6,placeholder:"000000",value:code,onChange:e=>setCode(digits(e.target.value).slice(0,6)),onKeyDown:e=>e.key==="Enter"&&code.length===6&&!busy&&confirm(step)}),
+    h("button",{className:"btn",style:{marginTop:12},disabled:busy||code.length!==6,onClick:()=>confirm(step)},busy?"Checking\u2026":step==="enable"?"Turn on":"Turn off"),
+    h(Err,{text:err}),
+    h("div",{className:"links"},
+      h("button",{className:"act",disabled:busy,onClick:()=>send(step)},"Resend code"),
+      h("button",{className:"act",onClick:()=>{setStep("idle");setErr("")}},"Cancel")));
+  if(info.enabled)return h("div",{className:"card"},
+    h("div",{className:"name"},"Two-step verification is on"),
+    h("p",{className:"sub"},"When you sign in, Kite also asks for a code sent to "+info.email+"."),
+    h("button",{className:"btn soft",style:{marginTop:12},disabled:busy,onClick:()=>send("disable")},busy?"Sending code\u2026":"Turn off"),
+    h(Err,{text:err}));
+  const okEmail=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+  return h("div",{className:"card"},
+    h("div",{className:"name"},"Two-step verification"),
+    h("p",{className:"sub"},"Optional. Add your email and Kite will ask for a code from it each time you sign in, on top of the code we text you."),
+    h("label",{className:"lbl",htmlFor:"tfemail"},"Your email address"),
+    h("input",{id:"tfemail",className:"field",type:"email",inputMode:"email",autoComplete:"email",placeholder:"you@example.com",value:email,onChange:e=>setEmail(e.target.value),onKeyDown:e=>e.key==="Enter"&&okEmail&&!busy&&send("enable")}),
+    h("button",{className:"btn",style:{marginTop:12},disabled:busy||!okEmail,onClick:()=>send("enable")},busy?"Sending code\u2026":"Send code"),
+    h(Err,{text:err}));
+}
 function PremiumPanel({acct,notify}){
   const [plans,setPlans]=useState(null),[busy,setBusy]=useState("");
   useEffect(()=>{api("/api/premium/plans").then(r=>setPlans(r.plans)).catch(()=>setPlans([]))},[]);
@@ -1665,7 +1725,7 @@ function ProProfile({me,acct,banner,onAvatar,notify,onSettings,onSignOut}){
   const shown=posts&&(tab==="media"?posts.filter(q=>q.media):posts);
   return h(Fragment,null,
     h("div",{className:"profbanner",style:{borderRadius:18,...(banner&&banner.url?{backgroundImage:"url("+cl(banner.url,"f_auto,q_auto,w_900")+")"}:{background:"linear-gradient(135deg,hsl("+hue(me.number)+" 70% 42%),hsl("+((hue(me.number)+50)%360)+" 70% 55%))"})}},
-      h("button",{className:"act",style:{position:"absolute",top:10,right:10,background:"rgba(0,0,0,.5)",color:"#fff"},onClick:()=>onSettings("settings")},"Settings")),
+      h("button",{className:"act",style:{position:"absolute",top:10,right:10,background:"rgba(0,0,0,.5)",color:"#fff"},"aria-label":"Settings",onClick:()=>onSettings("settings")},h(Icon,{n:"gear",s:20}))),
     h("div",{style:{marginTop:-36,width:"fit-content",borderRadius:"50%",boxShadow:"0 0 0 4px var(--bg)",position:"relative",marginLeft:14}},
       h("label",{style:{cursor:"pointer"},"aria-label":"Change profile photo"},h(Avatar,{id:me.number,name:me.name,size:74,src:me.avatarUrl}),h("span",{className:"cam"},h(Icon,{n:"camera",s:14})),h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)onAvatar(f)}}))),
     h("div",{style:{padding:"0 4px"}},
@@ -1735,14 +1795,14 @@ function Me({me,prefs,setPrefs,onSave,onSignOut,onAvatar,notify,banner,onBanner,
   const Head=t=>h("div",{className:"titlerow",style:{justifyContent:"flex-start",gap:10,marginBottom:10}},
     h("button",{className:"iconbtn",onClick:()=>setView(view==="settings"?"home":"settings"),"aria-label":"Back"},h(Icon,{n:"back"})),
     h("h1",{className:"h1",style:{margin:0}},t));
-  if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("chats","Chats & calls","Wallpaper, bubbles and call display"),Row("notifs","Notifications","Messages, calls and likes"),Row("pro","Professional mode","Followers, banner and analytics"),Row("premium","Kite Premium",isPrem?(acct.premium.free?"Free for your account":"Active"):"Themes, wallpapers, icons and more"),Row("privacy","Privacy","Read receipts, last seen and status"),Row("data","Data","Data saver"),
+  if(view==="settings")return h(Fragment,null,Head("Settings"),Row("account","Account","Name and about"),Row("appearance","Appearance","Light or dark"),Row("chats","Chats & calls","Wallpaper, bubbles and call display"),Row("notifs","Notifications","Messages, calls and likes"),Row("security","Security","Two-step verification with your email"),Row("pro","Professional mode","Followers, banner and analytics"),Row("premium","Kite Premium",isPrem?(acct.premium.free?"Free for your account":"Active"):"Themes, wallpapers, icons and more"),Row("privacy","Privacy","Read receipts, last seen and status"),Row("data","Data","Data saver"),
     isAdmin&&Row("admin","Admin panel","Reports, verification and stats"),
     h("button",{className:"row","aria-expanded":moreOpen,onClick:()=>setMoreOpen(o=>!o)},h("div",{className:"grow name"},"More"),h("div",{className:"sub"},moreOpen?"Show less":"Storage, language, help and more"),h(Icon,{n:moreOpen?"up":"down",s:20})),
     moreOpen&&h(Fragment,null,
     Row("storage","Storage","Cache and data on this device"),Row("parental","Parental control","PIN, hide discover, block unknown calls"),Row("a11y","Accessibility","Text size, contrast and motion"),Row("lang","App language","English, Pidgin, Yor\u00f9b\u00e1, Igbo, Hausa"),Row("icon","App icon","Choose the Kite logo style"),
     Row("invite","Invite a friend","Share Kite"),Row("help","Help centre","Answers to common questions"),Row("contact","Contact us",SUPPORT_EMAIL),Row("privacypolicy","Privacy policy","How we handle your data"),Row("updates","App updates","Version "+APP_BUILD),
     Row("delete","Delete account","Permanently remove your account and data")));
-  const PANELS={premium:["Kite Premium",()=>h(PremiumPanel,{acct,notify})],admin:["Admin panel",()=>h(AdminPanel,{notify})],storage:["Storage",()=>h(StoragePanel,{prefs,setPrefs,notify})],parental:["Parental control",()=>h(ParentalPanel,{prefs,setPrefs,notify})],a11y:["Accessibility",()=>h(A11yPanel,{prefs,setPrefs})],lang:["App language",()=>h(LangPanel,{prefs,setPrefs})],icon:["App icon",()=>h(IconPanel,{prefs,setPrefs,gate,isPrem})],invite:["Invite a friend",()=>h(InvitePanel,{me,notify})],help:["Help centre",()=>h(HelpPanel)],contact:["Contact us",()=>h(ContactPanel)],privacypolicy:["Privacy policy",()=>h(PrivacyPanel)],updates:["App updates",()=>h(UpdatesPanel,{notify})],delete:["Delete account",()=>h(DeletePanel,{me,notify,onDone:()=>{try{Object.keys(localStorage).filter(k=>k.startsWith("kite:")).forEach(k=>localStorage.removeItem(k))}catch(e){}onSignOut()}})]};
+  const PANELS={security:["Security",()=>h(SecurityPanel,{notify})],premium:["Kite Premium",()=>h(PremiumPanel,{acct,notify})],admin:["Admin panel",()=>h(AdminPanel,{notify})],storage:["Storage",()=>h(StoragePanel,{prefs,setPrefs,notify})],parental:["Parental control",()=>h(ParentalPanel,{prefs,setPrefs,notify})],a11y:["Accessibility",()=>h(A11yPanel,{prefs,setPrefs})],lang:["App language",()=>h(LangPanel,{prefs,setPrefs})],icon:["App icon",()=>h(IconPanel,{prefs,setPrefs,gate,isPrem})],invite:["Invite a friend",()=>h(InvitePanel,{me,notify})],help:["Help centre",()=>h(HelpPanel)],contact:["Contact us",()=>h(ContactPanel)],privacypolicy:["Privacy policy",()=>h(PrivacyPanel)],updates:["App updates",()=>h(UpdatesPanel,{notify})],delete:["Delete account",()=>h(DeletePanel,{me,notify,onDone:()=>{try{Object.keys(localStorage).filter(k=>k.startsWith("kite:")).forEach(k=>localStorage.removeItem(k))}catch(e){}onSignOut()}})]};
   if(PANELS[view])return h(Fragment,null,Head(PANELS[view][0]),PANELS[view][1]());
   if(view==="account")return h(Fragment,null,Head("Account"),
     h("div",{className:"bannerimg",style:banner&&banner.url?{backgroundImage:"url("+banner.url+")"}:undefined},!(banner&&banner.url)&&h("span",{className:"sub"},"No banner yet")),

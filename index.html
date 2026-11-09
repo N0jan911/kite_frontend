@@ -1898,8 +1898,8 @@ function ProProfile({me,acct,banner,onAvatar,notify,onSettings,onSignOut}){
   const pin=async q=>{const on=!q.pinned;try{await api("/api/users/pin",{method:"POST",body:{postId:on?q.id:null}});setPosts(l=>l.map(x=>({...x,pinned:on&&x.id===q.id})));notify(on?"Pinned to your profile":"Unpinned")}catch(e){notify(e.message)}};
   const del=async q=>{if(!confirm("Delete this post?"))return;try{await api("/api/posts/"+encodeURIComponent(q.id),{method:"DELETE"});setPosts(l=>l.filter(x=>x.id!==q.id))}catch(e){notify(e.message)}};
   const shareProfile=async()=>{
-    const url=location.origin+location.pathname+"?user="+encodeURIComponent(me.number);
-    const payload={title:(me.name||"Kite user")+" on Kite",text:"Connect with "+(me.name||"me")+" on Kite.",url};
+    const url=location.origin+location.pathname;
+    const payload={title:(me.name||"Kite user")+" on Kite",text:"Connect with "+(me.name||"me")+" on Kite. My Kite number: "+me.number,url};
     try{if(navigator.share)await navigator.share(payload);else{await navigator.clipboard.writeText(url);notify("Profile link copied")}}catch(e){if(e&&e.name!=="AbortError")notify("Couldn't share profile")}
   };
   const shown=posts&&(tab==="media"?posts.filter(q=>q.media):posts);

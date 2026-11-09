@@ -520,6 +520,64 @@ body{background:#f4f8ff;color:#172b49}.shell{background:#fff;box-shadow:0 12px 5
 .shell[data-skin=dark] .iconbtn,.shell[data-skin=dim] .iconbtn{background:#fff;color:#1769d2;border-color:#d9e8fb}
 .shell[data-skin=dark] .field,.shell[data-skin=dim] .field{background:#fff;color:#172b49;border-color:#d9e8fb}
 @media(max-width:519px){.feed-fab{right:20px}}
+
+/* Me screen compact profile layout */
+:root{--profile-blue:#1769d2;--profile-soft:#edf5ff;--profile-muted:#8290a4;--profile-gap-1:8px;--profile-gap-2:12px;--profile-gap-3:16px;--profile-gap-4:24px}
+.profile-banner{height:94px!important;min-height:94px!important;border-radius:16px!important;margin-bottom:0;overflow:visible}
+.profile-more-button{position:absolute;z-index:8;top:10px;right:10px;width:46px;height:46px;border:0;border-radius:50%;background:#fff;color:#26364b;display:grid;place-items:center;box-shadow:0 3px 12px rgba(8,35,72,.2);cursor:pointer}
+.profile-more-button svg{stroke-width:2.8}
+.profile-summary{padding:0 4px 8px}
+.profile-meta-row{display:flex;align-items:center;gap:12px;margin-top:-31px;position:relative;z-index:2;min-width:0}
+.profile-avatar-wrap{width:88px;height:88px;flex:none;position:relative;border-radius:50%;display:grid;place-items:center;background:var(--bg);box-shadow:0 0 0 3px var(--bg)}
+.profile-avatar-wrap .avatar{width:84px!important;height:84px!important;border:3px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.12)}
+.profile-avatar-label{position:relative;display:block;width:84px;height:84px}
+.profile-avatar-label .cam{position:absolute;right:-1px;bottom:0;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--profile-blue);color:#fff;border:2px solid var(--bg)}
+.profile-stats{display:flex;align-items:center;justify-content:space-around;gap:4px;flex:1;min-width:0;padding:5px 0 0}
+.profile-stat-button{min-width:0;flex:1;border:0;background:transparent;padding:5px 1px;color:inherit;cursor:pointer}
+.profile-stat-button .h2{font-size:17px;font-weight:800;line-height:1.2;margin:0;color:var(--ink)}
+.profile-stat-button .sub{font-size:10px;line-height:1.35;color:var(--profile-muted);white-space:nowrap}
+.profile-identity{padding:10px 2px 0}
+.profile-name-line{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0}
+.profile-name-line .profile-name{font-size:18px;line-height:1.2;margin:0;font-weight:800;max-width:70%;overflow-wrap:anywhere}
+.profile-name-line .tag{font-size:10px;padding:3px 8px;border-radius:999px;background:var(--profile-soft);color:var(--profile-blue);white-space:nowrap}
+.profile-about{font-size:12px;line-height:1.45;margin-top:4px;color:var(--profile-muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.profile-link{display:block;color:var(--profile-blue)!important;font-size:12px;margin-top:4px;word-break:break-all}
+.profile-dashboard{height:44px;min-height:44px;width:100%;margin:12px 0 4px!important;border-radius:12px;font-weight:700;background:var(--profile-blue)!important;color:#fff!important}
+.profile-requests{margin:8px 0}
+.profile-tabs{display:flex!important;justify-content:space-around;align-items:stretch;gap:2px!important;margin:10px 0 8px!important;padding:0!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;background:transparent!important}
+.profile-tabs button{flex:1;min-width:0;padding:11px 3px 10px!important;border:0!important;border-radius:0!important;background:transparent!important;color:var(--mute);font-size:13px;font-weight:600}
+.profile-tabs button[aria-pressed=true]{color:var(--profile-blue)!important;background:transparent!important;box-shadow:inset 0 -2px 0 var(--profile-blue)}
+.profile-empty{min-height:145px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:24px 16px;color:var(--profile-muted)}
+.profile-empty-icon{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--profile-soft);color:var(--profile-blue)}
+.profile-empty p{margin:0;font-size:12px;line-height:1.5;color:var(--profile-muted);max-width:260px}
+.profile-loading{text-align:center;padding:18px 0;font-size:12px}
+.shell[data-skin=dark] .profile-more-button,.shell[data-skin=dim] .profile-more-button{background:#fff;color:#26364b}
+.shell[data-skin=dark] .profile-avatar-wrap,.shell[data-skin=dim] .profile-avatar-wrap{background:var(--bg);box-shadow:0 0 0 3px var(--bg)}
+.shell[data-skin=dark] .profile-avatar-wrap .avatar,.shell[data-skin=dim] .profile-avatar-wrap .avatar{border-color:#fff}
+.shell[data-skin=dark] .profile-name-line .tag,.shell[data-skin=dim] .profile-name-line .tag{background:#203b5c;color:#a9d0ff}
+.shell[data-skin=dark] .profile-empty-icon,.shell[data-skin=dim] .profile-empty-icon{background:#203b5c;color:#a9d0ff}
+.shell[data-skin=dark] .profile-tabs,.shell[data-skin=dim] .profile-tabs{border-color:#34445e!important}
+@media(max-width:390px){
+ .profile-meta-row{gap:8px}
+ .profile-avatar-wrap{width:84px;height:84px}
+ .profile-avatar-label{width:80px;height:80px}
+ .profile-avatar-label .avatar{width:80px!important;height:80px!important}
+ .profile-stats{gap:1px}
+ .profile-stat-button .h2{font-size:16px}
+ .profile-stat-button .sub{font-size:9px}
+ .profile-name-line .profile-name{font-size:17px;max-width:66%}
+ .profile-tabs button{font-size:12px}
+}
+@media(max-width:360px){
+ .profile-meta-row{gap:6px}
+ .profile-avatar-wrap{width:80px;height:80px}
+ .profile-avatar-label,.profile-avatar-label .avatar{width:76px!important;height:76px!important}
+ .profile-stats{gap:0}
+ .profile-stat-button .h2{font-size:15px}
+ .profile-stat-button .sub{font-size:8px}
+ .profile-name-line{gap:5px}
+ .profile-name-line .profile-name{font-size:16px;max-width:62%}
+}
 </style>
 </head>
 <body>
@@ -1831,7 +1889,7 @@ function PremiumPanel({acct,notify}){
       h("p",{className:"sub",style:{marginTop:8}},"Payments are handled securely by Paystack. Premium does not renew by itself: subscribe again when your time ends.")));
 }
 function ProProfile({me,acct,banner,onAvatar,notify,onSettings,onSignOut}){
-  const [d,setD]=useState(null),[tab,setTab]=useState("post"),[posts,setPosts]=useState(null),[flist,setFlist]=useState(null),[reqs,setReqs]=useState([]);
+  const [d,setD]=useState(null),[tab,setTab]=useState("post"),[posts,setPosts]=useState(null),[flist,setFlist]=useState(null),[reqs,setReqs]=useState([]),[menuOpen,setMenuOpen]=useState(false);
   useEffect(()=>{api("/api/users/profile/"+encodeURIComponent(me.number)).then(setD).catch(()=>{})},[me.number]);
   useEffect(()=>{setPosts(null);api(tab==="likes"?"/api/posts/liked?limit=40":"/api/posts/by/"+encodeURIComponent(me.number)+"?kind="+(tab==="repost"?"repost":"post")+"&limit="+(tab==="media"?60:40)).then(r=>setPosts(r.posts||[])).catch(()=>setPosts([]))},[tab,me.number]);
   useEffect(()=>{if(acct.privateAccount)api("/api/users/requests").then(r=>setReqs(r.people||[])).catch(()=>{});else setReqs([])},[acct.privateAccount]);
@@ -1839,36 +1897,48 @@ function ProProfile({me,acct,banner,onAvatar,notify,onSettings,onSignOut}){
   const setVis=async q=>{const v=q.visibility==="private"?"public":"private";try{await api("/api/posts/"+encodeURIComponent(q.id)+"/visibility",{method:"POST",body:{visibility:v}});setPosts(l=>l.map(x=>x.id===q.id?{...x,visibility:v,pinned:v==="private"?false:x.pinned}:x))}catch(e){notify(e.message)}};
   const pin=async q=>{const on=!q.pinned;try{await api("/api/users/pin",{method:"POST",body:{postId:on?q.id:null}});setPosts(l=>l.map(x=>({...x,pinned:on&&x.id===q.id})));notify(on?"Pinned to your profile":"Unpinned")}catch(e){notify(e.message)}};
   const del=async q=>{if(!confirm("Delete this post?"))return;try{await api("/api/posts/"+encodeURIComponent(q.id),{method:"DELETE"});setPosts(l=>l.filter(x=>x.id!==q.id))}catch(e){notify(e.message)}};
+  const shareProfile=async()=>{
+    const url=location.origin+location.pathname+"?user="+encodeURIComponent(me.number);
+    const payload={title:(me.name||"Kite user")+" on Kite",text:"Connect with "+(me.name||"me")+" on Kite.",url};
+    try{if(navigator.share)await navigator.share(payload);else{await navigator.clipboard.writeText(url);notify("Profile link copied")}}catch(e){if(e&&e.name!=="AbortError")notify("Couldn't share profile")}
+  };
   const shown=posts&&(tab==="media"?posts.filter(q=>q.media):posts);
   return h(Fragment,null,
-    h("div",{className:"profbanner",style:{borderRadius:18,...(banner&&banner.url?{backgroundImage:"url("+cl(banner.url,"f_auto,q_auto,w_900")+")"}:{background:"linear-gradient(135deg,hsl("+hue(me.number)+" 70% 42%),hsl("+((hue(me.number)+50)%360)+" 70% 55%))"})}},
-      h("button",{className:"act",style:{position:"absolute",top:10,right:10,background:"rgba(0,0,0,.5)",color:"#fff"},"aria-label":"Settings",onClick:()=>onSettings("settings")},h(Icon,{n:"gear",s:20}))),
-    h("div",{style:{marginTop:-36,width:"fit-content",borderRadius:"50%",boxShadow:"0 0 0 4px var(--bg)",position:"relative",marginLeft:14}},
-      h("label",{style:{cursor:"pointer"},"aria-label":"Change profile photo"},h(Avatar,{id:me.number,name:me.name,size:74,src:me.avatarUrl}),h("span",{className:"cam"},h(Icon,{n:"camera",s:14})),h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)onAvatar(f)}}))),
-    h("div",{style:{padding:"0 4px"}},
-      h("div",{style:{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}},h("div",{className:"h2",style:{margin:"8px 0 0"}},me.name,acct.verified&&h(Check)),h("span",{className:"tag"},acct.pro.category||"Professional"),acct.privateAccount&&h("span",{className:"tag"},"Private")),
-      h("div",{className:"sub",style:{whiteSpace:"pre-wrap",margin:"4px 0 6px"}},me.about||"No about yet"),
-      acct.linkUrl&&h("a",{className:"sub",href:acct.linkUrl,target:"_blank",rel:"noopener noreferrer nofollow",style:{display:"block",color:"var(--accent)",margin:"0 0 8px",wordBreak:"break-all"}},acct.linkUrl.replace(/^https?:\/\//,"")),
-      h("div",{style:{display:"flex",padding:"10px 0",borderTop:"1px solid var(--line)",borderBottom:"1px solid var(--line)"}},
-        h("button",{className:"statbtn",onClick:()=>setFlist("followers")},h(Stat,{n:d?d.followers:"-",label:"Followers"})),
-        h("button",{className:"statbtn",onClick:()=>setFlist("following")},h(Stat,{n:d?d.following:"-",label:"Following"})),
-        h(Stat,{n:d?d.posts:"-",label:"Posts"})),
-      h("div",{style:{display:"flex",gap:10,margin:"12px 0"}},
-        h("button",{className:"btn sm",style:{flex:1,margin:0,padding:"9px 12px"},onClick:()=>onSettings("pro")},"Dashboard"),
-        h("button",{className:"btn soft sm",style:{flex:1,margin:0,padding:"9px 12px"},onClick:()=>onSettings("account")},"Edit profile")),
-      reqs.length>0&&h("div",{className:"card"},h("div",{className:"name"},"Follow requests ("+reqs.length+")"),reqs.map(u=>h("div",{key:u.number,className:"row"},h(Avatar,{id:u.number,name:u.name,size:36,src:u.avatar}),h("div",{className:"grow name trunc"},u.name,u.verified&&h(Check)),h("button",{className:"act",onClick:()=>answer(u,true)},"Accept"),h("button",{className:"act",onClick:()=>answer(u,false)},"Decline")))),
-      h("div",{className:"seg",style:{marginTop:8}},[["post","Posts"],["repost","Reposts"],["media","Media"],["likes","Likes"]].map(([k,l])=>h("button",{key:k,"aria-pressed":tab===k,onClick:()=>setTab(k)},l))),
-      posts===null&&h("p",{className:"sub"},"Loading\u2026"),
-      shown&&shown.length===0&&h("p",{className:"empty"},tab==="repost"?"No reposts yet. Repost a news story from the Feed.":tab==="media"?"No photos or videos yet.":tab==="likes"?"Posts you like will show here.":"No posts yet. Share something from the Feed."),
-      shown&&shown.map(q=>h("article",{className:"post",key:q.id},
-        h("div",{className:"sub"},(tab==="likes"?q.name+" \u00b7 ":"")+(q.pinned?"\ud83d\udccc Pinned \u00b7 ":"")+ago(q.ts)+(tab==="likes"?"":" \u00b7 "+(q.visibility==="private"?"Private":"Public"))),
-        h("div",{className:"text"},q.text),
-        q.media&&(isVideo(q.media)?h("video",{className:"pic",src:cl(q.media,"q_auto,w_720"),poster:vposter(q.media),controls:true,playsInline:true,preload:"none"}):h(Img,{className:"pic",src:q.media,w:640,alt:"Photo"})),
-        h("div",{className:"actions"},h("span",{className:"sub"},q.likes+" likes"),
-          tab!=="likes"&&h("button",{className:"act",onClick:()=>setVis(q)},h(Icon,{n:"lock",s:14}),q.visibility==="private"?"Make public":"Make private"),
-          tab!=="likes"&&q.kind==="post"&&q.visibility==="public"&&h("button",{className:"act",onClick:()=>pin(q)},q.pinned?"Unpin":"Pin"),
-          tab!=="likes"&&h("button",{className:"act",onClick:()=>del(q)},"Delete")))),
-      h("button",{className:"btn soft",style:{marginTop:18},onClick:onSignOut},h(Icon,{n:"logout",s:18}),"Sign out")),
+    h("div",{className:"profbanner profile-banner",style:{borderRadius:16,...(banner&&banner.url?{backgroundImage:"url("+cl(banner.url,"f_auto,q_auto,w_900")+")"}:{background:"linear-gradient(135deg,#1769d2,#67adf7)"})}},
+      h("button",{className:"profile-more-button","aria-label":"Profile options","aria-haspopup":"dialog",onClick:()=>setMenuOpen(true)},h(Icon,{n:"dots",s:22}))),
+    h("div",{className:"profile-summary"},
+      h("div",{className:"profile-meta-row"},
+        h("div",{className:"profile-avatar-wrap"},
+          h("label",{className:"profile-avatar-label",style:{cursor:"pointer"},"aria-label":"Change profile photo"},
+            h(Avatar,{id:me.number,name:me.name,size:84,src:me.avatarUrl}),
+            h("span",{className:"cam"},h(Icon,{n:"camera",s:14})),
+            h("input",{type:"file",accept:"image/*",style:{display:"none"},onChange:e=>{const f=e.target.files[0];e.target.value="";if(f)onAvatar(f)}}))),
+        h("div",{className:"profile-stats"},
+          h("button",{className:"profile-stat-button",onClick:()=>setFlist("followers")},h(Stat,{n:d?d.followers:"-",label:"Followers"})),
+          h("button",{className:"profile-stat-button",onClick:()=>setFlist("following")},h(Stat,{n:d?d.following:"-",label:"Following"})),
+          h("div",{className:"profile-stat-button"},h(Stat,{n:d?d.posts:"-",label:"Posts"})))),
+      h("div",{className:"profile-identity"},
+        h("div",{className:"profile-name-line"},h("div",{className:"h2 profile-name"},me.name,acct.verified&&h(Check)),h("span",{className:"tag"},"Creator"),acct.privateAccount&&h("span",{className:"tag"},"Private")),
+        h("div",{className:"sub profile-about"},me.about||"No about yet"),
+        acct.linkUrl&&h("a",{className:"sub profile-link",href:acct.linkUrl,target:"_blank",rel:"noopener noreferrer nofollow"},acct.linkUrl.replace(/^https?:\/\//,""))),
+      h("button",{className:"btn profile-dashboard",onClick:()=>onSettings("pro")},"Dashboard")),
+    reqs.length>0&&h("div",{className:"card profile-requests"},h("div",{className:"name"},"Follow requests ("+reqs.length+")"),reqs.map(u=>h("div",{key:u.number,className:"row"},h(Avatar,{id:u.number,name:u.name,size:36,src:u.avatar}),h("div",{className:"grow name trunc"},u.name,u.verified&&h(Check)),h("button",{className:"act",onClick:()=>answer(u,true)},"Accept"),h("button",{className:"act",onClick:()=>answer(u,false)},"Decline")))),
+    h("div",{className:"seg profile-tabs"},[["post","Posts"],["repost","Reposts"],["media","Media"],["likes","Likes"]].map(([k,l])=>h("button",{key:k,"aria-pressed":tab===k,onClick:()=>setTab(k)},l))),
+    posts===null&&h("p",{className:"sub profile-loading"},"Loading…"),
+    shown&&shown.length===0&&h("div",{className:"profile-empty"},h("span",{className:"profile-empty-icon"},h(Icon,{n:"image",s:22})),h("p",null,tab==="repost"?"No reposts yet. Repost a news story from the Feed.":tab==="media"?"No photos or videos yet.":tab==="likes"?"Posts you like will show here.":"No posts yet. Share something from the Feed.")),
+    shown&&shown.map(q=>h("article",{className:"post",key:q.id},
+      h("div",{className:"sub"},(tab==="likes"?q.name+" · ":"")+(q.pinned?"📌 Pinned · ":"")+ago(q.ts)+(tab==="likes"?"":" · "+(q.visibility==="private"?"Private":"Public"))),
+      h("div",{className:"text"},q.text),
+      q.media&&(isVideo(q.media)?h("video",{className:"pic",src:cl(q.media,"q_auto,w_720"),poster:vposter(q.media),controls:true,playsInline:true,preload:"none"}):h(Img,{className:"pic",src:q.media,w:640,alt:"Photo"})),
+      h("div",{className:"actions"},h("span",{className:"sub"},q.likes+" likes"),
+        tab!=="likes"&&h("button",{className:"act",onClick:()=>setVis(q)},h(Icon,{n:"lock",s:14}),q.visibility==="private"?"Make public":"Make private"),
+        tab!=="likes"&&q.kind==="post"&&q.visibility==="public"&&h("button",{className:"act",onClick:()=>pin(q)},q.pinned?"Unpin":"Pin"),
+        tab!=="likes"&&h("button",{className:"act",onClick:()=>del(q)},"Delete")))),
+    h("button",{className:"btn soft",style:{marginTop:18},onClick:onSignOut},h(Icon,{n:"logout",s:18}),"Sign out"),
+    menuOpen&&h(Sheet,{title:"Profile options",onClose:()=>setMenuOpen(false)},
+      h("button",{className:"row",onClick:()=>{setMenuOpen(false);onSettings("account")}},h(Icon,{n:"user",s:19}),h("div",{className:"grow name"},"Edit profile"),h(Icon,{n:"chev",s:18})),
+      h("button",{className:"row",onClick:()=>{setMenuOpen(false);shareProfile()}},h(Icon,{n:"share",s:19}),h("div",{className:"grow name"},"Share profile"),h(Icon,{n:"chev",s:18})),
+      h("button",{className:"row",onClick:()=>{setMenuOpen(false);onSettings("settings")}},h(Icon,{n:"gear",s:19}),h("div",{className:"grow name"},"Settings"),h(Icon,{n:"chev",s:18}))),
     flist&&h("div",{className:"layer"},h(FollowList,{number:me.number,kind:flist,notify,onClose:()=>setFlist(null),onOpen:()=>{}})));
 }
 function DeletePanel({me,notify,onDone}){

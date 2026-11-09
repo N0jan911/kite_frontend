@@ -1197,6 +1197,7 @@ const EMOJI=Array.from("😀😃😄😁😆😅😂🤣😊😇🙂😉😍🥰
 const isVideo=u=>typeof u==="string"&&/\/video\/upload\//.test(u);
 const vposter=u=>cl(u,"so_0,f_jpg,w_640").replace(/\.[a-z0-9]+(\?.*)?$/i,".jpg");
 function PostMedia({src,onOpen}){
+  if(typeof src==="string"&&src.includes("/raw/upload/"))return h("a",{className:"filecard",href:src,target:"_blank",rel:"noopener noreferrer"},h(Icon,{n:"file",s:22}),h("span",{className:"grow"},"Open attached file"),h(Icon,{n:"download",s:18}));
   return isVideo(src)?h("video",{className:"pic",src:cl(src,"q_auto,w_720"),poster:vposter(src),controls:true,playsInline:true,preload:"none"}):h(Img,{className:"pic",src,w:640,alt:"Photo",role:"button",tabIndex:0,"aria-label":"View full photo",style:{cursor:"zoom-in"},onClick:onOpen,onKeyDown:e=>{if(e.key==="Enter")onOpen()}});
 }
 function Tagged({text,onTag}){

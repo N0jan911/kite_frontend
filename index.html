@@ -430,6 +430,65 @@ body{
 .shell[data-skin=dark] .row:hover{background:#1b2235}
 .shell[data-skin=dark] .banner{background:#1b2235;color:#aab4d0}
 
+
+/* ---- Kite Connect plum/lavender visual refresh ---- */
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap');
+:root{
+ --bg:#fff;--sky:#F8F2F9;--tint:#F4E8F6;--line:#F0E7F1;
+ --ink:#1A1A1A;--mute:#8A8A8A;--accent:#C44FD8;--btn:#5B0F6E;
+ --bad:#E5484D;--theirs:#fff;
+}
+body{font-family:'Urbanist','Outfit','Poppins',system-ui,sans-serif;background:#F8F2F9;color:#1A1A1A}
+.shell{max-width:480px;background:#fff;border-radius:0;box-shadow:0 12px 50px rgba(64,20,70,.07)}
+.shell::before{display:none}
+.top{padding: max(16px,env(safe-area-inset-top)) 20px 12px;background:#fff}
+.brand{color:#5B0F6E;background:none;-webkit-text-fill-color:#5B0F6E;font-size:22px;font-weight:800}
+.main{padding:8px 18px 28px;background:#fff}
+.h1{font-size:25px;letter-spacing:-.025em;font-weight:800;color:#1A1A1A}
+.h2{font-size:18px;color:#1A1A1A}
+.sub,.time{color:#8A8A8A}
+.iconbtn{width:40px;height:40px;border-radius:50%;background:#fff;border:1px solid #F0E7F1;color:#5B0F6E}
+.searchbar{background:#F8F2F9;border:1px solid #F0E7F1;border-radius:999px}
+.chatrow{margin:2px 0;padding:12px 4px;background:#fff;border:0;border-radius:14px;box-shadow:none;animation:none}
+.chatrow:hover,.row:hover{background:#FCF8FC;border-color:transparent}
+.chatrow .avatar{width:46px!important;height:46px!important;box-shadow:none!important}
+.chatrow.unread .avatar{box-shadow:0 0 0 2px #fff,0 0 0 3px #EBD5EF!important}
+.chatrow.unread .sub{color:#777;font-weight:500}
+.name{font-size:14px;font-weight:700;color:#1A1A1A}
+.chatrow .sub{font-size:12px}
+.time{font-size:10px}
+.count{min-width:19px;height:19px;padding:0 5px;border-radius:50%;background:#E5484D;color:#fff;box-shadow:none;font-size:10px}
+.tabs{position:relative;z-index:3;gap:6px;margin:0 14px 12px;padding:8px 10px max(10px,env(safe-area-inset-bottom));border:1px solid #F1E8F2;border-radius:24px;background:#fff;box-shadow:0 8px 26px rgba(50,20,55,.10)}
+.tab{padding:9px 0 7px;border-radius:18px;color:#8A8A8A;font-size:11px}
+.tab[aria-current=page]{background:#F8EFFA;color:#C44FD8}
+.fab{right:calc(50% - 28px);bottom:86px;width:56px;height:56px;background:#5B0F6E;color:#fff;border:4px solid #fff;box-shadow:0 8px 20px rgba(91,15,110,.25)}
+.seg{border-color:#5B0F6E;background:#fff;border-radius:999px}
+.seg button{border-radius:999px;color:#5B0F6E}
+.seg button[aria-pressed=true]{background:#5B0F6E;color:#fff}
+.btn,.send,.bub.me{background:#5B0F6E}
+.btn{border-radius:999px}
+.btn.soft{background:#F4E8F6;color:#5B0F6E}
+.act{background:#F8F2F9;color:#6C5570}
+.ring{background:linear-gradient(135deg,#f4c84c,#e98ac5 55%,#c9c9d1);padding:3px}
+.ring.new{border-color:#C44FD8}
+.plus{background:#5B0F6E}
+.post{border-color:#F0E7F1}
+.card{background:#fff;border:1px solid #F0E7F1;border-radius:14px;box-shadow:0 5px 18px rgba(60,20,65,.06)}
+.shell[data-skin=dark],.shell[data-skin=dim]{--bg:#fff;--sky:#F8F2F9;--tint:#F4E8F6;--line:#F0E7F1;--ink:#1A1A1A;--mute:#8A8A8A;--accent:#C44FD8;--btn:#5B0F6E;--bad:#E5484D;--theirs:#fff;background:#fff;color:#1A1A1A}
+.shell[data-skin=dark] .tabs,.shell[data-skin=dim] .tabs{background:#fff}
+.shell[data-skin=dark] .tab,.shell[data-skin=dim] .tab{color:#8A8A8A}
+.shell[data-skin=dark] .tab[aria-current=page],.shell[data-skin=dim] .tab[aria-current=page]{background:#F8EFFA;color:#C44FD8}
+.shell[data-skin=dark] .avatar,.shell[data-skin=dim] .avatar{background:hsl(var(--h) 85% 92%);color:hsl(var(--h) 70% 30%)}
+.shell[data-skin=dark] .iconbtn,.shell[data-skin=dim] .iconbtn{background:#fff;color:#5B0F6E;border-color:#F0E7F1}
+.shell[data-skin=dark] .field,.shell[data-skin=dim] .field{background:#fff;color:#1A1A1A;border-color:#F0E7F1}
+.shell[data-skin=dark] .composer,.shell[data-skin=dim] .composer{background:#fff}
+.shell[data-skin=dark] .composer textarea,.shell[data-skin=dim] .composer textarea{background:#F8F2F9;color:#1A1A1A;border-color:#F0E7F1}
+.shell[data-skin=dark] .bub.them,.shell[data-skin=dim] .bub.them{background:#fff;color:#1A1A1A;border-color:#F0E7F1}
+.shell[data-skin=dark] .btn,.shell[data-skin=dark] .send,.shell[data-skin=dark] .fab,.shell[data-skin=dark] .bub.me{color:#fff}
+.shell[data-skin=dim] .btn,.shell[data-skin=dim] .send,.shell[data-skin=dim] .fab,.shell[data-skin=dim] .bub.me{color:#fff}
+@media(min-width:520px){.shell{margin:18px auto;height:calc(100dvh - 36px);border-radius:28px;overflow:hidden}}
+@media(max-width:519px){.shell{height:100dvh}}
+
 </style>
 </head>
 <body>

@@ -1937,7 +1937,7 @@ function ProProfile({me,acct,banner,onAvatar,notify,onSettings,onSignOut}){
     h("button",{className:"btn soft",style:{marginTop:18},onClick:onSignOut},h(Icon,{n:"logout",s:18}),"Sign out"),
     menuOpen&&h(Sheet,{title:"Profile options",onClose:()=>setMenuOpen(false)},
       h("button",{className:"row",onClick:()=>{setMenuOpen(false);onSettings("account")}},h(Icon,{n:"user",s:19}),h("div",{className:"grow name"},"Edit profile"),h(Icon,{n:"chev",s:18})),
-      h("button",{className:"row",onClick:()=>{setMenuOpen(false);shareProfile()}},h(Icon,{n:"share",s:19}),h("div",{className:"grow name"},"Share profile"),h(Icon,{n:"chev",s:18})),
+      h("button",{className:"row",onClick:()=>{setMenuOpen(false);shareProfile()}},h(Icon,{n:"link",s:19}),h("div",{className:"grow name"},"Share profile"),h(Icon,{n:"chev",s:18})),
       h("button",{className:"row",onClick:()=>{setMenuOpen(false);onSettings("settings")}},h(Icon,{n:"gear",s:19}),h("div",{className:"grow name"},"Settings"),h(Icon,{n:"chev",s:18}))),
     flist&&h("div",{className:"layer"},h(FollowList,{number:me.number,kind:flist,notify,onClose:()=>setFlist(null),onOpen:()=>{}})));
 }

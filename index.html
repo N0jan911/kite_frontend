@@ -578,6 +578,120 @@ body{background:#f4f8ff;color:#172b49}.shell{background:#fff;box-shadow:0 12px 5
  .profile-name-line{gap:5px}
  .profile-name-line .profile-name{font-size:16px;max-width:62%}
 }
+
+/* ---- 2026 UI fixes: unified dark palette, fixed chat action, and mobile spacing ---- */
+:root{--surface:#fff;--page-bg:#fff;--border-color:var(--line);--text-primary:var(--ink);--text-secondary:var(--mute)}
+:root[data-theme="dark"]{
+  --bg:#0F172A;--page-bg:#0F172A;--sky:#0F172A;--surface:#1E293B;
+  --tint:rgba(59,130,246,.2);--line:#334155;--border-color:#334155;
+  --ink:#F1F5F9;--text-primary:#F1F5F9;--mute:#94A3B8;--text-secondary:#94A3B8;
+  --accent:#60A5FA;--btn:#2563EB;--bad:#F87171;--theirs:#1E293B;
+  --profile-blue:#60A5FA;--profile-soft:rgba(59,130,246,.2);--profile-muted:#94A3B8;
+}
+:root[data-theme="dark"] body,:root[data-theme="dark"] #root,:root[data-theme="dark"] .shell{
+  background:var(--page-bg)!important;color:var(--text-primary)!important;
+}
+:root[data-theme="dark"] .shell{
+  --bg:#0F172A!important;--sky:#0F172A!important;--surface:#1E293B!important;
+  --tint:rgba(59,130,246,.2)!important;--line:#334155!important;--ink:#F1F5F9!important;
+  --mute:#94A3B8!important;--accent:#60A5FA!important;--btn:#2563EB!important;--theirs:#1E293B!important;
+  background:var(--page-bg)!important;
+}
+:root[data-theme="dark"] .top,:root[data-theme="dark"] .tabs,:root[data-theme="dark"] .chathead,
+:root[data-theme="dark"] .composer,:root[data-theme="dark"] .main,:root[data-theme="dark"] .msgs{
+  background:var(--page-bg)!important;color:var(--text-primary)!important;
+}
+:root[data-theme="dark"] .tabs{border-color:var(--border-color)!important}
+:root[data-theme="dark"] .card,:root[data-theme="dark"] .post,:root[data-theme="dark"] .sheet,
+:root[data-theme="dark"] .chatrow,:root[data-theme="dark"] .notifprev,:root[data-theme="dark"] .compose-editor,
+:root[data-theme="dark"] .field,:root[data-theme="dark"] .bub.them,:root[data-theme="dark"] .composer textarea{
+  background:var(--surface)!important;border-color:var(--border-color)!important;color:var(--text-primary)!important;
+}
+:root[data-theme="dark"] .post,:root[data-theme="dark"] .post .name,:root[data-theme="dark"] .post .text,
+:root[data-theme="dark"] .post p,:root[data-theme="dark"] .posthead,:root[data-theme="dark"] .posthead .name,
+:root[data-theme="dark"] .comment,:root[data-theme="dark"] .comment-text,:root[data-theme="dark"] .comment-body,
+:root[data-theme="dark"] .reply,:root[data-theme="dark"] .replies,:root[data-theme="dark"] .story-label,
+:root[data-theme="dark"] .sb{color:var(--text-primary)!important}
+:root[data-theme="dark"] .post .sub,:root[data-theme="dark"] .post time,:root[data-theme="dark"] .post small,
+:root[data-theme="dark"] .posthead .sub,:root[data-theme="dark"] .comment .sub,
+:root[data-theme="dark"] .reply .sub,:root[data-theme="dark"] .story-time,:root[data-theme="dark"] .sb small{
+  color:var(--text-secondary)!important;
+}
+:root[data-theme="dark"] .field::placeholder,:root[data-theme="dark"] .composer textarea::placeholder{color:var(--text-secondary)!important}
+:root[data-theme="dark"] .tab[aria-current="page"],:root[data-theme="dark"] .tabs .tab[aria-current="page"]{
+  background:rgba(59,130,246,.2)!important;color:#60A5FA!important;
+}
+:root[data-theme="dark"] .tabs .tab[aria-current="page"] svg{color:#60A5FA!important;stroke:#60A5FA!important}
+:root[data-theme="dark"] .tabs .tab{color:var(--text-secondary)!important}
+:root[data-theme="dark"] .act{background:var(--surface)!important;color:var(--text-secondary)!important;border-color:var(--border-color)!important}
+:root[data-theme="dark"] .act[aria-pressed="true"]{background:rgba(59,130,246,.2)!important;color:#60A5FA!important}
+:root[data-theme="dark"] .tag,:root[data-theme="dark"] .day{background:rgba(59,130,246,.2)!important;color:#60A5FA!important}
+:root[data-theme="dark"] .profile-more-button{width:40px!important;height:40px!important;background:#fff!important;color:#172033!important;box-shadow:0 3px 12px rgba(0,0,0,.22)!important}
+:root[data-theme="dark"] .profile-avatar-wrap{background:var(--page-bg)!important;box-shadow:0 0 0 3px var(--page-bg)!important}
+:root[data-theme="dark"] .profile-avatar-wrap .avatar{border-color:#fff!important}
+:root[data-theme="dark"] .profile-name-line .tag,:root[data-theme="dark"] .profile-empty-icon{background:rgba(59,130,246,.2)!important;color:#60A5FA!important}
+:root[data-theme="dark"] .profile-tabs{border-color:var(--border-color)!important}
+:root[data-theme="dark"] .profile-tabs button{color:var(--text-secondary)!important}
+:root[data-theme="dark"] .profile-tabs button[aria-pressed="true"]{color:#60A5FA!important;box-shadow:inset 0 -2px 0 #60A5FA!important}
+/* Chats FAB: fixed above the nav; Feed FAB remains independent. */
+.chat-fab{
+  position:fixed!important;z-index:6!important;
+  right:max(16px,calc((100vw - 480px)/2 + 16px))!important;
+  bottom:calc(76px + env(safe-area-inset-bottom) + 16px)!important;
+  width:56px!important;height:56px!important;min-width:56px!important;
+  border:0!important;border-radius:50%!important;background:#1769D2!important;color:#fff!important;
+  box-shadow:0 8px 22px rgba(15,45,90,.28)!important;
+}
+.chat-fab svg{width:26px;height:26px;stroke:#fff!important}
+.chat-fabmenu{
+  position:fixed!important;z-index:7!important;
+  right:max(16px,calc((100vw - 480px)/2 + 16px))!important;
+  bottom:calc(76px + env(safe-area-inset-bottom) + 84px)!important;
+  align-items:flex-end!important;max-width:calc(100vw - 32px);
+}
+.chat-fabmenu .fabopt{max-width:calc(100vw - 48px)}
+.chatlist-content{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+.chats-main{padding-bottom:calc(24px + env(safe-area-inset-bottom))!important}
+.feed-main{padding-bottom:calc(170px + env(safe-area-inset-bottom))!important}
+.feedbar .stories{min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none!important;-ms-overflow-style:none}
+.feedbar .stories::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+.feedbar .act{flex:none}
+.feed-fab{bottom:calc(94px + env(safe-area-inset-bottom))!important}
+/* Profile stats are below the banner; the avatar overlaps it by about 30%. */
+.profile-more-button{
+  width:40px!important;height:40px!important;color:#172033!important;background:#fff!important;
+  box-shadow:0 3px 12px rgba(8,35,72,.2)!important;
+}
+.profile-more-button svg{width:18px!important;height:18px!important;stroke-width:3.2!important}
+.profile-banner{height:94px!important;min-height:94px!important}
+.profile-meta-row{margin-top:-25px!important;gap:10px!important;align-items:flex-start!important}
+.profile-avatar-wrap{
+  width:84px!important;height:84px!important;box-shadow:0 0 0 3px var(--bg)!important;
+}
+.profile-avatar-wrap .avatar{width:84px!important;height:84px!important;border:3px solid #fff!important}
+.profile-avatar-label{width:84px!important;height:84px!important}
+.profile-avatar-label .avatar{width:84px!important;height:84px!important}
+.profile-avatar-label .cam{width:24px!important;height:24px!important;right:0!important;bottom:0!important}
+.profile-avatar-label .cam svg{width:13px;height:13px}
+.profile-stats{
+  min-width:0;flex:1;display:flex;align-items:center;justify-content:space-evenly;
+  gap:2px!important;padding:0!important;transform:translateY(18px);
+}
+.profile-stat-button{min-width:0;flex:1;padding:4px 0!important}
+@media(max-width:390px){
+  .profile-meta-row{gap:7px!important}
+  .profile-avatar-wrap,.profile-avatar-label,.profile-avatar-label .avatar,.profile-avatar-wrap .avatar{width:84px!important;height:84px!important}
+  .profile-stat-button .h2{font-size:15px!important}
+  .profile-stat-button .sub{font-size:9px!important;white-space:normal!important}
+}
+@media(max-width:360px){
+  .profile-meta-row{gap:5px!important}
+  .profile-avatar-wrap,.profile-avatar-label,.profile-avatar-label .avatar,.profile-avatar-wrap .avatar{width:84px!important;height:84px!important}
+  .profile-stat-button .h2{font-size:14px!important}
+  .profile-stat-button .sub{font-size:8px!important}
+  .profile-stats{gap:0!important}
+}
+
 </style>
 </head>
 <body>
@@ -1161,7 +1275,7 @@ function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf,con
       h(NewChat,{onStart:async n=>{const e=await onStart(n);if(!e)setAdding(false);return e}}),
       h("button",{className:"act",style:{margin:"8px 0"},onClick:()=>setAdding(false)},"Cancel")),
     convos.length>0&&h("label",{className:"searchbar"},h(Icon,{n:"search",s:18}),h("input",{placeholder:"Search chats","aria-label":"Search chats",value:q,onChange:e=>setQ(e.target.value)})),
-    h("div",{style:{marginTop:8}},
+    h("div",{className:"chatlist-content",style:{marginTop:8}},
       convos.length===0&&h("div",{className:"empty",style:{textAlign:"center",padding:"48px 12px"}},h(Icon,{n:"chat",s:46}),h("p",{style:{margin:"12px 0 0"}},"No chats yet. Tap + to start one. They need to be registered on Kite first.")),
       convos.length>0&&filtered.length===0&&h("p",{className:"empty"},"No chats match your search."),
       filtered.map((c,i)=>h("button",{key:c.partner,className:"row chatrow"+(c.unread>0?" unread":""),style:{animationDelay:Math.min(i,8)*45+"ms"},onClick:()=>onOpen(c.partner)},
@@ -1172,8 +1286,8 @@ function ChatList({me,convos,nameOf,onOpen,onStart,notify,onProfile,avatarOf,con
             h("span",{className:"sub trunc"},(c.last.from===me.number?"You: ":"")+(c.last.text||(c.last.file?"📎 "+c.last.file.name:""))),
             c.unread>0&&h("span",{className:"count"},c.unread)))))),
     fab&&h("div",{className:"scrim",onClick:()=>setFab(false)}),
-    fab&&h("div",{className:"fabmenu"},[["group","New group"],["call","New call"],["contact","New contact"]].map(([k,l])=>h("button",{key:k,className:"fabopt",onClick:()=>pick(k)},l))),
-    h("button",{className:"fab","aria-label":"New chat options","aria-expanded":fab,onClick:()=>setFab(!fab)},h(Icon,{n:"plus",s:26})));
+    fab&&h("div",{className:"fabmenu chat-fabmenu"},[["group","New group"],["call","New call"],["contact","New contact"]].map(([k,l])=>h("button",{key:k,className:"fabopt",onClick:()=>pick(k)},l))),
+    h("button",{className:"fab chat-fab","aria-label":"New chat options","aria-expanded":fab,onClick:()=>setFab(!fab)},h(Icon,{n:"plus",s:26})));
 }
 
 const rgbHsl=(r,g,b)=>{r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn;let h=0,s=0;if(d){s=d/(1-Math.abs(2*l-1));h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h=(h*60+360)%360}return[h,s,l]};
@@ -1905,7 +2019,7 @@ function ProProfile({me,acct,banner,onAvatar,notify,onSettings,onSignOut}){
   const shown=posts&&(tab==="media"?posts.filter(q=>q.media):posts);
   return h(Fragment,null,
     h("div",{className:"profbanner profile-banner",style:{borderRadius:16,...(banner&&banner.url?{backgroundImage:"url("+cl(banner.url,"f_auto,q_auto,w_900")+")"}:{background:"linear-gradient(135deg,#1769d2,#67adf7)"})}},
-      h("button",{className:"profile-more-button","aria-label":"Profile options","aria-haspopup":"dialog",onClick:()=>setMenuOpen(true)},h(Icon,{n:"dots",s:22}))),
+      h("button",{className:"profile-more-button","aria-label":"Profile options","aria-haspopup":"dialog",onClick:()=>setMenuOpen(true)},h(Icon,{n:"dots",s:18}))),
     h("div",{className:"profile-summary"},
       h("div",{className:"profile-meta-row"},
         h("div",{className:"profile-avatar-wrap"},
@@ -2356,6 +2470,7 @@ function App(){
   const isPrem=!!(acct.premium&&acct.premium.active);
   const eff=isPrem?prefs:{...prefs,wall:FREE_WALL.includes(prefs.wall)?prefs.wall:"mix",wallColor:"blue",bubble:"blue",icon:"classic",matchBanner:false};
   const bt=me&&eff.matchBanner&&banner&&banner.color?themeVars(banner.color,prefs.theme,prefs.bannerMode||"auto"):null;
+  useEffect(()=>{document.documentElement.dataset.theme=(bt?bt.skin:prefs.theme)==="dark"?"dark":"light"},[prefs.theme,bt&&bt.skin]);
   let body;
   if(booting)body=h("div",{className:"boot"},h("div",{className:"bootmark"},"KITE"));
   else if(!me)body=h(Auth,{onDone:onAuthed,theme:prefs.theme,onTheme:toggleTheme});
@@ -2365,7 +2480,7 @@ function App(){
       h("div",{className:"brand"},h(Logo,{size:30}),"Kite"),h("div",{className:"spacer"}),
       !online&&h("span",{className:"pill"},h(Icon,{n:"off",s:15}),"Offline"),
       h("button",{className:"iconbtn",onClick:toggleTheme,"aria-label":prefs.theme==="dark"?"Switch to light theme":"Switch to dark theme"},h(Icon,{n:prefs.theme==="dark"?"sun":"moon"}))),
-    h("main",{className:"main"},
+    h("main",{className:"main "+(tab==="chats"?"chats-main":tab==="feed"?"feed-main":"")},
       tab==="chats"&&h(ChatList,{me,convos,nameOf,onOpen:setPartner,onStart:addContact,notify,onProfile:openProfile,avatarOf,contacts,onAdd:addContact,verifiedOf:n=>!!(names[n]&&names[n].verified)}),
       tab==="calls"&&h(CallsTab,{calls:callLog,contacts,nameOf,avatarOf,onProfile:openProfile,notify,onAdd:addContact,onChat:n=>{setTab("chats");setPartner(n)}}),
       tab==="feed"&&h(FeedTab,{me,convos,nameOf,avatarOf,notify,onMessage:messageFromFeed,onProfile:openProfile,forward:setFwd,onBlock:setBlock,onSource:setSrcCard}),
